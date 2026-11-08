@@ -6,64 +6,99 @@
     <title>Ozan Okkıran | Mathematics Portfolio</title>
     <style>
         :root {
-            --bg-color: #faf9f6;
-            --text-color: #4a4a4a;
-            --primary: #9bb7d4;
-            --accent: #ffb7b2;
+            --bg-color: #f4f7f6; /* Biraz daha soğuk, modern bir gri-beyaz */
+            --text-color: #2c3e50;
+            --primary: #5d8aa8; /* Daha derin bir mavi */
+            --accent: #e07a5f; /* Daha sıcak bir kiremit rengi */
+            --card-bg: #ffffff;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 4rem 1.5rem;
+            padding: 5rem 2rem;
             margin: 0;
         }
-        .header { text-align: center; margin-bottom: 4rem; }
-        h1 { font-weight: 300; margin-bottom: 0.5rem; color: #333; font-size: 2.5rem;}
-        p.subtitle { color: #888; font-style: italic; font-size: 1.1rem; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 5rem; 
+        }
+        h1 { 
+            font-weight: 300; 
+            margin-bottom: 0.5rem; 
+            color: var(--text-color); 
+            font-size: 3rem;
+            letter-spacing: 1px;
+        }
+        p.subtitle { 
+            color: #7f8c8d; 
+            font-style: italic; 
+            font-size: 1.2rem; 
+        }
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
         }
         .card {
-            background: white;
-            padding: 2.5rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+            background: var(--card-bg);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
             text-align: center;
             text-decoration: none;
             color: inherit;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border-top: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            border-top: 5px solid var(--primary);
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative; /* Badge konumlandırması için */
+            overflow: hidden; /* Efektin taşmaması için */
         }
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            border-top-color: var(--accent); /* Hover'da renk değişimi */
         }
-        .card h2 { font-size: 1.3rem; font-weight: 600; margin-bottom: 12px; color: var(--primary); }
-        .card p { font-size: 0.95rem; color: #666; margin-bottom: 25px; line-height: 1.5; flex-grow: 1;}
-        .card.coming-soon { border-top: 4px solid #eaeaea; opacity: 0.7; cursor: default; }
-        .card.coming-soon:hover { transform: none; box-shadow: 0 8px 30px rgba(0,0,0,0.04); }
-        .card.coming-soon h2 { color: #aaa; }
+        .card h2 { 
+            font-size: 1.5rem; 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+            color: var(--primary); 
+            transition: color 0.3s ease;
+        }
+        .card:hover h2 {
+            color: var(--accent);
+        }
+        .card p { 
+            font-size: 1rem; 
+            color: #555; 
+            margin-bottom: 30px; 
+            line-height: 1.6; 
+            flex-grow: 1;
+        }
         .badge {
             display: inline-block;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
             background: var(--accent);
             color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(224, 122, 95, 0.3);
+            transition: transform 0.2s ease;
         }
-        .badge.gray { background: #ccc; }
+        .card:hover .badge {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -74,25 +109,26 @@
     </div>
 
     <div class="grid">
-        <!-- Aktif Simülasyonumuz -->
+        <!-- 1. Riemann -->
         <a href="riemann.html" class="card">
             <h2>Dynamic Riemann Sums</h2>
-            <p>Visualizing the area under curves and the concept of infinite limits.</p>
+            <p>Visualizing the area under curves and the concept of infinite limits. A hands-on approach to integration.</p>
             <span class="badge">Live</span>
         </a>
 
-        <!-- Blöf Yaptığımız Gelecek Projeler (Tıklanmaz) -->
-        <div class="card coming-soon">
+        <!-- 2. Unit Circle (Artık Aktif) -->
+        <a href="unitcircle.html" class="card">
             <h2>Unit Circle Explorer</h2>
-            <p>Interactive trigonometric functions and radians visualization.</p>
-            <span class="badge gray">Coming Soon</span>
-        </div>
+            <p>Interactive trigonometric functions and radians visualization. Connect angles, coordinates, and sine/cosine values.</p>
+            <span class="badge">Live</span>
+        </a>
 
-        <div class="card coming-soon">
+        <!-- 3. Derivative (Artık Aktif) -->
+        <a href="derivative.html" class="card">
             <h2>Derivative Visualizer</h2>
-            <p>Tangent lines and instantaneous rates of change over f(x).</p>
-            <span class="badge gray">Coming Soon</span>
-        </div>
+            <p>Tangent lines and instantaneous rates of change over f(x). See how the slope evolves dynamically.</p>
+            <span class="badge">Live</span>
+        </a>
     </div>
 
 </body>
