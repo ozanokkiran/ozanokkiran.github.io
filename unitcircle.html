@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit Circle Explorer | Ozan Okkıran</title>
+    <style>
+        :root {
+            --bg-color: #faf9f6;
+            --text-color: #4a4a4a;
+            --primary: #5d8aa8;
+            --accent: #e07a5f;
+            --circle-color: rgba(93, 138, 168, 0.2);
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            margin: 0;
+        }
+        h1 { font-weight: 300; margin-bottom: 0.2rem; }
+        p.subtitle { color: #888; margin-top: 0; margin-bottom: 2rem; font-style: italic; }
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            border: 1px solid #eaeaea;
+            border-radius: 4px;
+            margin-bottom: 1.5rem;
+            cursor: crosshair;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+        }
+        input[type=range] { width: 100%; margin: 20px 0; cursor: pointer; }
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+            font-size: 1.1rem;
+            background: #f9fbfd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eef2f5;
+            text-align: center;
+        }
+        .stat-value { font-weight: bold; font-size: 1.3rem; margin-top: 5px; }
+        .cos-val { color: var(--primary); }
+        .sin-val { color: var(--accent); }
+        .angle-val { color: #555; }
+        .back-link { margin-top: 20px; color: var(--primary); text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <h1>Unit Circle Explorer</h1>
+    <p class="subtitle">Connecting Angles, Coordinates, and Trigonometric Functions</p>
+
+    <div class="container">
+        <canvas id="mathCanvas" width="400" height="400"></canvas>
+        
+        <div class="controls">
+            <label>Angle (&theta;) = <span id="angleDisplay" class="angle-val">45</span>&deg;</label>
+            <input type="range" id="angleSlider" min="0" max="360" value="45">
+            
+            <div class="stats">
+                <div>
+                    <div>Angle (Rad)</div>
+                    <div class="stat-value angle-val" id="radDisplay">&pi;/4</div>
+                </div>
+                <div>
+                    <div>cos(&theta;) [x]</div>
+                    <div class="stat-value cos-val" id="cosDisplay">0.707</div>
+                </div>
+                <div>
+                    <div>sin(&theta;) [y]</div>
+                    <div class="stat-value sin-val" id="sinDisplay">0.707</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="index.html" class="back-link">&larr; Back to Portfolio</a>
+
+    <script>
+        const canvas = document.getElementById('mathCanvas');
+        const ctx = canvas.getContext('2d');
+        const angleSlider = document.getElementById('angleSlider');
+        const angleDisplay = document.getElementById('angleDisplay');
+        const radDisplay = document.getElementById('radDisplay');
+        const cosDisplay = document.getElementById('cosDisplay');
+        const sinDisplay = document.getElementById('sinDisplay');
+
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const radius = 150; // Çemberin piksel yarıçapı
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let degrees = parseInt(angleSlider.value);
+            let radians = degrees * (Math.PI / 180);
+            
+            // X ve Y koordinatları (Matematiksel)
+            let cosVal = Math.cos(radians);
+            let sinVal = Math.sin(radians);
+            
+            // Canvas piksel koordinatları
+            let px = cx + cosVal * radius;
+            let py = cy - sinVal * radius; // Canvas'ta Y ekseni aşağı doğru artar
+
+            // 1. Eksenleri Çiz
+            ctx.beginPath();
+            ctx.strokeStyle = '#ddd';
+            ctx.lineWidth = 1;
+            ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); // X ekseni
+            ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); // Y ekseni
+            ctx.stroke();
+
+            // 2. Birim Çemberi Çiz
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(93, 138, 168, 0.05)';
+            ctx.fill();
+            ctx.strokeStyle = '#5d8aa8';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 3. Açıyı Çiz (Yay)
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, radius * 0.2, 0, -radians, true);
+            ctx.fillStyle = 'rgba(224, 122, 95, 0.3)';
+            ctx.fill();
+
+            // 4. Üçgeni Çiz (Sin/Cos izdüşümleri)
+            // Cosinus çizgisi (X ekseni üzerinde)
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(px, cy);
+            ctx.strokeStyle = '#5d8aa8'; // Primary (Cos)
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Sinus çizgisi (Dikey izdüşüm)
+            ctx.beginPath();
+            ctx.moveTo(px, cy);
+            ctx.lineTo(px, py);
+            ctx.strokeStyle = '#e07a5f'; // Accent (Sin)
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // 5. Hipotenüs (Yarıçap)
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(px, py);
+            ctx.strokeStyle = '#4a4a4a';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 6. Noktayı İşaretle
+            ctx.beginPath();
+            ctx.arc(px, py, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#2c3e50';
+            ctx.fill();
+
+            // Değerleri Güncelle
+            angleDisplay.innerText = degrees;
+            // Basit radyan gösterimi
+            let frac = (degrees / 180).toFixed(2);
+            radDisplay.innerHTML = (frac == 1.00) ? "&pi;" : (frac == 0.00) ? "0" : frac + "&pi;";
+            cosDisplay.innerText = cosVal.toFixed(3);
+            sinDisplay.innerText = sinVal.toFixed(3);
+        }
+
+        angleSlider.addEventListener('input', draw);
+        draw();
+    </script>
+</body>
+</html>
