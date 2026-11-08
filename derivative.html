@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Derivative Visualizer | Ozan Okkıran</title>
+    <!-- Math.js Kütüphanesi: Fonksiyonları okumak ve türev almak için -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root {
-            --bg-color: #faf9f6;
-            --text-color: #4a4a4a;
-            --primary: #9bb7d4;
-            --accent: #ffb7b2;
-            --tangent: #4CAF50; /* Tatlı bir yeşil */
+            --bg-color: #f4f7f6;
+            --text-color: #2c3e50;
+            --primary: #5d8aa8;
+            --accent: #e07a5f;
+            --tangent: #27ae60;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -23,63 +25,113 @@
             margin: 0;
         }
         h1 { font-weight: 300; margin-bottom: 0.2rem; }
-        p.subtitle { color: #888; margin-top: 0; margin-bottom: 2rem; font-style: italic; }
+        p.subtitle { color: #7f8c8d; margin-top: 0; margin-bottom: 2rem; font-style: italic; }
         .container {
             background: white;
             padding: 2.5rem;
             border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             align-items: center;
+            max-width: 750px;
+            width: 100%;
         }
+        /* Canvas'ı büyüttük ve belirginleştirdik */
         canvas {
-            border-left: 2px solid #eaeaea;
-            border-bottom: 2px solid #eaeaea;
+            border: 1px solid #eaeaea;
+            border-radius: 8px;
             margin-bottom: 1.5rem;
+            background-color: #fafafa;
         }
         .controls {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
         }
-        input[type=range] { width: 100%; margin: 20px 0; cursor: pointer; }
-        .stats {
+        .func-input-group {
             display: flex;
-            justify-content: space-around;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .func-input-group label { font-size: 1.2rem; font-weight: bold; color: var(--primary); }
+        input[type=text] {
+            padding: 8px 12px;
+            font-size: 1.1rem;
+            border: 2px solid #eaeaea;
+            border-radius: 8px;
+            outline: none;
+            width: 200px;
+            transition: border-color 0.3s;
+        }
+        input[type=text]:focus { border-color: var(--primary); }
+        select {
+            padding: 8px 12px;
+            font-size: 1rem;
+            border: 2px solid #eaeaea;
+            border-radius: 8px;
+            cursor: pointer;
+            background: white;
+        }
+        #errorMsg { color: #e74c3c; font-size: 0.9rem; height: 20px; margin-bottom: 10px;}
+        input[type=range] { width: 100%; margin: 15px 0; cursor: pointer; }
+        .slider-label { font-size: 1.2rem; font-weight: 500; margin-top: 10px;}
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
             width: 100%;
             font-size: 1.1rem;
             background: #f9fbfd;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
             border: 1px solid #eef2f5;
             text-align: center;
         }
-        .stat-value { font-weight: bold; font-size: 1.4rem; margin-top: 5px; }
-        .x-val { color: var(--primary); }
+        .stat-value { font-weight: bold; font-size: 1.5rem; margin-top: 8px; }
+        .y-val { color: var(--primary); }
         .slope-val { color: var(--tangent); }
-        .back-link { margin-top: 20px; color: var(--primary); text-decoration: none; }
+        .back-link { margin-top: 25px; color: var(--primary); text-decoration: none; font-weight: 500;}
         .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
     <h1>Derivative Visualizer</h1>
-    <p class="subtitle">Instantaneous Rate of Change: f(x) = sin(x)</p>
+    <p class="subtitle">Dynamic Rate of Change for Any Function</p>
 
     <div class="container">
-        <canvas id="mathCanvas" width="500" height="300"></canvas>
+        <!-- Koordinat sistemi için geniş alan -->
+        <canvas id="mathCanvas" width="600" height="400"></canvas>
         
         <div class="controls">
-            <label>Point x = <span id="xDisplay" class="x-val">0.00</span></label>
-            <input type="range" id="xSlider" min="0" max="628" value="314"> <!-- 0 to 2*PI scaled -->
+            <!-- Fonksiyon Giriş Alanı -->
+            <div class="func-input-group">
+                <label>f(x) =</label>
+                <input type="text" id="funcInput" value="sin(x)">
+                <select id="presetSelect">
+                    <option value="sin(x)">Preset: sin(x)</option>
+                    <option value="cos(x)">Preset: cos(x)</option>
+                    <option value="x^2 - 4">Preset: Parabola (x² - 4)</option>
+                    <option value="x^3/10 - 2x">Preset: Cubic Curve</option>
+                    <option value="e^(x/2)">Preset: Exponential</option>
+                </select>
+            </div>
+            <div id="errorMsg"></div>
+
+            <div class="slider-label">Point x = <span id="xDisplay" style="color: var(--accent); font-weight: bold;">0.00</span></div>
+            <input type="range" id="xSlider" min="-10" max="10" step="0.1" value="2">
             
             <div class="stats">
                 <div>
                     <div>f(x) Value</div>
-                    <div class="stat-value" id="yDisplay">0.000</div>
+                    <div class="stat-value y-val" id="yDisplay">0.000</div>
                 </div>
                 <div>
                     <div>Slope f'(x)</div>
@@ -93,79 +145,127 @@
     <script>
         const canvas = document.getElementById('mathCanvas');
         const ctx = canvas.getContext('2d');
+        const funcInput = document.getElementById('funcInput');
+        const presetSelect = document.getElementById('presetSelect');
         const xSlider = document.getElementById('xSlider');
+        const errorMsg = document.getElementById('errorMsg');
+        
         const xDisplay = document.getElementById('xDisplay');
         const yDisplay = document.getElementById('yDisplay');
         const slopeDisplay = document.getElementById('slopeDisplay');
 
-        // Fonksiyon: f(x) = sin(x)
-        function f(x) { return Math.sin(x); }
-        // Türevi: f'(x) = cos(x)
-        function df(x) { return Math.cos(x); }
-
-        const xMin = 0, xMax = 2 * Math.PI;
-        const yMin = -1.5, yMax = 1.5;
+        // Koordinat Düzlemi Sınırları
+        const xMin = -10, xMax = 10;
+        const yMin = -10, yMax = 10;
         
         function mapX(x) { return (x - xMin) / (xMax - xMin) * canvas.width; }
         function mapY(y) { return canvas.height - (y - yMin) / (yMax - yMin) * canvas.height; }
 
+        let compiledFunc, compiledDeriv;
+
+        // Math.js ile fonksiyonu derleme ve türev alma
+        function updateFunction() {
+            try {
+                let expr = funcInput.value;
+                compiledFunc = math.compile(expr);
+                compiledDeriv = math.derivative(expr, 'x');
+                errorMsg.innerText = ''; // Hata yoksa temizle
+                draw();
+            } catch (err) {
+                errorMsg.innerText = 'Invalid mathematical expression!';
+            }
+        }
+
         function draw() {
+            if (!compiledFunc || !compiledDeriv) return;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            let x_target = parseInt(xSlider.value) / 100; // 0 to 6.28
-            let y_target = f(x_target);
-            let slope = df(x_target);
-
-            // 1. Sıfır Çizgisini (X Ekseni) Çiz
+            // 1. Eksenleri Çiz (Grid)
             ctx.beginPath();
-            ctx.moveTo(0, mapY(0));
-            ctx.lineTo(canvas.width, mapY(0));
-            ctx.strokeStyle = '#eaeaea';
+            ctx.strokeStyle = '#e0e0e0';
             ctx.lineWidth = 1;
+            ctx.moveTo(0, mapY(0)); ctx.lineTo(canvas.width, mapY(0)); // X Ekseni
+            ctx.moveTo(mapX(0), 0); ctx.lineTo(mapX(0), canvas.height); // Y Ekseni
             ctx.stroke();
 
-            // 2. Fonksiyonu Çiz (Sinüs eğrisi)
+            // 2. Fonksiyon Eğrisini Çiz
             ctx.beginPath();
-            ctx.strokeStyle = '#9bb7d4'; // Primary
+            ctx.strokeStyle = '#5d8aa8'; // Primary color
             ctx.lineWidth = 3;
-            for (let px = 0; px <= canvas.width; px++) {
+            let firstPoint = true;
+            
+            for (let px = 0; px <= canvas.width; px += 2) {
                 let x = xMin + (px / canvas.width) * (xMax - xMin);
-                let y = f(x);
-                if (px === 0) ctx.moveTo(mapX(x), mapY(y));
-                else ctx.lineTo(mapX(x), mapY(y));
+                try {
+                    let y = compiledFunc.evaluate({x: x});
+                    // Yalnızca ekranda görünen değerleri çiz (performans ve temizlik için)
+                    if (y >= yMin - 10 && y <= yMax + 10) {
+                        if (firstPoint) {
+                            ctx.moveTo(mapX(x), mapY(y));
+                            firstPoint = false;
+                        } else {
+                            ctx.lineTo(mapX(x), mapY(y));
+                        }
+                    } else {
+                        firstPoint = true;
+                    }
+                } catch (e) {
+                    firstPoint = true; // Tanımsız noktalarda (örn: asimptot) çizgiyi kes
+                }
             }
             ctx.stroke();
 
-            // 3. Teğet Doğrusunu Çiz (y - y1 = m * (x - x1))
-            let tangentLength = 1.5; // Teğetin ne kadar uzun çizileceği
-            let x1 = x_target - tangentLength;
-            let y1 = y_target - slope * tangentLength;
-            let x2 = x_target + tangentLength;
-            let y2 = y_target + slope * tangentLength;
+            // 3. Hesaplamalar ve Teğet Doğrusu
+            let x_target = parseFloat(xSlider.value);
+            try {
+                let y_target = compiledFunc.evaluate({x: x_target});
+                let slope = compiledDeriv.evaluate({x: x_target});
 
-            ctx.beginPath();
-            ctx.moveTo(mapX(x1), mapY(y1));
-            ctx.lineTo(mapX(x2), mapY(y2));
-            ctx.strokeStyle = '#4CAF50'; // Tangent yeşili
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]); // Kesikli çizgi
-            ctx.stroke();
-            ctx.setLineDash([]); // Reset
+                // Teğet Çizgisi Uzunluğu
+                let tangentLength = 3;
+                let x1 = x_target - tangentLength;
+                let y1 = y_target - slope * tangentLength;
+                let x2 = x_target + tangentLength;
+                let y2 = y_target + slope * tangentLength;
 
-            // 4. Temas Noktasını İşaretle
-            ctx.beginPath();
-            ctx.arc(mapX(x_target), mapY(y_target), 6, 0, 2 * Math.PI);
-            ctx.fillStyle = '#e07a5f'; // Accent
-            ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(mapX(x1), mapY(y1));
+                ctx.lineTo(mapX(x2), mapY(y2));
+                ctx.strokeStyle = '#27ae60'; // Teğet Yeşili
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]); // Kesikli
+                ctx.stroke();
+                ctx.setLineDash([]); // Sıfırla
 
-            // Değerleri Güncelle
-            xDisplay.innerText = x_target.toFixed(2);
-            yDisplay.innerText = y_target.toFixed(3);
-            slopeDisplay.innerText = slope.toFixed(3);
+                // Temas Noktası
+                ctx.beginPath();
+                ctx.arc(mapX(x_target), mapY(y_target), 6, 0, 2 * Math.PI);
+                ctx.fillStyle = '#e07a5f';
+                ctx.fill();
+
+                // Değerleri Ekrana Yazdır
+                xDisplay.innerText = x_target.toFixed(2);
+                yDisplay.innerText = y_target.toFixed(3);
+                slopeDisplay.innerText = slope.toFixed(3);
+                
+            } catch (e) {
+                // Eğer seçilen X değerinde fonksiyon tanımsızsa
+                yDisplay.innerText = "Undefined";
+                slopeDisplay.innerText = "Undefined";
+            }
         }
 
+        // Dinleyiciler
+        funcInput.addEventListener('input', updateFunction);
+        presetSelect.addEventListener('change', (e) => {
+            funcInput.value = e.target.value;
+            updateFunction();
+        });
         xSlider.addEventListener('input', draw);
-        draw();
+
+        // Başlangıç Çalıştırması
+        updateFunction();
     </script>
 </body>
 </html>
