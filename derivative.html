@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derivative Visualizer | Ozan Okkıran</title>
+    <style>
+        :root {
+            --bg-color: #faf9f6;
+            --text-color: #4a4a4a;
+            --primary: #9bb7d4;
+            --accent: #ffb7b2;
+            --tangent: #4CAF50; /* Tatlı bir yeşil */
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            margin: 0;
+        }
+        h1 { font-weight: 300; margin-bottom: 0.2rem; }
+        p.subtitle { color: #888; margin-top: 0; margin-bottom: 2rem; font-style: italic; }
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            border-left: 2px solid #eaeaea;
+            border-bottom: 2px solid #eaeaea;
+            margin-bottom: 1.5rem;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+        }
+        input[type=range] { width: 100%; margin: 20px 0; cursor: pointer; }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            font-size: 1.1rem;
+            background: #f9fbfd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eef2f5;
+            text-align: center;
+        }
+        .stat-value { font-weight: bold; font-size: 1.4rem; margin-top: 5px; }
+        .x-val { color: var(--primary); }
+        .slope-val { color: var(--tangent); }
+        .back-link { margin-top: 20px; color: var(--primary); text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <h1>Derivative Visualizer</h1>
+    <p class="subtitle">Instantaneous Rate of Change: f(x) = sin(x)</p>
+
+    <div class="container">
+        <canvas id="mathCanvas" width="500" height="300"></canvas>
+        
+        <div class="controls">
+            <label>Point x = <span id="xDisplay" class="x-val">0.00</span></label>
+            <input type="range" id="xSlider" min="0" max="628" value="314"> <!-- 0 to 2*PI scaled -->
+            
+            <div class="stats">
+                <div>
+                    <div>f(x) Value</div>
+                    <div class="stat-value" id="yDisplay">0.000</div>
+                </div>
+                <div>
+                    <div>Slope f'(x)</div>
+                    <div class="stat-value slope-val" id="slopeDisplay">0.000</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="index.html" class="back-link">&larr; Back to Portfolio</a>
+
+    <script>
+        const canvas = document.getElementById('mathCanvas');
+        const ctx = canvas.getContext('2d');
+        const xSlider = document.getElementById('xSlider');
+        const xDisplay = document.getElementById('xDisplay');
+        const yDisplay = document.getElementById('yDisplay');
+        const slopeDisplay = document.getElementById('slopeDisplay');
+
+        // Fonksiyon: f(x) = sin(x)
+        function f(x) { return Math.sin(x); }
+        // Türevi: f'(x) = cos(x)
+        function df(x) { return Math.cos(x); }
+
+        const xMin = 0, xMax = 2 * Math.PI;
+        const yMin = -1.5, yMax = 1.5;
+        
+        function mapX(x) { return (x - xMin) / (xMax - xMin) * canvas.width; }
+        function mapY(y) { return canvas.height - (y - yMin) / (yMax - yMin) * canvas.height; }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let x_target = parseInt(xSlider.value) / 100; // 0 to 6.28
+            let y_target = f(x_target);
+            let slope = df(x_target);
+
+            // 1. Sıfır Çizgisini (X Ekseni) Çiz
+            ctx.beginPath();
+            ctx.moveTo(0, mapY(0));
+            ctx.lineTo(canvas.width, mapY(0));
+            ctx.strokeStyle = '#eaeaea';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // 2. Fonksiyonu Çiz (Sinüs eğrisi)
+            ctx.beginPath();
+            ctx.strokeStyle = '#9bb7d4'; // Primary
+            ctx.lineWidth = 3;
+            for (let px = 0; px <= canvas.width; px++) {
+                let x = xMin + (px / canvas.width) * (xMax - xMin);
+                let y = f(x);
+                if (px === 0) ctx.moveTo(mapX(x), mapY(y));
+                else ctx.lineTo(mapX(x), mapY(y));
+            }
+            ctx.stroke();
+
+            // 3. Teğet Doğrusunu Çiz (y - y1 = m * (x - x1))
+            let tangentLength = 1.5; // Teğetin ne kadar uzun çizileceği
+            let x1 = x_target - tangentLength;
+            let y1 = y_target - slope * tangentLength;
+            let x2 = x_target + tangentLength;
+            let y2 = y_target + slope * tangentLength;
+
+            ctx.beginPath();
+            ctx.moveTo(mapX(x1), mapY(y1));
+            ctx.lineTo(mapX(x2), mapY(y2));
+            ctx.strokeStyle = '#4CAF50'; // Tangent yeşili
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]); // Kesikli çizgi
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset
+
+            // 4. Temas Noktasını İşaretle
+            ctx.beginPath();
+            ctx.arc(mapX(x_target), mapY(y_target), 6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#e07a5f'; // Accent
+            ctx.fill();
+
+            // Değerleri Güncelle
+            xDisplay.innerText = x_target.toFixed(2);
+            yDisplay.innerText = y_target.toFixed(3);
+            slopeDisplay.innerText = slope.toFixed(3);
+        }
+
+        xSlider.addEventListener('input', draw);
+        draw();
+    </script>
+</body>
+</html>
