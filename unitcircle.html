@@ -6,11 +6,10 @@
     <title>Unit Circle Explorer | Ozan Okkıran</title>
     <style>
         :root {
-            --bg-color: #faf9f6;
-            --text-color: #4a4a4a;
+            --bg-color: #f4f7f6;
+            --text-color: #2c3e50;
             --primary: #5d8aa8;
             --accent: #e07a5f;
-            --circle-color: rgba(93, 138, 168, 0.2);
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -23,21 +22,24 @@
             margin: 0;
         }
         h1 { font-weight: 300; margin-bottom: 0.2rem; }
-        p.subtitle { color: #888; margin-top: 0; margin-bottom: 2rem; font-style: italic; }
+        p.subtitle { color: #7f8c8d; margin-top: 0; margin-bottom: 2rem; font-style: italic; }
         .container {
             background: white;
             padding: 2.5rem;
             border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             align-items: center;
+            max-width: 650px;
+            width: 100%;
         }
+        /* Canvas'ı daha büyük ve belirgin yaptık */
         canvas {
             border: 1px solid #eaeaea;
-            border-radius: 4px;
+            border-radius: 8px;
             margin-bottom: 1.5rem;
-            cursor: crosshair;
+            background-color: #fafafa;
         }
         .controls {
             display: flex;
@@ -46,7 +48,35 @@
             width: 100%;
             max-width: 500px;
         }
-        input[type=range] { width: 100%; margin: 20px 0; cursor: pointer; }
+        /* Manuel Giriş Kutusu Tasarımı */
+        .angle-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        input[type=number] {
+            width: 80px;
+            padding: 8px 12px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            border: 2px solid #eaeaea;
+            border-radius: 8px;
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type=number]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(93, 138, 168, 0.2);
+        }
+        input[type=range] { 
+            width: 100%; 
+            margin: 25px 0; 
+            cursor: pointer; 
+        }
         .stats {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -54,16 +84,16 @@
             width: 100%;
             font-size: 1.1rem;
             background: #f9fbfd;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
             border: 1px solid #eef2f5;
             text-align: center;
         }
-        .stat-value { font-weight: bold; font-size: 1.3rem; margin-top: 5px; }
+        .stat-value { font-weight: bold; font-size: 1.4rem; margin-top: 8px; }
         .cos-val { color: var(--primary); }
         .sin-val { color: var(--accent); }
         .angle-val { color: #555; }
-        .back-link { margin-top: 20px; color: var(--primary); text-decoration: none; }
+        .back-link { margin-top: 25px; color: var(--primary); text-decoration: none; font-weight: 500;}
         .back-link:hover { text-decoration: underline; }
     </style>
 </head>
@@ -73,10 +103,17 @@
     <p class="subtitle">Connecting Angles, Coordinates, and Trigonometric Functions</p>
 
     <div class="container">
-        <canvas id="mathCanvas" width="400" height="400"></canvas>
+        <!-- Canvas'ı 500x500'e büyüttük -->
+        <canvas id="mathCanvas" width="500" height="500"></canvas>
         
         <div class="controls">
-            <label>Angle (&theta;) = <span id="angleDisplay" class="angle-val">45</span>&deg;</label>
+            <!-- Dinamik Input Alanı -->
+            <div class="angle-control">
+                <label for="angleInput">Angle (&theta;) = </label>
+                <input type="number" id="angleInput" value="45">
+                <span>&deg;</span>
+            </div>
+            
             <input type="range" id="angleSlider" min="0" max="360" value="45">
             
             <div class="stats">
@@ -101,38 +138,37 @@
         const canvas = document.getElementById('mathCanvas');
         const ctx = canvas.getContext('2d');
         const angleSlider = document.getElementById('angleSlider');
-        const angleDisplay = document.getElementById('angleDisplay');
+        const angleInput = document.getElementById('angleInput');
         const radDisplay = document.getElementById('radDisplay');
         const cosDisplay = document.getElementById('cosDisplay');
         const sinDisplay = document.getElementById('sinDisplay');
 
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
-        const radius = 150; // Çemberin piksel yarıçapı
+        const radius = 200; // Yarıçapı 150'den 200'e çıkardık
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            let degrees = parseInt(angleSlider.value);
+            // Eğer kutu silinirse veya boş bırakılırsa hata vermemesi için 0 varsay
+            let degrees = parseInt(angleInput.value) || 0; 
             let radians = degrees * (Math.PI / 180);
             
-            // X ve Y koordinatları (Matematiksel)
             let cosVal = Math.cos(radians);
             let sinVal = Math.sin(radians);
             
-            // Canvas piksel koordinatları
             let px = cx + cosVal * radius;
-            let py = cy - sinVal * radius; // Canvas'ta Y ekseni aşağı doğru artar
+            let py = cy - sinVal * radius; 
 
-            // 1. Eksenleri Çiz
+            // 1. Eksenler
             ctx.beginPath();
             ctx.strokeStyle = '#ddd';
             ctx.lineWidth = 1;
-            ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); // X ekseni
-            ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); // Y ekseni
+            ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy);
+            ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height);
             ctx.stroke();
 
-            // 2. Birim Çemberi Çiz
+            // 2. Birim Çember
             ctx.beginPath();
             ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
             ctx.fillStyle = 'rgba(93, 138, 168, 0.05)';
@@ -141,31 +177,30 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // 3. Açıyı Çiz (Yay)
+            // 3. Açı (Yay)
             ctx.beginPath();
             ctx.moveTo(cx, cy);
-            ctx.arc(cx, cy, radius * 0.2, 0, -radians, true);
+            // Negatif açıları da doğru yönde çizmesi için
+            ctx.arc(cx, cy, radius * 0.2, 0, -radians, radians > 0);
             ctx.fillStyle = 'rgba(224, 122, 95, 0.3)';
             ctx.fill();
 
-            // 4. Üçgeni Çiz (Sin/Cos izdüşümleri)
-            // Cosinus çizgisi (X ekseni üzerinde)
+            // 4. İzdüşümler (Üçgen)
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.lineTo(px, cy);
-            ctx.strokeStyle = '#5d8aa8'; // Primary (Cos)
+            ctx.strokeStyle = '#5d8aa8';
             ctx.lineWidth = 3;
             ctx.stroke();
 
-            // Sinus çizgisi (Dikey izdüşüm)
             ctx.beginPath();
             ctx.moveTo(px, cy);
             ctx.lineTo(px, py);
-            ctx.strokeStyle = '#e07a5f'; // Accent (Sin)
+            ctx.strokeStyle = '#e07a5f';
             ctx.lineWidth = 3;
             ctx.stroke();
 
-            // 5. Hipotenüs (Yarıçap)
+            // 5. Hipotenüs
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.lineTo(px, py);
@@ -173,22 +208,34 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // 6. Noktayı İşaretle
+            // 6. Nokta
             ctx.beginPath();
             ctx.arc(px, py, 6, 0, 2 * Math.PI);
             ctx.fillStyle = '#2c3e50';
             ctx.fill();
 
-            // Değerleri Güncelle
-            angleDisplay.innerText = degrees;
-            // Basit radyan gösterimi
+            // Değerleri Göster
             let frac = (degrees / 180).toFixed(2);
             radDisplay.innerHTML = (frac == 1.00) ? "&pi;" : (frac == 0.00) ? "0" : frac + "&pi;";
-            cosDisplay.innerText = cosVal.toFixed(3);
-            sinDisplay.innerText = sinVal.toFixed(3);
+            
+            // JavaScript'in minik virgül hatalarını yuvarlayalım
+            cosDisplay.innerText = (cosVal === 0 ? 0 : cosVal).toFixed(3);
+            sinDisplay.innerText = (sinVal === 0 ? 0 : sinVal).toFixed(3);
         }
 
-        angleSlider.addEventListener('input', draw);
+        // Slider kaydırıldığında input'u güncelle ve çiz
+        angleSlider.addEventListener('input', (e) => {
+            angleInput.value = e.target.value;
+            draw();
+        });
+
+        // Input'a elle sayı yazıldığında slider'ı güncelle ve çiz
+        angleInput.addEventListener('input', (e) => {
+            let val = parseInt(e.target.value) || 0;
+            angleSlider.value = val; // Slider 0-360 arasında kalır ama sayı serbesttir
+            draw();
+        });
+
         draw();
     </script>
 </body>
