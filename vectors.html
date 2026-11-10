@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>2D Vector Addition</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #fdf6e3; color: #333; margin-top: 20px; }
+  canvas { background-color: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px; }
+  .controls { margin: 15px auto; padding: 15px; background: white; border-radius: 8px; width: 450px; display:flex; justify-content: space-around; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .vec-box { padding: 10px; border: 1px solid #eee; border-radius: 5px; }
+  input[type=range] { width: 100px; }
+  .legend { font-size: 18px; font-weight: bold; margin-top: 10px; }
+  .u-color { color: #2aa198; } .v-color { color: #cb4b16; } .w-color { color: #d33682; }
+</style>
+</head>
+<body>
+  <h2>2D Vector Addition</h2>
+  <div class="controls">
+    <div class="vec-box">
+      <h3 class="u-color">Vector u</h3>
+      x: <span id="ux_val">3</span> <br><input type="range" id="ux" min="-5" max="5" value="3" oninput="draw()"><br>
+      y: <span id="uy_val">2</span> <br><input type="range" id="uy" min="-5" max="5" value="2" oninput="draw()">
+    </div>
+    <div class="vec-box">
+      <h3 class="v-color">Vector v</h3>
+      x: <span id="vx_val">1</span> <br><input type="range" id="vx" min="-5" max="5" value="1" oninput="draw()"><br>
+      y: <span id="vy_val">-3</span> <br><input type="range" id="vy" min="-5" max="5" value="-3" oninput="draw()">
+    </div>
+  </div>
+  <div class="legend">Resultant: <span class="w-color">w = u + v</span> = (<span id="wx_val">4</span>, <span id="wy_val">-1</span>)</div>
+  <canvas id="graph" width="400" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById('graph');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height, originX = w/2, originY = h/2, scale = 30;
+
+    function drawArrow(fromx, fromy, tox, toy, color) {
+      const headlen = 10;
+      const angle = Math.atan2(toy - fromy, tox - fromx);
+      ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 3;
+      ctx.moveTo(fromx, fromy); ctx.lineTo(tox, toy);
+      ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.moveTo(tox, toy);
+      ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.stroke();
+    }
+
+    function draw() {
+      const ux = parseInt(document.getElementById('ux').value);
+      const uy = parseInt(document.getElementById('uy').value);
+      const vx = parseInt(document.getElementById('vx').value);
+      const vy = parseInt(document.getElementById('vy').value);
+      
+      document.getElementById('ux_val').innerText = ux; document.getElementById('uy_val').innerText = uy;
+      document.getElementById('vx_val').innerText = vx; document.getElementById('vy_val').innerText = vy;
+      document.getElementById('wx_val').innerText = ux + vx; document.getElementById('wy_val').innerText = uy + vy;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.beginPath(); ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
+      for(let i=0; i<=w; i+=scale) { ctx.moveTo(i,0); ctx.lineTo(i,h); ctx.moveTo(0,i); ctx.lineTo(w,i); } ctx.stroke();
+      ctx.beginPath(); ctx.strokeStyle = '#777'; ctx.lineWidth = 2;
+      ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+
+      let uEnd = { x: originX + ux*scale, y: originY - uy*scale };
+      let vEnd = { x: uEnd.x + vx*scale, y: uEnd.y - vy*scale };
+
+      drawArrow(originX, originY, uEnd.x, uEnd.y, '#2aa198'); // u
+      drawArrow(uEnd.x, uEnd.y, vEnd.x, vEnd.y, '#cb4b16'); // v (from u tip)
+      drawArrow(originX, originY, vEnd.x, vEnd.y, '#d33682'); // w
+    }
+    draw();
+  </script>
+</body>
+</html>
