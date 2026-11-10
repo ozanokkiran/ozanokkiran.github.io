@@ -1,135 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ozan Okkıran | Mathematics Portfolio</title>
-    <style>
-        :root {
-            --bg-color: #f4f7f6;
-            --text-color: #2c3e50;
-            --primary: #5d8aa8;
-            --accent: #e07a5f;
-            --card-bg: #ffffff;
-        }
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 5rem 2rem;
-            margin: 0;
-        }
-        .header { 
-            text-align: center; 
-            margin-bottom: 5rem; 
-        }
-        h1 { 
-            font-weight: 300; 
-            margin-bottom: 0.5rem; 
-            color: var(--text-color); 
-            font-size: 3rem;
-            letter-spacing: 1px;
-        }
-        p.subtitle { 
-            color: #7f8c8d; 
-            font-style: italic; 
-            font-size: 1.2rem; 
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            width: 100%;
-            max-width: 1100px;
-        }
-        .card {
-            background: var(--card-bg);
-            padding: 3rem 2rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-            text-align: center;
-            text-decoration: none;
-            color: inherit;
-            transition: all 0.3s ease;
-            border-top: 5px solid var(--primary);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
-            border-top-color: var(--accent);
-        }
-        .card h2 { 
-            font-size: 1.5rem; 
-            font-weight: 600; 
-            margin-bottom: 15px; 
-            color: var(--primary); 
-            transition: color 0.3s ease;
-        }
-        .card:hover h2 {
-            color: var(--accent);
-        }
-        .card p { 
-            font-size: 1rem; 
-            color: #555; 
-            margin-bottom: 30px; 
-            line-height: 1.6; 
-            flex-grow: 1;
-        }
-        .badge {
-            display: inline-block;
-            padding: 8px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            background: var(--accent);
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 10px rgba(224, 122, 95, 0.3);
-            transition: transform 0.2s ease;
-        }
-        .card:hover .badge {
-            transform: scale(1.05);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ozan Okkıran - Interactive Math Lab</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fdf6e3; color: #333; margin: 0; padding: 40px 20px; text-align: center; }
+  h1 { color: #268bd2; margin-bottom: 5px; font-size: 32px; }
+  p.subtitle { font-size: 18px; color: #555; margin-bottom: 40px; }
+  .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 1000px; margin: 0 auto; }
+  .card { background: white; padding: 25px 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); width: 260px; text-decoration: none; color: inherit; transition: all 0.3s ease; border-bottom: 4px solid transparent; }
+  .card:hover { transform: translateY(-7px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-bottom: 4px solid #2aa198; }
+  .card h3 { margin: 0 0 10px 0; color: #d33682; font-size: 22px; }
+  .card p { font-size: 15px; margin: 0; color: #666; line-height: 1.4; }
+</style>
 </head>
 <body>
-
-    <div class="header">
-        <h1>Ozan Okkıran</h1>
-        <p class="subtitle">Interactive Mathematics Portfolio | IB DP HL</p>
-    </div>
-
-    <div class="grid">
-        <!-- 1. Riemann -->
-        <a href="riemann.html" class="card">
-            <h2>Dynamic Riemann Sums</h2>
-            <p>Visualizing the area under curves and the concept of infinite limits. A hands-on approach to integration.</p>
-            <span class="badge">Explore</span>
-        </a>
-
-        <!-- 2. Unit Circle -->
-        <a href="unitcircle.html" class="card">
-            <h2>Unit Circle Explorer</h2>
-            <p>Interactive trigonometric functions and radians visualization. Connect angles, coordinates, and sine/cosine values.</p>
-            <span class="badge">Explore</span>
-        </a>
-
-        <!-- 3. Derivative -->
-        <a href="derivative.html" class="card">
-            <h2>Derivative Visualizer</h2>
-            <p>Tangent lines and instantaneous rates of change over f(x). See how the slope evolves dynamically.</p>
-            <span class="badge">Explore</span>
-        </a>
-    </div>
-
+  <h1>Interactive Mathematics Laboratory</h1>
+  <p class="subtitle">Visualizing abstract concepts for High School and IB DP Mathematics</p>
+  
+  <div class="container">
+    <!-- Kalkülüs -->
+    <a href="riemann.html" class="card">
+      <h3>Riemann Sums</h3>
+      <p>Interactive calculus integration and area approximation.</p>
+    </a>
+    <a href="derivative.html" class="card">
+      <h3>Derivatives</h3>
+      <p>Visualizing tangent lines and rates of change.</p>
+    </a>
+    <a href="taylor.html" class="card">
+      <h3>Taylor Series</h3>
+      <p>Polynomial approximations of functions.</p>
+    </a>
+    
+    <!-- Trigonometri & Geometri -->
+    <a href="unitcircle.html" class="card">
+      <h3>Unit Circle</h3>
+      <p>Fundamentals of trigonometry and radians.</p>
+    </a>
+    <a href="sinewave.html" class="card">
+      <h3>Sine Waves</h3>
+      <p>Exploring trigonometric transformations.</p>
+    </a>
+    <a href="vectors.html" class="card">
+      <h3>2D Vectors</h3>
+      <p>Vector addition and geometric properties.</p>
+    </a>
+    
+    <!-- Cebir & Olasılık -->
+    <a href="quadratic.html" class="card">
+      <h3>Quadratics</h3>
+      <p>Parabola vertex and coefficient exploration.</p>
+    </a>
+    <a href="normaldist.html" class="card">
+      <h3>Normal Distribution</h3>
+      <p>Bell curve and standard deviation modeling.</p>
+    </a>
+    <a href="montecarlo.html" class="card">
+      <h3>Monte Carlo Pi</h3>
+      <p>Estimating Pi using probability and random points.</p>
+    </a>
+  </div>
 </body>
 </html>
