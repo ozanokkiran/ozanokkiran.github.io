@@ -1,1 +1,1 @@
-# ozanokkiran.github.io
+This repository contains interactive web-based simulations developed for mathematics students. The tools are designed to help students visualize abstract mathematical concepts—ranging from the unit circle in trigonometry to derivatives and Riemann sums in calculus. Built to be used as interactive whiteboard tools and student exploration playgrounds, these simulations encourage discovery over rote memorization.
