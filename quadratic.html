@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Quadratic Explorer</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #fdf6e3; color: #333; margin-top: 20px; }
+  canvas { background-color: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px; }
+  .controls { margin: 15px auto; padding: 15px; background: white; border-radius: 8px; width: 400px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .slider-container { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+  input[type=range] { width: 65%; cursor: pointer; }
+  .info { font-size: 20px; font-weight: bold; color: #268bd2; margin-top: 10px; }
+  .details { font-size: 16px; color: #d33682; margin-top: 5px; font-weight: 500; }
+</style>
+</head>
+<body>
+  <h2>Interactive Quadratic Explorer</h2>
+  <p>Adjust the coefficients to see how the parabola <strong>y = ax&sup2; + bx + c</strong> changes.</p>
+  
+  <div class="controls">
+    <div class="slider-container">
+      <label>a: <span id="a_val">1.0</span></label>
+      <input type="range" id="a" min="-5" max="5" step="0.1" value="1" oninput="updateGraph()">
+    </div>
+    <div class="slider-container">
+      <label>b: <span id="b_val">0.0</span></label>
+      <input type="range" id="b" min="-10" max="10" step="0.5" value="0" oninput="updateGraph()">
+    </div>
+    <div class="slider-container">
+      <label>c: <span id="c_val">0.0</span></label>
+      <input type="range" id="c" min="-10" max="10" step="0.5" value="0" oninput="updateGraph()">
+    </div>
+  </div>
+
+  <div class="info" id="equation">y = 1.0x&sup2; + 0.0x + 0.0</div>
+  <div class="details" id="vertex">Vertex: (0.00, 0.00)</div>
+  
+  <canvas id="graph" width="500" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById('graph');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const scale = 25; 
+    const originX = width / 2;
+    const originY = height / 2;
+
+    function drawAxes() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.beginPath();
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth = 1;
+      
+      // Grid lines
+      for(let i = 0; i <= width; i += scale) {
+        ctx.moveTo(i, 0); ctx.lineTo(i, height);
+        ctx.moveTo(0, i); ctx.lineTo(width, i);
+      }
+      ctx.strokeStyle = '#eee';
+      ctx.stroke();
+
+      // Main axes
+      ctx.beginPath();
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 2;
+      ctx.moveTo(0, originY); ctx.lineTo(width, originY);
+      ctx.moveTo(originX, 0); ctx.lineTo(originX, height);
+      ctx.stroke();
+    }
+
+    function updateGraph() {
+      const a = parseFloat(document.getElementById('a').value);
+      const b = parseFloat(document.getElementById('b').value);
+      const c = parseFloat(document.getElementById('c').value);
+
+      document.getElementById('a_val').innerText = a.toFixed(1);
+      document.getElementById('b_val').innerText = b.toFixed(1);
+      document.getElementById('c_val').innerText = c.toFixed(1);
+
+      let signB = b >= 0 ? '+ ' + b.toFixed(1) : '- ' + Math.abs(b).toFixed(1);
+      let signC = c >= 0 ? '+ ' + c.toFixed(1) : '- ' + Math.abs(c).toFixed(1);
+      document.getElementById('equation').innerText = `y = ${a.toFixed(1)}x² ${signB}x ${signC}`;
+
+      let vertexX = 0;
+      let vertexY = c;
+      if (a !== 0) {
+        vertexX = -b / (2 * a);
+        vertexY = a * vertexX * vertexX + b * vertexX + c;
+        document.getElementById('vertex').innerText = `Vertex: (${vertexX.toFixed(2)}, ${vertexY.toFixed(2)})`;
+      } else {
+        document.getElementById('vertex').innerText = 'Linear Equation (Not a parabola)';
+      }
+
+      drawAxes();
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#2aa198'; // Pastel teal
+      ctx.lineWidth = 3;
+      
+      for (let px = 0; px <= width; px++) {
+        let x = (px - originX) / scale;
+        let y = a * x * x + b * x + c;
+        let py = originY - (y * scale);
+        
+        if (px === 0) {
+          ctx.moveTo(px, py);
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.stroke();
+      
+      if (a !== 0) {
+        ctx.beginPath();
+        ctx.arc(originX + vertexX * scale, originY - vertexY * scale, 5, 0, 2 * Math.PI);
+        ctx.fillStyle = '#d33682'; // Pastel pink
+        ctx.fill();
+      }
+    }
+
+    updateGraph();
+  </script>
+</body>
+</html>
