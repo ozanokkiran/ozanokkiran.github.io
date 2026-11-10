@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sine Wave Transformations</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #fdf6e3; color: #333; margin-top: 20px; }
+  canvas { background-color: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px; }
+  .controls { margin: 15px auto; padding: 15px; background: white; border-radius: 8px; width: 450px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .slider-container { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+  input[type=range] { width: 65%; }
+  .equation { font-size: 20px; font-weight: bold; color: #268bd2; margin-top: 10px; }
+</style>
+</head>
+<body>
+  <h2>Trigonometric Transformations</h2>
+  <p>Explore Amplitude, Period, Phase Shift, and Vertical Shift.</p>
+  <div class="controls">
+    <div class="slider-container"><label>A (Amplitude): <span id="a_val">1.0</span></label><input type="range" id="a" min="0" max="5" step="0.1" value="1" oninput="draw()"></div>
+    <div class="slider-container"><label>B (Period factor): <span id="b_val">1.0</span></label><input type="range" id="b" min="0.1" max="5" step="0.1" value="1" oninput="draw()"></div>
+    <div class="slider-container"><label>C (Phase Shift): <span id="c_val">0.0</span></label><input type="range" id="c" min="-3.14" max="3.14" step="0.1" value="0" oninput="draw()"></div>
+    <div class="slider-container"><label>D (Vertical): <span id="d_val">0.0</span></label><input type="range" id="d" min="-3" max="3" step="0.1" value="0" oninput="draw()"></div>
+  </div>
+  <div class="equation" id="eq">y = 1.0 sin(1.0(x - 0.0)) + 0.0</div>
+  <canvas id="graph" width="600" height="300"></canvas>
+  <script>
+    const canvas = document.getElementById('graph');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height, originY = h/2, scaleX = 40, scaleY = 40;
+
+    function draw() {
+      const A = parseFloat(document.getElementById('a').value);
+      const B = parseFloat(document.getElementById('b').value);
+      const C = parseFloat(document.getElementById('c').value);
+      const D = parseFloat(document.getElementById('d').value);
+      
+      document.getElementById('a_val').innerText = A.toFixed(1);
+      document.getElementById('b_val').innerText = B.toFixed(1);
+      document.getElementById('c_val').innerText = C.toFixed(1);
+      document.getElementById('d_val').innerText = D.toFixed(1);
+      
+      let signC = C < 0 ? '+ ' + Math.abs(C).toFixed(1) : '- ' + C.toFixed(1);
+      let signD = D < 0 ? '- ' + Math.abs(D).toFixed(1) : '+ ' + D.toFixed(1);
+      document.getElementById('eq').innerText = `y = ${A.toFixed(1)} sin(${B.toFixed(1)}(x ${signC})) ${signD}`;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.beginPath(); ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1;
+      for(let i=0; i<w; i+=scaleX) { ctx.moveTo(i,0); ctx.lineTo(i,h); }
+      for(let i=0; i<h; i+=scaleY) { ctx.moveTo(0,i); ctx.lineTo(w,i); }
+      ctx.stroke();
+
+      ctx.beginPath(); ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
+      ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
+
+      ctx.beginPath(); ctx.strokeStyle = '#d33682'; ctx.lineWidth = 3;
+      for(let px=0; px<=w; px++) {
+        let x = (px - w/2) / scaleX;
+        let y = A * Math.sin(B * (x - C)) + D;
+        let py = originY - (y * scaleY);
+        px === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+    draw();
+  </script>
+</body>
+</html>
