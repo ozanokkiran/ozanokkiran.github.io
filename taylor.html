@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Taylor Series Approximation</title>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #fdf6e3; color: #333; margin-top: 20px; }
+  canvas { background-color: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px; }
+  .controls { margin: 15px auto; padding: 15px; background: white; border-radius: 8px; width: 450px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .slider-container { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
+  input[type=range] { width: 65%; cursor: pointer; }
+  .legend { font-size: 16px; font-weight: bold; margin-top: 10px; }
+  .sin-color { color: #555; } 
+  .taylor-color { color: #d33682; }
+</style>
+</head>
+<body>
+  <h2>Taylor Series Approximation</h2>
+  <p>Approximating <strong>f(x) = sin(x)</strong> using Taylor polynomials.</p>
+  
+  <div class="controls">
+    <div class="slider-container">
+      <label>Number of Terms (N): <span id="n_val" class="taylor-color">1</span></label>
+      <input type="range" id="terms" min="1" max="10" step="1" value="1" oninput="draw()">
+    </div>
+  </div>
+  
+  <div class="legend">
+    <span class="sin-color">Original Function: y = sin(x)</span> <br>
+    <span class="taylor-color">Approximation: Taylor Polynomial (Degree <span id="degree">1</span>)</span>
+  </div>
+  
+  <canvas id="graph" width="600" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById('graph');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    const originX = w / 2, originY = h / 2;
+    const scale = 40; // Zoom level
+
+    // Factorial function
+    function fact(num) {
+      if (num <= 1) return 1;
+      return num * fact(num - 1);
+    }
+
+    // Taylor series calculation for sin(x)
+    function taylorSin(x, terms) {
+      let sum = 0;
+      for (let i = 0; i < terms; i++) {
+        let sign = (i % 2 === 0) ? 1 : -1;
+        let power = 2 * i + 1;
+        sum += sign * Math.pow(x, power) / fact(power);
+      }
+      return sum;
+    }
+
+    function draw() {
+      const terms = parseInt(document.getElementById('terms').value);
+      document.getElementById('n_val').innerText = terms;
+      document.getElementById('degree').innerText = (2 * terms - 1);
+
+      ctx.clearRect(0, 0, w, h);
+      
+      // Draw grid
+      ctx.beginPath(); ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
+      for(let i=0; i<=w; i+=scale) { ctx.moveTo(i,0); ctx.lineTo(i,h); }
+      for(let i=0; i<=h; i+=scale) { ctx.moveTo(0,i); ctx.lineTo(w,i); }
+      ctx.stroke();
+
+      // Draw axes
+      ctx.beginPath(); ctx.strokeStyle = '#777'; ctx.lineWidth = 2;
+      ctx.moveTo(0, originY); ctx.lineTo(w, originY);
+      ctx.moveTo(originX, 0); ctx.lineTo(originX, h);
+      ctx.stroke();
+
+      // Draw original sin(x)
+      ctx.beginPath(); ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
+      for (let px = 0; px <= w; px++) {
+        let x = (px - originX) / scale;
+        let y = Math.sin(x);
+        let py = originY - (y * scale);
+        px === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Draw Taylor approximation
+      ctx.beginPath(); ctx.strokeStyle = '#d33682'; ctx.lineWidth = 3;
+      for (let px = 0; px <= w; px++) {
+        let x = (px - originX) / scale;
+        let y = taylorSin(x, terms);
+        let py = originY - (y * scale);
+        // Prevent drawing lines outside the canvas to avoid ugly vertical jumps
+        if (py > -1000 && py < h + 1000) {
+            px === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        } else {
+            ctx.moveTo(px, py); // Lift pen
+        }
+      }
+      ctx.stroke();
+    }
+    
+    draw();
+  </script>
+</body>
+</html>
