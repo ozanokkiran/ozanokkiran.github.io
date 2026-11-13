@@ -1,55 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Normal Distribution</title>
-<style>
-  body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #fdf6e3; color: #333; margin-top: 20px; }
-  canvas { background-color: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px; }
-  .controls { margin: 15px auto; padding: 15px; background: white; border-radius: 8px; width: 400px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .slider-container { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-  input[type=range] { width: 60%; }
-  .info { font-size: 18px; color: #268bd2; font-weight: bold; margin-top: 10px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normal Distribution (Bell Curve)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #fcf8eb; } /* Açık krem/sarımsı pastel arka plan */
+        
+        /* Özel Slider Stili */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #1d4ed8; /* blue-700 */
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #e2e8f0; /* slate-200 */
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+    </style>
 </head>
-<body>
-  <h2>Normal Distribution (Bell Curve)</h2>
-  <div class="controls">
-    <div class="slider-container"><label>&mu; (Mean): <span id="mu_val">0</span></label><input type="range" id="mu" min="-5" max="5" step="0.5" value="0" oninput="draw()"></div>
-    <div class="slider-container"><label>&sigma; (Std Dev): <span id="sigma_val">1.0</span></label><input type="range" id="sigma" min="0.5" max="3" step="0.1" value="1" oninput="draw()"></div>
-  </div>
-  <div class="info">N(&mu;=<span id="m_disp">0</span>, &sigma;&sup2;=<span id="v_disp">1.00</span>)</div>
-  <canvas id="graph" width="500" height="300"></canvas>
-  <script>
-    const canvas = document.getElementById('graph');
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height, originX = w/2, originY = h - 30, scaleX = 40, scaleY = 400;
+<body class="min-h-screen flex flex-col items-center justify-center p-8 text-slate-800">
 
-    function draw() {
-      const mu = parseFloat(document.getElementById('mu').value);
-      const sigma = parseFloat(document.getElementById('sigma').value);
-      
-      document.getElementById('mu_val').innerText = mu.toFixed(1);
-      document.getElementById('sigma_val').innerText = sigma.toFixed(1);
-      document.getElementById('m_disp').innerText = mu.toFixed(1);
-      document.getElementById('v_disp').innerText = (sigma*sigma).toFixed(2);
+    <div class="max-w-3xl w-full flex flex-col items-center space-y-8">
+        
+        <!-- Başlık -->
+        <h1 class="text-4xl font-bold text-slate-800 text-center drop-shadow-sm">Normal Distribution (Bell Curve)</h1>
 
-      ctx.clearRect(0, 0, w, h);
-      ctx.beginPath(); ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
-      ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.stroke(); // X axis
+        <!-- Kontrol Paneli -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-100 p-8 w-full max-w-xl">
+            <div class="space-y-8">
+                <!-- Ortalama (Mean) Slider -->
+                <div class="flex items-center space-x-6">
+                    <label class="w-32 text-lg font-medium text-slate-700 flex-shrink-0">
+                        μ (Mean): <span id="mean-val" class="text-slate-900">0.0</span>
+                    </label>
+                    <input type="range" id="mean" min="-4" max="4" step="0.1" value="0.0" class="flex-grow">
+                </div>
 
-      ctx.beginPath(); ctx.strokeStyle = '#2aa198'; ctx.lineWidth = 3; ctx.fillStyle = 'rgba(42, 161, 152, 0.2)';
-      for(let px=0; px<=w; px++) {
-        let x = (px - originX) / scaleX;
-        let exponent = -0.5 * Math.pow((x - mu) / sigma, 2);
-        let y = (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(exponent);
-        let py = originY - (y * scaleY);
-        px === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.lineTo(w, originY); ctx.lineTo(0, originY); ctx.closePath();
-      ctx.fill(); ctx.stroke();
-    }
-    draw();
-  </script>
+                <!-- Standart Sapma (Std Dev) Slider -->
+                <div class="flex items-center space-x-6">
+                    <label class="w-32 text-lg font-medium text-slate-700 flex-shrink-0">
+                        σ (Std Dev): <span id="std-val" class="text-slate-900">1.0</span>
+                    </label>
+                    <input type="range" id="std" min="0.5" max="3" step="0.1" value="1.0" class="flex-grow">
+                </div>
+            </div>
+        </div>
+
+        <!-- Formül Gösterimi -->
+        <div class="text-2xl font-bold text-blue-600 drop-shadow-sm tracking-wide">
+            N(μ=<span id="eq-mean">0.0</span>, σ²=<span id="eq-var">1.00</span>)
+        </div>
+
+        <!-- Grafik Alanı (Büyütüldü) -->
+        <div class="bg-white rounded-2xl shadow-lg border border-slate-300 overflow-hidden w-full relative">
+            <canvas id="bell-curve" width="800" height="450" class="w-full h-auto"></canvas>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bell-curve');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Eksen sınırları
+        const xMin = -6;
+        const xMax = 6;
+        
+        // Eksenin grafiğin neresinde çizileceği (alt boşluk bırakmak için)
+        const yMarginBottom = 40; 
+        const yAxisY = height - yMarginBottom;
+
+        // Formül ve slider elementleri
+        const sliderMean = document.getElementById('mean');
+        const sliderStd = document.getElementById('std');
+        const meanValLabel = document.getElementById('mean-val');
+        const stdValLabel = document.getElementById('std-val');
+        const eqMeanLabel = document.getElementById('eq-mean');
+        const eqVarLabel = document.getElementById('eq-var');
+
+        // Normal dağılım yoğunluk fonksiyonu (PDF)
+        function normalPDF(x, mean, std) {
+            const variance = std * std;
+            return (1 / Math.sqrt(2 * Math.PI * variance)) * Math.exp(-Math.pow(x - mean, 2) / (2 * variance));
+        }
+
+        // x koordinatını piksele çevir
+        function mapX(x) {
+            return ((x - xMin) / (xMax - xMin)) * width;
+        }
+
+        // y koordinatını piksele çevir (0 ile maksimum PDF değeri arası)
+        // Yüksekliği sabit bir ölçekte tutmak için max teorik Y değerini sabitliyoruz (std=0.5 iken max yoğunluk ~0.8)
+        const maxY = 0.9; 
+        function mapY(y) {
+            // Eksenin (y=0) çizgisi yAxisY koordinatında.
+            return yAxisY - (y / maxY) * (yAxisY - 20); // Üstten 20px boşluk bırak
+        }
+
+        function drawCurve() {
+            const mean = parseFloat(sliderMean.value);
+            const std = parseFloat(sliderStd.value);
+
+            // Arayüz metinlerini güncelle
+            meanValLabel.innerText = mean.toFixed(1);
+            stdValLabel.innerText = std.toFixed(1);
+            eqMeanLabel.innerText = mean.toFixed(1);
+            eqVarLabel.innerText = (std * std).toFixed(2);
+
+            // Canvas'ı temizle
+            ctx.clearRect(0, 0, width, height);
+
+            // 1. ADIM: Eksen Çizgisi ve Rakamları Çiz
+            ctx.beginPath();
+            ctx.moveTo(0, yAxisY);
+            ctx.lineTo(width, yAxisY);
+            ctx.strokeStyle = '#94a3b8'; // slate-400 (Gri eksen)
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Eksen üzerindeki sayıları (tick marks) çiz
+            ctx.fillStyle = '#64748b'; // slate-500
+            ctx.font = '14px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+
+            // -5'ten 5'e kadar her tam sayıda eksen işareti koy
+            for (let i = -5; i <= 5; i++) {
+                const px = mapX(i);
+                
+                // Küçük dikey çentik
+                ctx.beginPath();
+                ctx.moveTo(px, yAxisY);
+                ctx.lineTo(px, yAxisY + 5);
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Sayı yazısı
+                ctx.fillText(i.toString(), px, yAxisY + 8);
+            }
+
+            // 2. ADIM: Çan Eğrisini Çiz
+            ctx.beginPath();
+            
+            // Eğrinin altını boyamak için başlangıç noktasını eksene koy
+            ctx.moveTo(0, yAxisY);
+
+            // X ekseninde küçük adımlarla ilerle ve eğriyi çiz
+            const step = (xMax - xMin) / width; // Her piksel için bir adım
+            for (let x = xMin; x <= xMax; x += step) {
+                const y = normalPDF(x, mean, std);
+                ctx.lineTo(mapX(x), mapY(y));
+            }
+
+            // Eğriyi kapatıp doldur
+            ctx.lineTo(width, yAxisY);
+            ctx.closePath();
+
+            // Dolgu (Pastel turkuaz/yeşil saydam)
+            ctx.fillStyle = 'rgba(74, 222, 128, 0.15)'; // Açık yeşil transparan
+            ctx.fill();
+
+            // Sınır Çizgisi (Pastel turkuaz/deniz mavisi)
+            ctx.strokeStyle = '#38bdf8'; // sky-400
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // 3. ADIM: Ortalama (Mean) Çizgisi
+            const meanPx = mapX(mean);
+            const maxPdfVal = normalPDF(mean, mean, std);
+            
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]); // Kesik çizgi
+            ctx.moveTo(meanPx, yAxisY);
+            ctx.lineTo(meanPx, mapY(maxPdfVal));
+            ctx.strokeStyle = '#0284c7'; // sky-600
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.setLineDash([]); // Çizgi stilini sıfırla
+
+            // Ortalama değerini küçük bir etiketle belirt
+            ctx.fillStyle = '#0284c7';
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText('μ', meanPx, mapY(maxPdfVal) - 15);
+        }
+
+        // Slider değişimlerini dinle
+        sliderMean.addEventListener('input', drawCurve);
+        sliderStd.addEventListener('input', drawCurve);
+
+        // İlk çizimi yap
+        drawCurve();
+        
+        // Input stillerini ayarla (Slider barını mavi ile doldurma efekti için basit bir JS - opsiyonel)
+        function updateSliderBackground(slider) {
+            const val = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+            slider.style.background = `linear-gradient(to right, #3b82f6 ${val}%, #e2e8f0 ${val}%)`;
+        }
+        
+        [sliderMean, sliderStd].forEach(slider => {
+            slider.addEventListener('input', function() {
+                updateSliderBackground(this);
+            });
+            // İlk yüklemede arkaplanı ayarla
+            updateSliderBackground(slider);
+        });
+    </script>
 </body>
 </html>
