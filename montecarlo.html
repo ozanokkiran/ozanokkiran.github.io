@@ -1,70 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monte Carlo Pi Simulation</title>
-<style>
-  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #fdf6e3; color: #333; margin-top: 30px; }
-  canvas { background-color: white; border: 2px solid #ccc; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-  button { padding: 12px 24px; font-size: 16px; background-color: #2aa198; color: white; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; }
-  button:hover { background-color: #268bd2; }
-  .stats { font-size: 18px; margin-top: 15px; }
-  .pi-result { color: #d33682; font-size: 24px; font-weight: bold; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monte Carlo Pi Estimation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        canvas { background-color: #f8fafc; border-radius: 0.5rem; }
+    </style>
 </head>
-<body>
-  <h2>Monte Carlo Pi Estimation</h2>
-  <p>Estimating the value of &pi; by dropping random points into a square containing a circle.</p>
-  
-  <button onclick="addPoints()">Drop 1000 Points</button>
-  
-  <div class="stats">
-    Total Points: <span id="total">0</span> | Points inside Circle: <span id="inside">0</span>
-  </div>
-  <div class="pi-result">
-    Estimated &pi; &asymp; <span id="pi_val">0.0000</span>
-  </div>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 text-slate-800">
 
-  <canvas id="myCanvas" width="400" height="400"></canvas>
-
-  <script>
-    const canvas = document.getElementById('myCanvas');
-    const ctx = canvas.getContext('2d');
-    const r = canvas.width / 2;
-    let total = 0;
-    let inside = 0;
-
-    // Draw the main circle
-    ctx.beginPath();
-    ctx.arc(r, r, r, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#ccc';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    function addPoints() {
-      for(let i = 0; i < 1000; i++) {
-        let x = Math.random() * canvas.width;
-        let y = Math.random() * canvas.height;
-        let dist = Math.sqrt(Math.pow(x - r, 2) + Math.pow(y - r, 2));
+    <div class="max-w-4xl w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
         
-        total++;
-        if(dist <= r) {
-          inside++;
-          ctx.fillStyle = 'rgba(42, 161, 152, 0.6)'; // Pastel teal for inside
-        } else {
-          ctx.fillStyle = 'rgba(211, 54, 130, 0.6)'; // Pastel pink for outside
+        <!-- Sol Panel: Kontroller ve İstatistikler -->
+        <div class="flex flex-col justify-center space-y-6">
+            <div>
+                <h1 class="text-3xl font-semibold text-slate-800 mb-2">Monte Carlo Simülasyonu</h1>
+                <p class="text-slate-500 text-sm">Rastgele atılan noktalarla Pi ($\pi$) sayısının animasyonlu tahmini.</p>
+            </div>
+
+            <div class="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100">
+                <div class="text-sm font-medium text-indigo-400 mb-1">Tahmini Pi Değeri</div>
+                <div id="pi-estimate" class="text-4xl font-bold text-indigo-600 transition-all duration-200">3.141...</div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                    <div class="text-xs text-emerald-600 mb-1">Daire İçindeki Noktalar</div>
+                    <div id="inside-points" class="text-xl font-semibold text-emerald-700">0</div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="text-xs text-slate-500 mb-1">Toplam Nokta</div>
+                    <div id="total-points" class="text-xl font-semibold text-slate-700">0</div>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-sm font-medium text-slate-600">Animasyon Hızı: <span id="speed-label">50</span> nokta/kare</label>
+                <input type="range" id="speed-slider" min="1" max="500" value="50" class="w-full accent-indigo-500">
+            </div>
+
+            <div class="flex space-x-3 pt-2">
+                <button id="btn-start" class="flex-1 bg-teal-100 hover:bg-teal-200 text-teal-800 font-semibold py-3 rounded-xl transition-colors duration-200">Başlat</button>
+                <button id="btn-stop" class="flex-1 bg-rose-100 hover:bg-rose-200 text-rose-800 font-semibold py-3 rounded-xl transition-colors duration-200" disabled>Durdur</button>
+                <button id="btn-reset" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-xl transition-colors duration-200">Sıfırla</button>
+            </div>
+        </div>
+
+        <!-- Sağ Panel: Canvas (Görselleştirme) -->
+        <div class="flex justify-center items-center">
+            <div class="relative shadow-inner rounded-lg overflow-hidden border-2 border-slate-100">
+                <canvas id="mc-canvas" width="400" height="400"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mc-canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const radius = width; // Çeyrek daire çiziyoruz (merkez 0,0 - sol alt)
+        
+        // DOM Elementleri
+        const piEstimateEl = document.getElementById('pi-estimate');
+        const insidePointsEl = document.getElementById('inside-points');
+        const totalPointsEl = document.getElementById('total-points');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedLabel = document.getElementById('speed-label');
+        const btnStart = document.getElementById('btn-start');
+        const btnStop = document.getElementById('btn-stop');
+        const btnReset = document.getElementById('btn-reset');
+
+        let isRunning = false;
+        let animationId;
+        let total = 0;
+        let inside = 0;
+
+        // Başlangıç çizimi (Çeyrek daire yayı)
+        function drawBackground() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.beginPath();
+            ctx.arc(0, height, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#cbd5e1'; // slate-300
+            ctx.lineWidth = 2;
+            ctx.stroke();
         }
-        ctx.beginPath();
-        ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-      
-      let pi_est = 4 * (inside / total);
-      document.getElementById('total').innerText = total;
-      document.getElementById('inside').innerText = inside;
-      document.getElementById('pi_val').innerText = pi_est.toFixed(4);
-    }
-  </script>
+
+        function addPoints() {
+            if (!isRunning) return;
+            
+            const pointsPerFrame = parseInt(speedSlider.value);
+            
+            for (let i = 0; i < pointsPerFrame; i++) {
+                // Rastgele x ve y (0 ile 1 arası)
+                const x = Math.random();
+                const y = Math.random();
+                
+                // Orijine (sol alt köşeye) olan uzaklığın karesi
+                const distanceSquared = x*x + y*y;
+                
+                // Noktayı çiz (koordinat sistemini canvas'a uyarlayarak: 0,0 sol alt köşe)
+                const canvasX = x * width;
+                const canvasY = height - (y * height);
+                
+                ctx.beginPath();
+                ctx.arc(canvasX, canvasY, 1.5, 0, 2 * Math.PI);
+                
+                if (distanceSquared <= 1) {
+                    ctx.fillStyle = '#34d399'; // emerald-400 (Daire içi pastel yeşil)
+                    inside++;
+                } else {
+                    ctx.fillStyle = '#f87171'; // red-400 (Daire dışı pastel kırmızı)
+                }
+                ctx.fill();
+                total++;
+            }
+
+            // Arayüzü güncelle
+            const piEstimate = (4 * inside) / total;
+            piEstimateEl.innerText = piEstimate.toFixed(5);
+            insidePointsEl.innerText = inside.toLocaleString();
+            totalPointsEl.innerText = total.toLocaleString();
+
+            animationId = requestAnimationFrame(addPoints);
+        }
+
+        // Event Listeners
+        btnStart.addEventListener('click', () => {
+            isRunning = true;
+            btnStart.disabled = true;
+            btnStart.classList.replace('bg-teal-100', 'bg-slate-100');
+            btnStart.classList.replace('text-teal-800', 'text-slate-400');
+            
+            btnStop.disabled = false;
+            btnStop.classList.replace('bg-slate-100', 'bg-rose-100');
+            btnStop.classList.replace('text-slate-400', 'text-rose-800');
+            
+            addPoints();
+        });
+
+        btnStop.addEventListener('click', () => {
+            isRunning = false;
+            cancelAnimationFrame(animationId);
+            
+            btnStart.disabled = false;
+            btnStart.classList.replace('bg-slate-100', 'bg-teal-100');
+            btnStart.classList.replace('text-slate-400', 'text-teal-800');
+            
+            btnStop.disabled = true;
+            btnStop.classList.replace('bg-rose-100', 'bg-slate-100');
+            btnStop.classList.replace('text-rose-800', 'text-slate-400');
+        });
+
+        btnReset.addEventListener('click', () => {
+            isRunning = false;
+            cancelAnimationFrame(animationId);
+            total = 0;
+            inside = 0;
+            piEstimateEl.innerText = '3.141...';
+            insidePointsEl.innerText = '0';
+            totalPointsEl.innerText = '0';
+            drawBackground();
+            
+            btnStart.disabled = false;
+            btnStart.classList.replace('bg-slate-100', 'bg-teal-100');
+            btnStart.classList.replace('text-slate-400', 'text-teal-800');
+            
+            btnStop.disabled = true;
+            btnStop.classList.replace('bg-rose-100', 'bg-slate-100');
+            btnStop.classList.replace('text-rose-800', 'text-slate-400');
+        });
+
+        speedSlider.addEventListener('input', (e) => {
+            speedLabel.innerText = e.target.value;
+        });
+
+        // Sayfa yüklendiğinde arka planı çiz
+        drawBackground();
+    </script>
 </body>
 </html>
