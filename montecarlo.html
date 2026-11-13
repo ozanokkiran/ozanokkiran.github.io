@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monte Carlo Pi Estimation</title>
+    <title>Monte Carlo Pi Simülasyonu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -19,7 +19,7 @@
         <div class="flex flex-col justify-center space-y-6">
             <div>
                 <h1 class="text-3xl font-semibold text-slate-800 mb-2">Monte Carlo Simülasyonu</h1>
-                <p class="text-slate-500 text-sm">Rastgele atılan noktalarla Pi ($\pi$) sayısının animasyonlu tahmini.</p>
+                <p class="text-slate-500 text-sm">Rastgele atılan noktalarla Pi sayısının animasyonlu tahmini.</p>
             </div>
 
             <div class="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100">
@@ -45,7 +45,7 @@
 
             <div class="flex space-x-3 pt-2">
                 <button id="btn-start" class="flex-1 bg-teal-100 hover:bg-teal-200 text-teal-800 font-semibold py-3 rounded-xl transition-colors duration-200">Başlat</button>
-                <button id="btn-stop" class="flex-1 bg-rose-100 hover:bg-rose-200 text-rose-800 font-semibold py-3 rounded-xl transition-colors duration-200" disabled>Durdur</button>
+                <button id="btn-stop" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-400 font-semibold py-3 rounded-xl transition-colors duration-200" disabled>Durdur</button>
                 <button id="btn-reset" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-xl transition-colors duration-200">Sıfırla</button>
             </div>
         </div>
@@ -64,9 +64,13 @@
         const ctx = canvas.getContext('2d');
         const width = canvas.width;
         const height = canvas.height;
-        const radius = width; // Çeyrek daire çiziyoruz (merkez 0,0 - sol alt)
         
-        // DOM Elementleri
+        // Kenar boşlukları (Padding) ekleyerek çizginin kesilmesini önlüyoruz
+        const padding = 15;
+        const radius = width - padding * 2;
+        const originX = padding;
+        const originY = height - padding;
+        
         const piEstimateEl = document.getElementById('pi-estimate');
         const insidePointsEl = document.getElementById('inside-points');
         const totalPointsEl = document.getElementById('total-points');
@@ -81,11 +85,21 @@
         let total = 0;
         let inside = 0;
 
-        // Başlangıç çizimi (Çeyrek daire yayı)
         function drawBackground() {
             ctx.clearRect(0, 0, width, height);
+            
+            // Koordinat eksenlerini çiz
             ctx.beginPath();
-            ctx.arc(0, height, radius, 0, 2 * Math.PI);
+            ctx.moveTo(originX, padding);
+            ctx.lineTo(originX, originY);
+            ctx.lineTo(width - padding, originY);
+            ctx.strokeStyle = '#94a3b8'; // slate-400
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Çeyrek daireyi çiz
+            ctx.beginPath();
+            ctx.arc(originX, originY, radius, 0, 1.5 * Math.PI, true);
             ctx.strokeStyle = '#cbd5e1'; // slate-300
             ctx.lineWidth = 2;
             ctx.stroke();
@@ -97,40 +111,36 @@
             const pointsPerFrame = parseInt(speedSlider.value);
             
             for (let i = 0; i < pointsPerFrame; i++) {
-                // Rastgele x ve y (0 ile 1 arası)
+                // 0 ile 1 arası rastgele x, y
                 const x = Math.random();
                 const y = Math.random();
-                
-                // Orijine (sol alt köşeye) olan uzaklığın karesi
                 const distanceSquared = x*x + y*y;
                 
-                // Noktayı çiz (koordinat sistemini canvas'a uyarlayarak: 0,0 sol alt köşe)
-                const canvasX = x * width;
-                const canvasY = height - (y * height);
+                // Noktayı canvas koordinatlarına uyarla (padding dahil)
+                const canvasX = originX + (x * radius);
+                const canvasY = originY - (y * radius);
                 
                 ctx.beginPath();
                 ctx.arc(canvasX, canvasY, 1.5, 0, 2 * Math.PI);
                 
                 if (distanceSquared <= 1) {
-                    ctx.fillStyle = '#34d399'; // emerald-400 (Daire içi pastel yeşil)
+                    ctx.fillStyle = '#34d399'; // Daire içi yeşil (emerald)
                     inside++;
                 } else {
-                    ctx.fillStyle = '#f87171'; // red-400 (Daire dışı pastel kırmızı)
+                    ctx.fillStyle = '#f87171'; // Daire dışı kırmızı (red)
                 }
                 ctx.fill();
                 total++;
             }
 
-            // Arayüzü güncelle
             const piEstimate = (4 * inside) / total;
             piEstimateEl.innerText = piEstimate.toFixed(5);
-            insidePointsEl.innerText = inside.toLocaleString();
-            totalPointsEl.innerText = total.toLocaleString();
+            insidePointsEl.innerText = inside.toLocaleString('tr-TR');
+            totalPointsEl.innerText = total.toLocaleString('tr-TR');
 
             animationId = requestAnimationFrame(addPoints);
         }
 
-        // Event Listeners
         btnStart.addEventListener('click', () => {
             isRunning = true;
             btnStart.disabled = true;
@@ -180,7 +190,7 @@
             speedLabel.innerText = e.target.value;
         });
 
-        // Sayfa yüklendiğinde arka planı çiz
+        // Sayfa ilk yüklendiğinde arka planı çiz
         drawBackground();
     </script>
 </body>
