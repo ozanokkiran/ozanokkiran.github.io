@@ -9,6 +9,27 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        
+        /* Plotly Mode Bar (Sağ üstteki çirkin menü) için şıklaştırma ayarları */
+        .modebar {
+            background: transparent !important;
+            opacity: 0.3 !important;
+            transition: opacity 0.3s ease;
+        }
+        .modebar:hover {
+            opacity: 1 !important;
+        }
+        .modebar-btn {
+            background-color: rgba(255, 255, 255, 0.8) !important;
+            border-radius: 6px !important;
+            margin: 2px !important;
+            padding: 4px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+        }
+        .modebar-btn svg {
+            fill: #64748b !important; /* slate-500 renginde daha zarif ikonlar */
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 text-slate-800">
@@ -174,7 +195,20 @@
                 legend: { x: 0, y: 1 }
             };
 
-            Plotly.newPlot('plot-container', traces, layout, {responsive: true, displayModeBar: true});
+            // Modebar configuration: removing unnecessary buttons to keep it clean
+            let config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: [
+                    'hoverClosest3d', 
+                    'toImage', 
+                    'resetCameraDefault3d', 
+                    'resetCameraLastSave3d'
+                ]
+            };
+
+            Plotly.newPlot('plot-container', traces, layout, config);
         }
 
         // Event Listeners
