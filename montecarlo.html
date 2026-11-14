@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monte Carlo Pi Simülasyonu</title>
+    <title>Monte Carlo Pi Estimation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
@@ -15,42 +15,42 @@
 
     <div class="max-w-4xl w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
         
-        <!-- Sol Panel: Kontroller ve İstatistikler -->
+        <!-- Left Panel: Controls and Statistics -->
         <div class="flex flex-col justify-center space-y-6">
             <div>
-                <h1 class="text-3xl font-semibold text-slate-800 mb-2">Monte Carlo Simülasyonu</h1>
-                <p class="text-slate-500 text-sm">Rastgele atılan noktalarla Pi sayısının animasyonlu tahmini.</p>
+                <h1 class="text-3xl font-semibold text-slate-800 mb-2">Monte Carlo Simulation</h1>
+                <p class="text-slate-500 text-sm">Animated estimation of Pi using random point scattering.</p>
             </div>
 
             <div class="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100">
-                <div class="text-sm font-medium text-indigo-400 mb-1">Tahmini Pi Değeri</div>
+                <div class="text-sm font-medium text-indigo-400 mb-1">Estimated Pi Value</div>
                 <div id="pi-estimate" class="text-4xl font-bold text-indigo-600 transition-all duration-200">3.141...</div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                    <div class="text-xs text-emerald-600 mb-1">Daire İçindeki Noktalar</div>
+                    <div class="text-xs text-emerald-600 mb-1">Points Inside Circle</div>
                     <div id="inside-points" class="text-xl font-semibold text-emerald-700">0</div>
                 </div>
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <div class="text-xs text-slate-500 mb-1">Toplam Nokta</div>
+                    <div class="text-xs text-slate-500 mb-1">Total Points</div>
                     <div id="total-points" class="text-xl font-semibold text-slate-700">0</div>
                 </div>
             </div>
 
             <div class="space-y-3">
-                <label class="text-sm font-medium text-slate-600">Animasyon Hızı: <span id="speed-label">50</span> nokta/kare</label>
+                <label class="text-sm font-medium text-slate-600">Animation Speed: <span id="speed-label">50</span> points/frame</label>
                 <input type="range" id="speed-slider" min="1" max="500" value="50" class="w-full accent-indigo-500">
             </div>
 
             <div class="flex space-x-3 pt-2">
-                <button id="btn-start" class="flex-1 bg-teal-100 hover:bg-teal-200 text-teal-800 font-semibold py-3 rounded-xl transition-colors duration-200">Başlat</button>
-                <button id="btn-stop" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-400 font-semibold py-3 rounded-xl transition-colors duration-200" disabled>Durdur</button>
-                <button id="btn-reset" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-xl transition-colors duration-200">Sıfırla</button>
+                <button id="btn-start" class="flex-1 bg-teal-100 hover:bg-teal-200 text-teal-800 font-semibold py-3 rounded-xl transition-colors duration-200">Start</button>
+                <button id="btn-stop" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-400 font-semibold py-3 rounded-xl transition-colors duration-200" disabled>Stop</button>
+                <button id="btn-reset" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-xl transition-colors duration-200">Reset</button>
             </div>
         </div>
 
-        <!-- Sağ Panel: Canvas (Görselleştirme) -->
+        <!-- Right Panel: Canvas (Visualization) -->
         <div class="flex justify-center items-center">
             <div class="relative shadow-inner rounded-lg overflow-hidden border-2 border-slate-100">
                 <canvas id="mc-canvas" width="400" height="400"></canvas>
@@ -65,7 +65,7 @@
         const width = canvas.width;
         const height = canvas.height;
         
-        // Kenar boşlukları (Padding) ekleyerek çizginin kesilmesini önlüyoruz
+        // Add padding to prevent arc from clipping at the edges
         const padding = 15;
         const radius = width - padding * 2;
         const originX = padding;
@@ -88,19 +88,19 @@
         function drawBackground() {
             ctx.clearRect(0, 0, width, height);
             
-            // Koordinat eksenlerini çiz
+            // Draw coordinate axes
             ctx.beginPath();
             ctx.moveTo(originX, padding);
             ctx.lineTo(originX, originY);
             ctx.lineTo(width - padding, originY);
-            ctx.strokeStyle = '#94a3b8'; // slate-400
+            ctx.strokeStyle = '#94a3b8'; 
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // Çeyrek daireyi çiz
+            // Draw quarter circle
             ctx.beginPath();
             ctx.arc(originX, originY, radius, 0, 1.5 * Math.PI, true);
-            ctx.strokeStyle = '#cbd5e1'; // slate-300
+            ctx.strokeStyle = '#cbd5e1'; 
             ctx.lineWidth = 2;
             ctx.stroke();
         }
@@ -111,12 +111,12 @@
             const pointsPerFrame = parseInt(speedSlider.value);
             
             for (let i = 0; i < pointsPerFrame; i++) {
-                // 0 ile 1 arası rastgele x, y
+                // Random x, y between 0 and 1
                 const x = Math.random();
                 const y = Math.random();
                 const distanceSquared = x*x + y*y;
                 
-                // Noktayı canvas koordinatlarına uyarla (padding dahil)
+                // Adapt point to canvas coordinates (including padding)
                 const canvasX = originX + (x * radius);
                 const canvasY = originY - (y * radius);
                 
@@ -124,10 +124,10 @@
                 ctx.arc(canvasX, canvasY, 1.5, 0, 2 * Math.PI);
                 
                 if (distanceSquared <= 1) {
-                    ctx.fillStyle = '#34d399'; // Daire içi yeşil (emerald)
+                    ctx.fillStyle = '#34d399'; // Emerald (Inside circle)
                     inside++;
                 } else {
-                    ctx.fillStyle = '#f87171'; // Daire dışı kırmızı (red)
+                    ctx.fillStyle = '#f87171'; // Red (Outside circle)
                 }
                 ctx.fill();
                 total++;
@@ -135,8 +135,8 @@
 
             const piEstimate = (4 * inside) / total;
             piEstimateEl.innerText = piEstimate.toFixed(5);
-            insidePointsEl.innerText = inside.toLocaleString('tr-TR');
-            totalPointsEl.innerText = total.toLocaleString('tr-TR');
+            insidePointsEl.innerText = inside.toLocaleString('en-US');
+            totalPointsEl.innerText = total.toLocaleString('en-US');
 
             animationId = requestAnimationFrame(addPoints);
         }
@@ -190,7 +190,7 @@
             speedLabel.innerText = e.target.value;
         });
 
-        // Sayfa ilk yüklendiğinde arka planı çiz
+        // Draw background on initial page load
         drawBackground();
     </script>
 </body>
