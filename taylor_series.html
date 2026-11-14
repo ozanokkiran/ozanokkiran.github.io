@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taylor Serileri Yaklaşımı</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        canvas { background-color: #f8fafc; border-radius: 0.5rem; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 text-slate-800">
+
+    <div class="max-w-5xl w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Sol Panel: Kontroller ve Formül -->
+        <div class="flex flex-col justify-center space-y-8">
+            <div>
+                <h1 class="text-3xl font-semibold text-slate-800 mb-2">Taylor Serileri</h1>
+                <p class="text-slate-500 text-sm">Maclaurin polinomu kullanılarak <span class="font-semibold text-teal-600">f(x) = sin(x)</span> fonksiyonuna yaklaşımsal modelleme.</p>
+            </div>
+
+            <!-- Dinamik Formül Gösterimi -->
+            <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100 min-h-[140px] flex items-center justify-center overflow-x-auto">
+                <div class="text-lg font-medium text-indigo-700 flex items-center space-x-2 whitespace-nowrap" id="formula-display">
+                    <!-- JS ile doldurulacak -->
+                </div>
+            </div>
+
+            <!-- Kaydırıcı Kontrolü -->
+            <div class="space-y-4">
+                <label class="text-sm font-medium text-slate-600 flex justify-between">
+                    <span>Polinom Terim Sayısı (n)</span>
+                    <span id="terms-label" class="font-bold text-amber-500 text-lg">1</span>
+                </label>
+                <input type="range" id="terms-slider" min="1" max="10" value="1" class="w-full accent-amber-500">
+            </div>
+
+            <!-- Lejant (Açıklama) -->
+            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                <div class="flex items-center space-x-3">
+                    <div class="w-4 h-4 bg-teal-400 rounded-full shadow-sm"></div>
+                    <span class="text-sm font-medium text-slate-600">Gerçek sin(x)</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-4 h-4 bg-amber-400 rounded-full shadow-sm"></div>
+                    <span class="text-sm font-medium text-slate-600">Taylor Polinomu</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Panel: Canvas (Grafik Çizimi) -->
+        <div class="flex justify-center items-center">
+            <div class="relative shadow-inner rounded-lg overflow-hidden border-2 border-slate-100 w-full max-w-[450px]">
+                <canvas id="taylor-canvas" width="450" height="450" class="w-full h-auto"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('taylor-canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const slider = document.getElementById('terms-slider');
+        const label = document.getElementById('terms-label');
+        const formulaDisplay = document.getElementById('formula-display');
+
+        // Koordinat düzlemi sınırları
+        const xMin = -3 * Math.PI;
+        const xMax = 3 * Math.PI;
+        const yMin = -3;
+        const yMax = 3;
+
+        // Gerçek koordinatları Canvas piksellerine çevirme fonksiyonları
+        function mapX(x) {
+            return ((x - xMin) / (xMax - xMin)) * width;
+        }
+
+        function mapY(y) {
+            return height - ((y - yMin) / (yMax - yMin)) * height;
+        }
+
+        function factorial(num) {
+            if (num <= 1) return 1;
+            let res = 1;
+            for(let i = 2; i <= num; i++) res *= i;
+            return res;
+        }
+
+        function drawAxes() {
+            ctx.beginPath();
+            // X ekseni
+            ctx.moveTo(0, mapY(0));
+            ctx.lineTo(width, mapY(0));
+            // Y ekseni
+            ctx.moveTo(mapX(0), 0);
+            ctx.lineTo(mapX(0), height);
+            ctx.strokeStyle = '#cbd5e1'; // slate-300
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+        }
+
+        function drawTrueFunction() {
+            ctx.beginPath();
+            for (let px = 0; px <= width; px++) {
+                let x = xMin + (px / width) * (xMax - xMin);
+                let y = Math.sin(x);
+                let py = mapY(y);
+                if (px === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.strokeStyle = '#2dd4bf'; // teal-400 (Gerçek fonksiyon)
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function getTaylorValue(x, terms) {
+            let sum = 0;
+            for (let k = 0; k < terms; k++) {
+                let sign = k % 2 === 0 ? 1 : -1;
+                let power = 2 * k + 1;
+                sum += sign * Math.pow(x, power) / factorial(power);
+            }
+            return sum;
+        }
+
+        function drawTaylorFunction(terms) {
+            ctx.beginPath();
+            let first = true;
+            for (let px = 0; px <= width; px++) {
+                let x = xMin + (px / width) * (xMax - xMin);
+                let y = getTaylorValue(x, terms);
+                let py = mapY(y);
+
+                // Eğrinin Canvas dışına sonsuza uzamasını kes
+                if (py > -500 && py < height + 500) {
+                    if (first) {
+                        ctx.moveTo(px, py);
+                        first = false;
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+            }
+            ctx.strokeStyle = '#fbbf24'; // amber-400 (Yaklaşım fonksiyonu)
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function updateFormula(terms) {
+            let html = '<span>P(x) &asymp;</span>'; // ≈ işareti
+            for (let k = 0; k < terms; k++) {
+                let power = 2 * k + 1;
+                let sign = k % 2 === 0 ? '+' : '-';
+                
+                if (k === 0) sign = ''; 
+                else html += `<span class="mx-2">${sign}</span>`;
+
+                if (power === 1) {
+                    html += `<span>x</span>`;
+                } else {
+                    html += `
+                    <div class="inline-flex flex-col items-center justify-center align-middle relative -top-1">
+                        <span class="border-b-2 border-indigo-300 px-1">x<sup>${power}</sup></span>
+                        <span class="text-sm mt-0.5">${power}!</span>
+                    </div>`;
+                }
+            }
+            formulaDisplay.innerHTML = html;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            drawAxes();
+            drawTrueFunction();
+            let terms = parseInt(slider.value);
+            drawTaylorFunction(terms);
+            updateFormula(terms);
+        }
+
+        // Slider dinleyicisi
+        slider.addEventListener('input', (e) => {
+            label.innerText = e.target.value;
+            draw();
+        });
+
+        // Başlangıç çizimi
+        draw();
+    </script>
+</body>
+</html>
