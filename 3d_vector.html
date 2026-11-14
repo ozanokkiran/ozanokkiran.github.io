@@ -1,278 +1,230 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Vector Visualizer</title>
-    <!-- Tailwind CSS -->
+    <title>3D Vektör Laboratuvarı</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Plotly.js for 3D Graphing -->
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        /* Custom Input Styling */
-        input[type="number"] {
-            -moz-appearance: textfield;
-        }
-        input[type="number"]::-webkit-outer-spin-button,
-        input[type="number"]::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 text-slate-800">
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 text-slate-800">
 
-    <div class="max-w-6xl w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="max-w-6xl w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        <!-- Left Panel: Controls & Inputs (Takes 5 columns on LG) -->
-        <div class="lg:col-span-5 flex flex-col justify-center space-y-8">
-            
-            <!-- Header -->
+        <!-- Sol Panel: Kontroller -->
+        <div class="lg:col-span-5 flex flex-col justify-center space-y-6">
             <div>
-                <h1 class="text-3xl font-bold text-slate-800 tracking-tight mb-2">3D Vector Visualizer</h1>
-                <p class="text-slate-500 text-sm leading-relaxed">
-                    Interactive space to explore Vector Addition and Cross Product in 3D. 
-                    <br>
-                    <span class="text-indigo-500 font-medium inline-flex items-center mt-1">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
-                        Tip: Drag graph to rotate, scroll to zoom.
-                    </span>
-                </p>
+                <h1 class="text-3xl font-semibold text-slate-800 mb-2">3D Vektör Laboratuvarı</h1>
+                <p class="text-slate-500 text-sm">Uzayda vektörlerin hareketi, toplamı ve vektörel (Cross) çarpımının 3 boyutlu görselleştirilmesi.</p>
             </div>
 
-            <!-- Vector Inputs -->
-            <div class="space-y-5">
-                <!-- Vector A Input -->
-                <div class="bg-teal-50/50 p-4 rounded-xl border border-teal-100">
-                    <div class="text-sm font-bold text-teal-700 mb-3 flex items-center">
-                        <div class="w-3 h-3 bg-teal-400 rounded-full mr-2"></div>
-                        Vector A (Teal)
-                    </div>
-                    <div class="flex space-x-3">
-                        <div class="flex-1">
-                            <label class="text-xs text-teal-600 block mb-1">X component</label>
-                            <input type="number" id="ax" value="2" class="w-full bg-white border border-teal-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400 font-medium text-center">
-                        </div>
-                        <div class="flex-1">
-                            <label class="text-xs text-teal-600 block mb-1">Y component</label>
-                            <input type="number" id="ay" value="3" class="w-full bg-white border border-teal-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400 font-medium text-center">
-                        </div>
-                        <div class="flex-1">
-                            <label class="text-xs text-teal-600 block mb-1">Z component</label>
-                            <input type="number" id="az" value="1" class="w-full bg-white border border-teal-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400 font-medium text-center">
-                        </div>
-                    </div>
+            <!-- Vektör U Girişleri -->
+            <div class="bg-teal-50/50 p-4 rounded-xl border border-teal-100">
+                <div class="text-sm font-semibold text-teal-700 mb-3 flex items-center">
+                    <span class="w-3 h-3 rounded-full bg-teal-400 mr-2"></span>
+                    Vektör u (Turkuaz)
                 </div>
-
-                <!-- Vector B Input -->
-                <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
-                    <div class="text-sm font-bold text-amber-700 mb-3 flex items-center">
-                        <div class="w-3 h-3 bg-amber-400 rounded-full mr-2"></div>
-                        Vector B (Amber)
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500 block mb-1">X ekseni (i)</label>
+                        <input type="number" id="ux" value="3" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:border-teal-400">
                     </div>
-                    <div class="flex space-x-3">
-                        <div class="flex-1">
-                            <label class="text-xs text-amber-600 block mb-1">X component</label>
-                            <input type="number" id="bx" value="-1" class="w-full bg-white border border-amber-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-center">
-                        </div>
-                        <div class="flex-1">
-                            <label class="text-xs text-amber-600 block mb-1">Y component</label>
-                            <input type="number" id="by" value="2" class="w-full bg-white border border-amber-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-center">
-                        </div>
-                        <div class="flex-1">
-                            <label class="text-xs text-amber-600 block mb-1">Z component</label>
-                            <input type="number" id="bz" value="3" class="w-full bg-white border border-amber-200 rounded-lg px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400 font-medium text-center">
-                        </div>
+                    <div>
+                        <label class="text-xs text-slate-500 block mb-1">Y ekseni (j)</label>
+                        <input type="number" id="uy" value="1" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:border-teal-400">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500 block mb-1">Z ekseni (k)</label>
+                        <input type="number" id="uz" value="2" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:border-teal-400">
                     </div>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="grid grid-cols-2 gap-3">
-                <button id="btn-add" class="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-semibold py-3 px-4 rounded-xl transition-colors duration-200 text-sm">
-                    Show A + B
-                </button>
-                <button id="btn-cross" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold py-3 px-4 rounded-xl transition-colors duration-200 text-sm">
-                    Show A × B
-                </button>
-                <button id="btn-reset" class="col-span-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-3 rounded-xl transition-colors duration-200 text-sm">
-                    Clear Result Vector
-                </button>
-            </div>
-
-            <!-- Mathematical Result Box -->
-            <div id="result-box" class="bg-slate-50 border border-slate-200 p-5 rounded-xl text-center hidden transition-all duration-300">
-                <div id="result-title" class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Result</div>
-                <div id="result-math" class="text-xl font-medium text-slate-700 font-mono tracking-wide">
-                    <!-- Formula goes here -->
+            <!-- Vektör V Girişleri -->
+            <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
+                <div class="text-sm font-semibold text-amber-700 mb-3 flex items-center">
+                    <span class="w-3 h-3 rounded-full bg-amber-400 mr-2"></span>
+                    Vektör v (Kehribar)
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500 block mb-1">X ekseni (i)</label>
+                        <input type="number" id="vx" value="-1" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500 block mb-1">Y ekseni (j)</label>
+                        <input type="number" id="vy" value="4" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500 block mb-1">Z ekseni (k)</label>
+                        <input type="number" id="vz" value="1" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-700 focus:outline-none focus:border-amber-400">
+                    </div>
                 </div>
             </div>
 
+            <!-- Butonlar -->
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button id="btn-add" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-semibold py-3 rounded-xl transition-colors duration-200">
+                    u + v (Toplam)
+                </button>
+                <button id="btn-cross" class="bg-rose-100 hover:bg-rose-200 text-rose-700 font-semibold py-3 rounded-xl transition-colors duration-200">
+                    u × v (Cross Prod.)
+                </button>
+            </div>
+            
+            <button id="btn-reset" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium py-2 rounded-xl transition-colors duration-200">
+                Sadece Temel Vektörleri Göster
+            </button>
+
+            <!-- Sonuç Kutusu -->
+            <div id="result-box" class="hidden bg-slate-800 p-4 rounded-xl text-white mt-4 border-l-4 border-slate-500 shadow-md">
+                <div class="text-xs text-slate-400 mb-1" id="result-title">Sonuç</div>
+                <div class="text-lg font-mono" id="result-formula">w = (0, 0, 0)</div>
+            </div>
         </div>
 
-        <!-- Right Panel: 3D Plotly Graph (Takes 7 columns on LG) -->
-        <div class="lg:col-span-7 flex flex-col">
-            <div class="relative w-full h-[400px] lg:h-[600px] bg-slate-50 rounded-2xl overflow-hidden border-2 border-slate-100 flex-grow shadow-inner" id="plotly-container">
-                <!-- Plotly injects canvas here -->
+        <!-- Sağ Panel: 3D Plotly Canvas -->
+        <div class="lg:col-span-7 flex justify-center items-center relative min-h-[500px]">
+            <div class="w-full h-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-50/50 relative" id="plot-container">
+                <!-- Plotly buraya render edilecek -->
             </div>
         </div>
 
     </div>
 
     <script>
-        // DOM Elements
-        const inputs = {
-            ax: document.getElementById('ax'), ay: document.getElementById('ay'), az: document.getElementById('az'),
-            bx: document.getElementById('bx'), by: document.getElementById('by'), bz: document.getElementById('bz')
-        };
+        // DOM Elementleri
+        const btnAdd = document.getElementById('btn-add');
+        const btnCross = document.getElementById('btn-cross');
+        const btnReset = document.getElementById('btn-reset');
         const resultBox = document.getElementById('result-box');
-        const resultMath = document.getElementById('result-math');
         const resultTitle = document.getElementById('result-title');
+        const resultFormula = document.getElementById('result-formula');
 
-        // Colors matching Tailwind pastel theme
-        const colors = {
-            A: '#2dd4bf', // teal-400
-            B: '#fbbf24', // amber-400
-            Add: '#a855f7', // purple-500
-            Cross: '#f43f5e' // rose-500
-        };
-
-        let currentMode = 'none'; // 'none', 'add', 'cross'
-
-        // Read Inputs into Object
-        function getVectors() {
+        function getInputs() {
             return {
-                A: [parseFloat(inputs.ax.value) || 0, parseFloat(inputs.ay.value) || 0, parseFloat(inputs.az.value) || 0],
-                B: [parseFloat(inputs.bx.value) || 0, parseFloat(inputs.by.value) || 0, parseFloat(inputs.bz.value) || 0]
-            };
-        }
-
-        // Vector Math Functions
-        function addVectors(A, B) {
-            return [A[0] + B[0], A[1] + B[1], A[2] + B[2]];
-        }
-
-        function crossProduct(A, B) {
-            return [
-                A[1]*B[2] - A[2]*B[1],
-                A[2]*B[0] - A[0]*B[2],
-                A[0]*B[1] - A[1]*B[0]
-            ];
-        }
-
-        // Build a single Plotly trace for a vector line
-        function buildTrace(endPt, color, name, isResult = false) {
-            return {
-                type: 'scatter3d',
-                mode: 'lines+markers',
-                x: [0, endPt[0]],
-                y: [0, endPt[1]],
-                z: [0, endPt[2]],
-                marker: {
-                    size: [0, 6], // Marker only at the tip
-                    color: color,
-                    symbol: 'circle'
+                u: {
+                    x: parseFloat(document.getElementById('ux').value) || 0,
+                    y: parseFloat(document.getElementById('uy').value) || 0,
+                    z: parseFloat(document.getElementById('uz').value) || 0
                 },
-                line: {
-                    width: isResult ? 8 : 6,
-                    color: color
-                },
-                name: name,
-                hoverinfo: 'text',
-                text: [`Origin`, `${name}: (${endPt[0].toFixed(1)}, ${endPt[1].toFixed(1)}, ${endPt[2].toFixed(1)})`]
-            };
-        }
-
-        // Main Draw Function
-        function drawGraph() {
-            const vecs = getVectors();
-            let traces = [];
-
-            // Add Vector A and B
-            traces.push(buildTrace(vecs.A, colors.A, 'Vector A'));
-            traces.push(buildTrace(vecs.B, colors.B, 'Vector B'));
-
-            // Handle Resultant Vector based on state
-            if (currentMode === 'add') {
-                const res = addVectors(vecs.A, vecs.B);
-                traces.push(buildTrace(res, colors.Add, 'A + B', true));
-                updateFormulaUI('add', res);
-            } else if (currentMode === 'cross') {
-                const res = crossProduct(vecs.A, vecs.B);
-                traces.push(buildTrace(res, colors.Cross, 'A × B', true));
-                updateFormulaUI('cross', res);
-            } else {
-                resultBox.classList.add('hidden');
-            }
-
-            // Determine max range to keep graph aspect ratio proportional (cube)
-            const allVals = [...vecs.A, ...vecs.B];
-            if(currentMode === 'add') allVals.push(...addVectors(vecs.A, vecs.B));
-            if(currentMode === 'cross') allVals.push(...crossProduct(vecs.A, vecs.B));
-            
-            const maxAbs = Math.max(5, ...allVals.map(Math.abs));
-            const range = [-maxAbs - 1, maxAbs + 1];
-
-            // Plotly Layout Configuration
-            const layout = {
-                margin: { l: 0, r: 0, b: 0, t: 0 },
-                paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
-                showlegend: false,
-                scene: {
-                    aspectmode: 'cube', // Forces true orthogonality visually
-                    xaxis: { range: range, title: 'X', gridcolor: '#e2e8f0', zerolinecolor: '#94a3b8', zerolinewidth: 2 },
-                    yaxis: { range: range, title: 'Y', gridcolor: '#e2e8f0', zerolinecolor: '#94a3b8', zerolinewidth: 2 },
-                    zaxis: { range: range, title: 'Z', gridcolor: '#e2e8f0', zerolinecolor: '#94a3b8', zerolinewidth: 2 },
-                    camera: {
-                        eye: { x: 1.5, y: 1.5, z: 1.2 }
-                    }
+                v: {
+                    x: parseFloat(document.getElementById('vx').value) || 0,
+                    y: parseFloat(document.getElementById('vy').value) || 0,
+                    z: parseFloat(document.getElementById('vz').value) || 0
                 }
             };
-
-            Plotly.react('plotly-container', traces, layout, {displayModeBar: false, responsive: true});
         }
 
-        // Update the Math Formula UI
-        function updateFormulaUI(mode, res) {
-            resultBox.classList.remove('hidden');
-            if (mode === 'add') {
-                resultTitle.innerText = "Vector Addition";
-                resultTitle.className = "text-xs font-bold uppercase tracking-wider mb-2 text-purple-500";
-                resultMath.innerHTML = `A + B = &lang; <span class="text-purple-600">${res[0]}</span>, <span class="text-purple-600">${res[1]}</span>, <span class="text-purple-600">${res[2]}</span> &rang;`;
-            } else {
-                resultTitle.innerText = "Cross Product";
-                resultTitle.className = "text-xs font-bold uppercase tracking-wider mb-2 text-rose-500";
-                resultMath.innerHTML = `A &times; B = &lang; <span class="text-rose-600">${res[0]}</span>, <span class="text-rose-600">${res[1]}</span>, <span class="text-rose-600">${res[2]}</span> &rang;`;
+        // Plotly Çizim Fonksiyonu
+        function drawVectors(resultVector = null, type = null) {
+            const { u, v } = getInputs();
+            
+            // Temel Vektörler (u ve v)
+            let traces = [
+                {
+                    x: [0, u.x], y: [0, u.y], z: [0, u.z],
+                    mode: 'lines+markers',
+                    name: 'Vektör u',
+                    line: {color: '#2dd4bf', width: 8}, // Turkuaz
+                    marker: {size: [0, 6], color: '#2dd4bf'},
+                    type: 'scatter3d'
+                },
+                {
+                    x: [0, v.x], y: [0, v.y], z: [0, v.z],
+                    mode: 'lines+markers',
+                    name: 'Vektör v',
+                    line: {color: '#fbbf24', width: 8}, // Kehribar
+                    marker: {size: [0, 6], color: '#fbbf24'},
+                    type: 'scatter3d'
+                }
+            ];
+
+            // Sonuç Vektörü varsa ekle
+            if (resultVector) {
+                let color = type === 'add' ? '#818cf8' : '#fb7185'; // Toplam: İndigo, Cross: Rose
+                let name = type === 'add' ? 'u + v' : 'u × v';
+                
+                traces.push({
+                    x: [0, resultVector.x], y: [0, resultVector.y], z: [0, resultVector.z],
+                    mode: 'lines+markers',
+                    name: name,
+                    line: {color: color, width: 8},
+                    marker: {size: [0, 6], color: color},
+                    type: 'scatter3d'
+                });
             }
+
+            // Oranları korumak için 3D sahne ayarları
+            let layout = {
+                margin: { l: 0, r: 0, b: 0, t: 0 },
+                scene: {
+                    aspectmode: 'data', // 90 derece dikliğin gerçekçi görünmesi için en önemli ayar
+                    xaxis: { title: 'X', showbackground: true, backgroundcolor: '#f8fafc', gridcolor: '#e2e8f0', zerolinecolor: '#94a3b8' },
+                    yaxis: { title: 'Y', showbackground: true, backgroundcolor: '#f8fafc', gridcolor: '#e2e8f0', zerolinecolor: '#94a3b8' },
+                    zaxis: { title: 'Z', showbackground: true, backgroundcolor: '#f8fafc', gridcolor: '#e2e8f0', zerolinecolor: '#94a3b8' },
+                    camera: { eye: {x: 1.5, y: 1.5, z: 1.5} }
+                },
+                paper_bgcolor: 'transparent',
+                plot_bgcolor: 'transparent',
+                legend: { x: 0, y: 1 }
+            };
+
+            Plotly.newPlot('plot-container', traces, layout, {responsive: true, displayModeBar: false});
         }
 
         // Event Listeners
-        document.getElementById('btn-add').addEventListener('click', () => {
-            currentMode = 'add';
-            drawGraph();
+        btnAdd.addEventListener('click', () => {
+            const { u, v } = getInputs();
+            let res = {
+                x: u.x + v.x,
+                y: u.y + v.y,
+                z: u.z + v.z
+            };
+            drawVectors(res, 'add');
+            
+            resultBox.classList.remove('hidden');
+            resultBox.classList.replace('border-rose-400', 'border-indigo-400');
+            resultTitle.innerText = "Toplam Vektörü (u + v)";
+            resultFormula.innerHTML = `w = (${res.x})<span class="text-indigo-300">i</span> + (${res.y})<span class="text-indigo-300">j</span> + (${res.z})<span class="text-indigo-300">k</span>`;
         });
 
-        document.getElementById('btn-cross').addEventListener('click', () => {
-            currentMode = 'cross';
-            drawGraph();
+        btnCross.addEventListener('click', () => {
+            const { u, v } = getInputs();
+            // Cross Product Formülü: u × v = (uy*vz - uz*vy)i - (ux*vz - uz*vx)j + (ux*vy - uy*vx)k
+            let res = {
+                x: (u.y * v.z) - (u.z * v.y),
+                y: (u.z * v.x) - (u.x * v.z),
+                z: (u.x * v.y) - (u.y * v.x)
+            };
+            drawVectors(res, 'cross');
+            
+            resultBox.classList.remove('hidden');
+            resultBox.classList.replace('border-indigo-400', 'border-rose-400');
+            resultTitle.innerText = "Vektörel Çarpım (u × v) - Her iki vektöre de DİK(90°)";
+            resultFormula.innerHTML = `w = (${res.x})<span class="text-rose-300">i</span> + (${res.y})<span class="text-rose-300">j</span> + (${res.z})<span class="text-rose-300">k</span>`;
         });
 
-        document.getElementById('btn-reset').addEventListener('click', () => {
-            currentMode = 'none';
-            drawGraph();
+        btnReset.addEventListener('click', () => {
+            drawVectors();
+            resultBox.classList.add('hidden');
         });
 
-        // Redraw on any input change
-        Object.values(inputs).forEach(input => {
-            input.addEventListener('input', drawGraph);
+        // Inputlar değiştiğinde otomatik çizimi güncelle (sadece ana vektörler)
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('change', () => {
+                btnReset.click(); // Yeni değer girildiğinde sonucu sıfırla ve yeniden çiz
+            });
         });
 
-        // Initial Draw
-        window.onload = drawGraph;
-
+        // Sayfa yüklendiğinde ilk çizim
+        window.onload = () => {
+            drawVectors();
+        };
     </script>
 </body>
 </html>
