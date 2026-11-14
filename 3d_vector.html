@@ -9,27 +9,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        
-        /* Plotly Mode Bar (Sağ üstteki çirkin menü) için şıklaştırma ayarları */
-        .modebar {
-            background: transparent !important;
-            opacity: 0.3 !important;
-            transition: opacity 0.3s ease;
-        }
-        .modebar:hover {
-            opacity: 1 !important;
-        }
-        .modebar-btn {
-            background-color: rgba(255, 255, 255, 0.8) !important;
-            border-radius: 6px !important;
-            margin: 2px !important;
-            padding: 4px !important;
-            border: 1px solid #e2e8f0 !important;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-        }
-        .modebar-btn svg {
-            fill: #64748b !important; /* slate-500 renginde daha zarif ikonlar */
-        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 text-slate-800">
@@ -40,7 +19,7 @@
         <div class="lg:col-span-5 flex flex-col justify-center space-y-6">
             <div>
                 <h1 class="text-3xl font-semibold text-slate-800 mb-2">3D Vector Laboratory</h1>
-                <p class="text-slate-500 text-sm">Visualizing vector movement, addition, and cross product in 3D space.</p>
+                <p class="text-slate-500 text-sm">Visualizing vector movement, addition, and cross product in 3D space. <em>(Use mouse wheel to zoom, click and drag to rotate)</em></p>
             </div>
 
             <!-- Vector u Inputs -->
@@ -108,11 +87,18 @@
             </div>
         </div>
 
-        <!-- Right Panel: 3D Plotly Canvas -->
+        <!-- Right Panel: 3D Plotly Canvas with Custom Controls -->
         <div class="lg:col-span-7 flex justify-center items-center relative min-h-[500px]">
             <div class="w-full h-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-50/50 relative" id="plot-container">
                 <!-- Plotly render target -->
             </div>
+            
+            <!-- Custom Clean Reset Camera Button -->
+            <button id="custom-reset-camera" class="absolute top-4 right-4 bg-white/80 hover:bg-white text-slate-600 p-2 rounded-full shadow-sm border border-slate-200 transition-all duration-200 backdrop-blur-sm focus:outline-none group z-10" title="Reset Camera View">
+                <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+            </button>
         </div>
 
     </div>
@@ -122,9 +108,13 @@
         const btnAdd = document.getElementById('btn-add');
         const btnCross = document.getElementById('btn-cross');
         const btnReset = document.getElementById('btn-reset');
+        const customResetCam = document.getElementById('custom-reset-camera');
         const resultBox = document.getElementById('result-box');
         const resultTitle = document.getElementById('result-title');
         const resultFormula = document.getElementById('result-formula');
+
+        let currentResultVector = null;
+        let currentType = null;
 
         function getInputs() {
             return {
@@ -143,6 +133,8 @@
 
         // Plotly Draw Function
         function drawVectors(resultVector = null, type = null) {
+            currentResultVector = resultVector;
+            currentType = type;
             const { u, v } = getInputs();
             
             // Base Vectors (u and v)
@@ -180,7 +172,7 @@
                 });
             }
 
-            // 3D Scene Layout (Preserving orthogonal aspect ratio)
+            // 3D Scene Layout
             let layout = {
                 margin: { l: 0, r: 0, b: 0, t: 0 },
                 scene: {
@@ -195,21 +187,21 @@
                 legend: { x: 0, y: 1 }
             };
 
-            // Modebar configuration: removing unnecessary buttons to keep it clean
+            // TAMAMEN KAPATILAN MODE BAR (Çirkin menüyü yok eder)
             let config = {
                 responsive: true,
-                displayModeBar: true,
-                displaylogo: false,
-                modeBarButtonsToRemove: [
-                    'hoverClosest3d', 
-                    'toImage', 
-                    'resetCameraDefault3d', 
-                    'resetCameraLastSave3d'
-                ]
+                displayModeBar: false,
+                displaylogo: false
             };
 
             Plotly.newPlot('plot-container', traces, layout, config);
         }
+
+        // Custom Reset Camera Event
+        customResetCam.addEventListener('click', () => {
+            // Sadece kamerayı sıfırlamak için mevcut vektörlerle sahneyi yeniden çiz
+            drawVectors(currentResultVector, currentType);
+        });
 
         // Event Listeners
         btnAdd.addEventListener('click', () => {
