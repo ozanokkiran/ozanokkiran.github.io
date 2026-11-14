@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roots of Unity - Karmaşık Sayılar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        canvas { background-color: #f8fafc; border-radius: 0.5rem; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 text-slate-800">
+
+    <div class="max-w-5xl w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- Sol Panel: Kontroller ve Formül -->
+        <div class="flex flex-col justify-center space-y-8">
+            <div>
+                <h1 class="text-3xl font-semibold text-slate-800 mb-2">Roots of Unity</h1>
+                <p class="text-slate-500 text-sm">Argand Düzleminde <span class="font-semibold text-indigo-600">z<sup>n</sup> = 1</span> denkleminin kökleri ve De Moivre Teoremi.</p>
+            </div>
+
+            <!-- Kaydırıcı Kontrolü -->
+            <div class="space-y-4">
+                <label class="text-sm font-medium text-slate-600 flex justify-between">
+                    <span>Kök Sayısı (n)</span>
+                    <span id="n-label" class="font-bold text-teal-600 text-xl">3</span>
+                </label>
+                <input type="range" id="n-slider" min="2" max="12" value="3" class="w-full accent-teal-500">
+            </div>
+
+            <!-- Dinamik Formül Gösterimi -->
+            <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                <div class="text-sm font-medium text-indigo-400 mb-3">Köklerin Euler Formu (k = 0, 1, ..., n-1)</div>
+                <div class="text-2xl font-medium text-indigo-700 font-mono tracking-wide" id="formula-display">
+                    <!-- JS ile doldurulacak -->
+                </div>
+            </div>
+
+            <!-- Lejant (Açıklama) -->
+            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+                <div class="flex items-center space-x-3">
+                    <div class="w-4 h-4 bg-teal-400 rounded-full shadow-sm"></div>
+                    <span class="text-sm font-medium text-slate-600">Kök Vektörleri</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="w-4 h-4 bg-amber-400 rounded-full shadow-sm"></div>
+                    <span class="text-sm font-medium text-slate-600">Oluşan Çokgen</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Panel: Canvas (Argand Düzlemi) -->
+        <div class="flex justify-center items-center">
+            <div class="relative shadow-inner rounded-lg overflow-hidden border-2 border-slate-100 w-full max-w-[450px]">
+                <canvas id="argand-canvas" width="450" height="450" class="w-full h-auto"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('argand-canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = 160; // Birim çember yarıçapı (piksel)
+
+        const slider = document.getElementById('n-slider');
+        const label = document.getElementById('n-label');
+        const formulaDisplay = document.getElementById('formula-display');
+
+        function drawAxesAndCircle() {
+            // Eksenler (Re ve Im)
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(width, centerY);
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, height);
+            ctx.strokeStyle = '#cbd5e1'; // slate-300
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([]);
+            ctx.stroke();
+
+            // Eksen İsimleri
+            ctx.fillStyle = '#64748b'; // slate-500
+            ctx.font = '14px Inter';
+            ctx.fillText('Re', width - 25, centerY - 10);
+            ctx.fillText('Im', centerX + 10, 20);
+            ctx.fillText('1', centerX + radius - 5, centerY - 10);
+            ctx.fillText('i', centerX + 10, centerY - radius + 5);
+
+            // Birim Çember
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#94a3b8'; // slate-400
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]); // Kesik çizgi
+            ctx.stroke();
+            ctx.setLineDash([]); // Çizgi stilini sıfırla
+        }
+
+        function drawRoots(n) {
+            let roots = [];
+            
+            // Köklerin koordinatlarını hesapla
+            for (let k = 0; k < n; k++) {
+                let angle = (2 * Math.PI * k) / n;
+                roots.push({
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY - radius * Math.sin(angle) // Canvas'ta Y ekseni aşağı doğru artar, bu yüzden eksi
+                });
+            }
+
+            // Çokgeni Çiz (Kökleri Birleştir)
+            ctx.beginPath();
+            ctx.moveTo(roots[0].x, roots[0].y);
+            for (let k = 1; k < n; k++) {
+                ctx.lineTo(roots[k].x, roots[k].y);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = '#fbbf24'; // amber-400
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // Vektörleri ve Noktaları Çiz
+            roots.forEach((root, index) => {
+                // Merkezden köke vektör
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(root.x, root.y);
+                ctx.strokeStyle = '#2dd4bf'; // teal-400
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Kök Noktası
+                ctx.beginPath();
+                ctx.arc(root.x, root.y, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = '#0f766e'; // teal-700
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+
+        function updateFormula(n) {
+            // z = e^(i * 2πk/n)
+            formulaDisplay.innerHTML = `z<sub>k</sub> = e<sup><span class="text-indigo-400">i</span>(2&pi;k / ${n})</sup>`;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            drawAxesAndCircle();
+            let n = parseInt(slider.value);
+            drawRoots(n);
+            updateFormula(n);
+        }
+
+        // Event Listener
+        slider.addEventListener('input', (e) => {
+            label.innerText = e.target.value;
+            draw();
+        });
+
+        // Sayfa yüklendiğinde ilk çizim
+        draw();
+    </script>
+</body>
+</html>
