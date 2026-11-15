@@ -1,107 +1,553 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Taylor Series Approximation</title>
-<style>
-  body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #fdf6e3; color: #333; margin-top: 20px; }
-  canvas { background-color: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px; }
-  .controls { margin: 15px auto; padding: 15px; background: white; border-radius: 8px; width: 450px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .slider-container { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-  input[type=range] { width: 65%; cursor: pointer; }
-  .legend { font-size: 16px; font-weight: bold; margin-top: 10px; }
-  .sin-color { color: #555; } 
-  .taylor-color { color: #d33682; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taylor Series Approximation</title>
+    <!-- math.js kütüphanesi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <style>
+        :root {
+            /* Renk Paleti (Görseldeki krem arka plan) */
+            --bg-color: #fdf8e9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #555555;
+            --accent-blue: #1e88e5;
+            --original-curve: #666666; /* Koyu gri (sinüs) */
+            --taylor-curve: #e91e63; /* Pembe (Taylor) */
+            --grid-line: #ececec;
+            --axis-line: #666666;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        /* SOL PANEL */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        /* Manuel Sayı Girişi */
+        input[type="number"] {
+            padding: 4px 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--taylor-curve);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            width: 70px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--taylor-curve);
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 6px;
+            background: #dcdde1;
+            border-radius: 3px;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        /* Pedagojik Açıklama Paneli */
+        .math-explanation {
+            background-color: #fdfce8;
+            border-left: 4px solid #f1c40f;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #4a5568;
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .math-explanation h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            color: #b7791f;
+        }
+
+        .formula-block {
+            background-color: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed #b7791f;
+            text-align: center;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        /* SAĞ PANEL */
+        .right-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Matematiksel Denklemlerin Gösterimi */
+        .equations-container {
+            text-align: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .original-eq {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+
+        .taylor-eq {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--taylor-curve);
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .taylor-eq .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+        
+        .taylor-eq .fraction span:first-child {
+            border-bottom: 1.5px solid var(--taylor-curve);
+            padding: 0 2px;
+        }
+
+        .canvas-container {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            position: relative;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            pointer-events: none;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 550px;
+            cursor: crosshair;
+        }
+
+    </style>
 </head>
 <body>
-  <h2>Taylor Series Approximation</h2>
-  <p>Approximating <strong>f(x) = sin(x)</strong> using Taylor polynomials.</p>
-  
-  <div class="controls">
-    <div class="slider-container">
-      <label>Number of Terms (N): <span id="n_val" class="taylor-color">1</span></label>
-      <input type="range" id="terms" min="1" max="10" step="1" value="1" oninput="draw()">
+
+    <div class="header">
+        <h1>Taylor Series Approximation</h1>
+        <div class="subtitle">Approximating <b>f(x) = sin(x)</b> using Maclaurin polynomials (Taylor series centered at a=0).</div>
     </div>
-  </div>
-  
-  <div class="legend">
-    <span class="sin-color">Original Function: y = sin(x)</span> <br>
-    <span class="taylor-color">Approximation: Taylor Polynomial (Degree <span id="degree">1</span>)</span>
-  </div>
-  
-  <canvas id="graph" width="600" height="400"></canvas>
 
-  <script>
-    const canvas = document.getElementById('graph');
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height;
-    const originX = w / 2, originY = h / 2;
-    const scale = 40; // Zoom level
+    <div class="main-container">
+        
+        <!-- SOL PANEL -->
+        <div class="left-panel">
+            <div class="control-card">
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>Number of Terms (N):</span>
+                        <input type="number" id="nInput" min="1" max="15" step="1" value="1">
+                    </div>
+                    <input type="range" id="nSlider" min="1" max="15" step="1" value="1">
+                </div>
+            </div>
 
-    // Factorial function
-    function fact(num) {
-      if (num <= 1) return 1;
-      return num * fact(num - 1);
-    }
+            <div class="math-explanation">
+                <h3>Why does a polynomial look like a wave?</h3>
+                <p>A Taylor series allows us to approximate any smooth function (like sine) using simple polynomials ($x, x^2, x^3...$). By matching the function's value and all its derivatives at a single point (here, $x=0$), the polynomial "learns" the curve's behavior.</p>
+                <p>As you increase the Number of Terms (N), the approximation perfectly hugs the original curve further and further away from the center.</p>
+                <div class="formula-block">
+                    sin(x) = &sum; (-1)<sup>n</sup> x<sup>2n+1</sup> / (2n+1)!
+                </div>
+            </div>
+        </div>
 
-    // Taylor series calculation for sin(x)
-    function taylorSin(x, terms) {
-      let sum = 0;
-      for (let i = 0; i < terms; i++) {
-        let sign = (i % 2 === 0) ? 1 : -1;
-        let power = 2 * i + 1;
-        sum += sign * Math.pow(x, power) / fact(power);
-      }
-      return sum;
-    }
+        <!-- SAĞ PANEL -->
+        <div class="right-panel">
+            
+            <div class="equations-container">
+                <div class="original-eq">Original Function: y = sin(x)</div>
+                <div class="taylor-eq" id="taylorEq">
+                    <!-- Javascript ile dinamik matematiksel ifade basılacak -->
+                    P(x) = x
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
+                <canvas id="taylorCanvas" width="750" height="550"></canvas>
+            </div>
 
-    function draw() {
-      const terms = parseInt(document.getElementById('terms').value);
-      document.getElementById('n_val').innerText = terms;
-      document.getElementById('degree').innerText = (2 * terms - 1);
+        </div>
 
-      ctx.clearRect(0, 0, w, h);
-      
-      // Draw grid
-      ctx.beginPath(); ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
-      for(let i=0; i<=w; i+=scale) { ctx.moveTo(i,0); ctx.lineTo(i,h); }
-      for(let i=0; i<=h; i+=scale) { ctx.moveTo(0,i); ctx.lineTo(w,i); }
-      ctx.stroke();
+    </div>
 
-      // Draw axes
-      ctx.beginPath(); ctx.strokeStyle = '#777'; ctx.lineWidth = 2;
-      ctx.moveTo(0, originY); ctx.lineTo(w, originY);
-      ctx.moveTo(originX, 0); ctx.lineTo(originX, h);
-      ctx.stroke();
+    <script>
+        const canvas = document.getElementById('taylorCanvas');
+        const ctx = canvas.getContext('2d');
+        const nInput = document.getElementById('nInput');
+        const nSlider = document.getElementById('nSlider');
+        const taylorEqDisplay = document.getElementById('taylorEq');
 
-      // Draw original sin(x)
-      ctx.beginPath(); ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
-      for (let px = 0; px <= w; px++) {
-        let x = (px - originX) / scale;
-        let y = Math.sin(x);
-        let py = originY - (y * scale);
-        px === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.stroke();
+        // Dinamik Viewport
+        let xMin = -12;
+        let xMax = 12;
+        let yMin = -6;
+        let yMax = 6;
 
-      // Draw Taylor approximation
-      ctx.beginPath(); ctx.strokeStyle = '#d33682'; ctx.lineWidth = 3;
-      for (let px = 0; px <= w; px++) {
-        let x = (px - originX) / scale;
-        let y = taylorSin(x, terms);
-        let py = originY - (y * scale);
-        // Prevent drawing lines outside the canvas to avoid ugly vertical jumps
-        if (py > -1000 && py < h + 1000) {
-            px === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-        } else {
-            ctx.moveTo(px, py); // Lift pen
+        // Faktöriyel hesaplama
+        function factorial(n) {
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = 2; i <= n; i++) result *= i;
+            return result;
         }
-      }
-      ctx.stroke();
-    }
-    
-    draw();
-  </script>
+
+        // Fare ile Zoom
+        canvas.addEventListener('wheel', function(event) {
+            event.preventDefault(); 
+            const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
+            
+            xMin *= zoomFactor;
+            xMax *= zoomFactor;
+            yMin *= zoomFactor;
+            yMax *= zoomFactor;
+            
+            if (xMax - xMin < 2) { xMin = -1; xMax = 1; }
+            if (xMax - xMin > 100) { xMin = -50; xMax = 50; }
+            if (yMax - yMin < 2) { yMin = -1; yMax = 1; }
+            if (yMax - yMin > 100) { yMin = -50; yMax = 50; }
+
+            draw();
+        });
+
+        // Fare ile Pan
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        canvas.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
+            const xRange = xMax - xMin;
+            const yRange = yMax - yMin;
+            const xDelta = (dx / canvas.width) * xRange;
+            const yDelta = (dy / canvas.height) * yRange;
+
+            xMin -= xDelta;
+            xMax -= xDelta;
+            yMin += yDelta; 
+            yMax += yDelta;
+
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+
+        function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+        function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
+        function unmapX(px) { return (px / canvas.width) * (xMax - xMin) + xMin; }
+
+        function getGridStep(range) {
+            if (range <= 4) return 0.5;
+            if (range <= 10) return 1;
+            if (range <= 25) return 2;
+            if (range <= 50) return 5;
+            if (range <= 100) return 10;
+            return 20;
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.lineWidth = 1;
+            ctx.font = '11px sans-serif';
+            ctx.fillStyle = '#999999';
+
+            let xStep = getGridStep(xMax - xMin);
+            let yStep = getGridStep(yMax - yMin);
+
+            // Dikey Izgaralar
+            let startX = Math.ceil(xMin / xStep) * xStep;
+            for (let i = startX; i <= xMax; i += xStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.moveTo(mapX(i), 0);
+                ctx.lineTo(mapX(i), canvas.height);
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
+            }
+
+            // Yatay Izgaralar
+            let startY = Math.ceil(yMin / yStep) * yStep;
+            for (let i = startY; i <= yMax; i += yStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.moveTo(0, mapY(i));
+                ctx.lineTo(canvas.width, mapY(i));
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
+            }
+
+            // ANA EKSENLER
+            ctx.beginPath();
+            ctx.strokeStyle = 'var(--axis-line)';
+            ctx.lineWidth = 1.5; 
+            
+            ctx.moveTo(0, mapY(0));
+            ctx.lineTo(canvas.width, mapY(0));
+            ctx.moveTo(mapX(0), 0);
+            ctx.lineTo(mapX(0), canvas.height);
+            
+            ctx.stroke();
+            ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
+        }
+
+        // Dinamik Taylor Serisi Formülü Üretme
+        function generateTaylorFormulaHTML(n) {
+            let html = 'P(x) = x'; // n=1 durumu
+            
+            for (let i = 1; i < n; i++) {
+                let sign = (i % 2 !== 0) ? '-' : '+';
+                let power = 2 * i + 1;
+                
+                // HTML fraction (kesir) yapısı oluşturuyoruz
+                html += ` ${sign} 
+                <div class="fraction">
+                    <span>x<sup>${power}</sup></span>
+                    <span>${power}!</span>
+                </div>`;
+            }
+            return html;
+        }
+
+        // Belirli bir n ve x için Taylor (Maclaurin) Sinüs değerini hesaplar
+        function taylorSin(x, n) {
+            let sum = 0;
+            for (let i = 0; i < n; i++) {
+                let term = Math.pow(-1, i) * Math.pow(x, 2 * i + 1) / factorial(2 * i + 1);
+                sum += term;
+            }
+            return sum;
+        }
+
+        function draw() {
+            drawGrid();
+
+            let n = parseInt(nInput.value) || 1;
+            
+            // Başlıktaki Formülü Güncelle
+            taylorEqDisplay.innerHTML = generateTaylorFormulaHTML(n);
+
+            // 1. Orijinal Fonksiyonu Çiz (y = sin(x))
+            ctx.beginPath();
+            ctx.strokeStyle = '#666666'; // Koyu Gri
+            ctx.lineWidth = 2.5;
+            let firstOrig = true;
+            for (let px = 0; px <= canvas.width; px += 2) {
+                let x = unmapX(px);
+                let y = Math.sin(x);
+                let py = mapY(y);
+
+                if (firstOrig) {
+                    ctx.moveTo(px, py);
+                    firstOrig = false;
+                } else {
+                    ctx.lineTo(px, py);
+                }
+            }
+            ctx.stroke();
+
+            // 2. Taylor Polinomunu Çiz
+            ctx.beginPath();
+            ctx.strokeStyle = '#e91e63'; // Pembe (Taylor)
+            ctx.lineWidth = 3;
+            let firstTaylor = true;
+            for (let px = 0; px <= canvas.width; px += 2) {
+                let x = unmapX(px);
+                let y = taylorSin(x, n);
+                
+                // Çok yüksek değerlerde çizimi sınırla ki canvas motoru çökmesin
+                if (isNaN(y) || Math.abs(y) > 1000) continue; 
+
+                let py = mapY(y);
+
+                if (firstTaylor) {
+                    ctx.moveTo(px, py);
+                    firstTaylor = false;
+                } else {
+                    ctx.lineTo(px, py);
+                }
+            }
+            ctx.stroke();
+        }
+
+        // Input ve Slider Senkronizasyonu
+        nSlider.addEventListener('input', function() {
+            nInput.value = parseInt(this.value);
+            draw();
+        });
+
+        nInput.addEventListener('input', function() {
+            let val = parseInt(this.value);
+            
+            if(isNaN(val)) {
+                draw(); 
+                return; 
+            }
+            
+            if (val > 15) { val = 15; this.value = 15; }
+            if (val < 1) { val = 1; this.value = 1; }
+            
+            nSlider.value = val;
+            draw();
+        });
+        
+        nInput.addEventListener('blur', function() {
+            if(this.value === "" || isNaN(parseInt(this.value))) {
+                this.value = "1";
+                nSlider.value = 1;
+                draw();
+            }
+        });
+
+        // İlk çizim
+        window.onload = draw;
+    </script>
 </body>
 </html>
