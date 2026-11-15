@@ -3,230 +3,548 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Normal Distribution (Bell Curve)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Normal Distribution Visualizer</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #fcf8eb; } /* Açık krem/sarımsı pastel arka plan */
-        
-        /* Özel Slider Stili */
-        input[type=range] {
-            -webkit-appearance: none;
-            width: 100%;
-            background: transparent;
+        :root {
+            /* Senin ekran görüntündeki renk paleti */
+            --bg-color: #fcf9f2; 
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-light: #6b7280;
+            --curve-color: #38bdf8;
+            --curve-fill: rgba(56, 189, 248, 0.15);
+            --bar-color: rgba(99, 102, 241, 0.4);
+            --bar-border: rgba(99, 102, 241, 0.8);
+            --accent-blue: #2563eb;
+            --border-color: #e5e7eb;
+            
+            /* 68-95-99.7 renkleri */
+            --sd1-color: rgba(56, 189, 248, 0.4);
+            --sd2-color: rgba(56, 189, 248, 0.2);
+            --sd3-color: rgba(56, 189, 248, 0.05);
         }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 20px;
-            width: 20px;
-            border-radius: 50%;
-            background: #1d4ed8; /* blue-700 */
-            cursor: pointer;
-            margin-top: -8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
         }
-        input[type=range]::-webkit-slider-runnable-track {
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .main-container {
             width: 100%;
+            max-width: 1100px;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        /* Sol Panel - Kontroller ve Açıklamalar */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slider-group {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .val-badge {
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
             height: 6px;
-            cursor: pointer;
-            background: #e2e8f0; /* slate-200 */
-            border-radius: 4px;
-            border: 1px solid #cbd5e1;
-        }
-        input[type=range]:focus {
+            background: #cbd5e1;
+            border-radius: 3px;
             outline: none;
+            margin-top: 5px;
         }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        .action-btn {
+            width: 100%;
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .action-btn:hover {
+            background-color: #1d4ed8;
+        }
+
+        .action-btn.reset {
+            background-color: #f3f4f6;
+            color: var(--text-main);
+            border: 1px solid #d1d5db;
+            margin-top: 10px;
+        }
+        
+        .action-btn.reset:hover {
+            background-color: #e5e7eb;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-wrapper label {
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Pedagojik Bilgi Panelleri */
+        .info-card {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--accent-blue);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .info-card h3 {
+            margin: 0 0 5px 0;
+            font-size: 1rem;
+            color: var(--accent-blue);
+        }
+
+        /* Sağ Panel - Grafik */
+        .right-panel {
+            flex: 1.5;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .equation-display {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+        }
+
+        .canvas-container {
+            width: 100%;
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: 450px;
+            display: block;
+        }
+
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-8 text-slate-800">
+<body>
 
-    <div class="max-w-3xl w-full flex flex-col items-center space-y-8">
+    <div class="header">
+        <h1>Normal Distribution (Bell Curve)</h1>
+    </div>
+
+    <div class="main-container">
         
-        <!-- Başlık -->
-        <h1 class="text-4xl font-bold text-slate-800 text-center drop-shadow-sm">Normal Distribution (Bell Curve)</h1>
-
-        <!-- Kontrol Paneli -->
-        <div class="bg-white rounded-2xl shadow-md border border-slate-100 p-8 w-full max-w-xl">
-            <div class="space-y-8">
-                <!-- Ortalama (Mean) Slider -->
-                <div class="flex items-center space-x-6">
-                    <label class="w-32 text-lg font-medium text-slate-700 flex-shrink-0">
-                        μ (Mean): <span id="mean-val" class="text-slate-900">0.0</span>
-                    </label>
-                    <input type="range" id="mean" min="-4" max="4" step="0.1" value="0.0" class="flex-grow">
+        <!-- SOL PANEL -->
+        <div class="left-panel">
+            <div class="control-card">
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>μ (Mean - Average)</span>
+                        <span class="val-badge" id="muVal">0.0</span>
+                    </div>
+                    <input type="range" id="muSlider" min="-5" max="5" step="0.1" value="0">
                 </div>
 
-                <!-- Standart Sapma (Std Dev) Slider -->
-                <div class="flex items-center space-x-6">
-                    <label class="w-32 text-lg font-medium text-slate-700 flex-shrink-0">
-                        σ (Std Dev): <span id="std-val" class="text-slate-900">1.0</span>
-                    </label>
-                    <input type="range" id="std" min="0.5" max="3" step="0.1" value="1.0" class="flex-grow">
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>σ (Standard Deviation)</span>
+                        <span class="val-badge" id="sigmaVal">1.0</span>
+                    </div>
+                    <input type="range" id="sigmaSlider" min="0.5" max="3" step="0.1" value="1">
                 </div>
+                
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="empiricalCheck" onchange="draw()">
+                    <label for="empiricalCheck">Show 68-95-99.7% Rule (Areas)</label>
+                </div>
+
+                <button class="action-btn" id="simulateBtn" onclick="toggleSimulation()">Simulate Real Data Drop</button>
+                <button class="action-btn reset" onclick="clearData()">Clear Data</button>
+            </div>
+
+            <!-- Pedagojik Açıklamalar -->
+            <div class="info-card">
+                <h3>Where does the curve come from?</h3>
+                <p>The curve isn't just a random shape. It represents a <b>Distribution of Data</b>. When you measure things in nature (like heights of people or test scores), most values clump around the average (the peak), and extreme values are rare (the tails). The curve is the "ideal blanket" covering that data pile.</p>
+            </div>
+            
+            <div class="info-card" style="background-color: #f5f3ff; border-color: #8b5cf6;">
+                <h3 style="color: #6d28d9;">Mean (μ) & Standard Deviation (σ)</h3>
+                <p><b>μ (Mean):</b> The center of gravity. It shifts the entire curve left or right.<br>
+                <b>σ (Std Dev):</b> The "spread". A small σ means data is tightly packed (tall/skinny curve). A large σ means data is widely spread out (short/wide curve).</p>
             </div>
         </div>
 
-        <!-- Formül Gösterimi -->
-        <div class="text-2xl font-bold text-blue-600 drop-shadow-sm tracking-wide">
-            N(μ=<span id="eq-mean">0.0</span>, σ²=<span id="eq-var">1.00</span>)
-        </div>
-
-        <!-- Grafik Alanı (Büyütüldü) -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-300 overflow-hidden w-full relative">
-            <canvas id="bell-curve" width="800" height="450" class="w-full h-auto"></canvas>
+        <!-- SAĞ PANEL -->
+        <div class="right-panel">
+            <div class="equation-display" id="eqDisplay">N(μ = 0.0, σ² = 1.00)</div>
+            <div class="canvas-container">
+                <canvas id="bellCanvas" width="700" height="450"></canvas>
+            </div>
         </div>
 
     </div>
 
     <script>
-        const canvas = document.getElementById('bell-curve');
+        const canvas = document.getElementById('bellCanvas');
         const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
-        
-        // Eksen sınırları
-        const xMin = -6;
-        const xMax = 6;
-        
-        // Eksenin grafiğin neresinde çizileceği (alt boşluk bırakmak için)
-        const yMarginBottom = 40; 
-        const yAxisY = height - yMarginBottom;
+        const muSlider = document.getElementById('muSlider');
+        const sigmaSlider = document.getElementById('sigmaSlider');
+        const muValDisplay = document.getElementById('muVal');
+        const sigmaValDisplay = document.getElementById('sigmaVal');
+        const eqDisplay = document.getElementById('eqDisplay');
+        const empiricalCheck = document.getElementById('empiricalCheck');
+        const simulateBtn = document.getElementById('simulateBtn');
 
-        // Formül ve slider elementleri
-        const sliderMean = document.getElementById('mean');
-        const sliderStd = document.getElementById('std');
-        const meanValLabel = document.getElementById('mean-val');
-        const stdValLabel = document.getElementById('std-val');
-        const eqMeanLabel = document.getElementById('eq-mean');
-        const eqVarLabel = document.getElementById('eq-var');
+        // Sabit Eksen Sınırları
+        const xMin = -8;
+        const xMax = 8;
+        const yMin = 0;
+        const yMax = 0.9; // Y max sabit tutuldu ki eğri daraldığında yukarı uzasın
 
-        // Normal dağılım yoğunluk fonksiyonu (PDF)
-        function normalPDF(x, mean, std) {
-            const variance = std * std;
-            return (1 / Math.sqrt(2 * Math.PI * variance)) * Math.exp(-Math.pow(x - mean, 2) / (2 * variance));
+        // Histogram (Veri) Değişkenleri
+        let binCount = 60;
+        let bins = new Array(binCount).fill(0);
+        let totalDataPoints = 0;
+        let isSimulating = false;
+        let animationId;
+
+        // Normal Dağılım Olasılık Yoğunluk Fonksiyonu (PDF)
+        function normalPDF(x, mu, sigma) {
+            const coefficient = 1 / (sigma * Math.sqrt(2 * Math.PI));
+            const exponent = -Math.pow(x - mu, 2) / (2 * Math.pow(sigma, 2));
+            return coefficient * Math.exp(exponent);
         }
 
-        // x koordinatını piksele çevir
-        function mapX(x) {
-            return ((x - xMin) / (xMax - xMin)) * width;
+        // Box-Muller Transform (Rastgele Normal Dağılımlı Sayı Üretici)
+        function generateGaussian(mu, sigma) {
+            let u = 0, v = 0;
+            while(u === 0) u = Math.random();
+            while(v === 0) v = Math.random();
+            let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+            return (num * sigma) + mu;
         }
 
-        // y koordinatını piksele çevir (0 ile maksimum PDF değeri arası)
-        // Yüksekliği sabit bir ölçekte tutmak için max teorik Y değerini sabitliyoruz (std=0.5 iken max yoğunluk ~0.8)
-        const maxY = 0.9; 
-        function mapY(y) {
-            // Eksenin (y=0) çizgisi yAxisY koordinatında.
-            return yAxisY - (y / maxY) * (yAxisY - 20); // Üstten 20px boşluk bırak
-        }
+        // Koordinat Dönüşümleri
+        function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+        function mapY(y) { return canvas.height - 30 - ((y - yMin) / (yMax - yMin)) * (canvas.height - 40); }
 
-        function drawCurve() {
-            const mean = parseFloat(sliderMean.value);
-            const std = parseFloat(sliderStd.value);
-
-            // Arayüz metinlerini güncelle
-            meanValLabel.innerText = mean.toFixed(1);
-            stdValLabel.innerText = std.toFixed(1);
-            eqMeanLabel.innerText = mean.toFixed(1);
-            eqVarLabel.innerText = (std * std).toFixed(2);
-
-            // Canvas'ı temizle
-            ctx.clearRect(0, 0, width, height);
-
-            // 1. ADIM: Eksen Çizgisi ve Rakamları Çiz
+        function drawAxes() {
             ctx.beginPath();
-            ctx.moveTo(0, yAxisY);
-            ctx.lineTo(width, yAxisY);
-            ctx.strokeStyle = '#94a3b8'; // slate-400 (Gri eksen)
+            ctx.strokeStyle = '#9ca3af';
             ctx.lineWidth = 2;
+            const y0 = mapY(0);
+            ctx.moveTo(0, y0);
+            ctx.lineTo(canvas.width, y0);
             ctx.stroke();
 
-            // Eksen üzerindeki sayıları (tick marks) çiz
-            ctx.fillStyle = '#64748b'; // slate-500
-            ctx.font = '14px Inter, sans-serif';
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '12px sans-serif';
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-
-            // -5'ten 5'e kadar her tam sayıda eksen işareti koy
-            for (let i = -5; i <= 5; i++) {
-                const px = mapX(i);
-                
-                // Küçük dikey çentik
+            for (let i = Math.ceil(xMin); i <= Math.floor(xMax); i++) {
+                let px = mapX(i);
                 ctx.beginPath();
-                ctx.moveTo(px, yAxisY);
-                ctx.lineTo(px, yAxisY + 5);
-                ctx.strokeStyle = '#94a3b8';
-                ctx.lineWidth = 2;
+                ctx.moveTo(px, y0);
+                ctx.lineTo(px, y0 + 5);
                 ctx.stroke();
+                ctx.fillText(i, px, y0 + 20);
+            }
+        }
 
-                // Sayı yazısı
-                ctx.fillText(i.toString(), px, yAxisY + 8);
+        function fillEmpiricalAreas(mu, sigma) {
+            if (!empiricalCheck.checked) return;
+
+            // X değerini fonksiyona göre mapleyen, altını dolduran yardımcı fonksiyon
+            function fillArea(xStart, xEnd, color) {
+                ctx.beginPath();
+                ctx.moveTo(mapX(xStart), mapY(0));
+                for (let x = xStart; x <= xEnd; x += 0.05) {
+                    ctx.lineTo(mapX(x), mapY(normalPDF(x, mu, sigma)));
+                }
+                ctx.lineTo(mapX(xEnd), mapY(normalPDF(xEnd, mu, sigma)));
+                ctx.lineTo(mapX(xEnd), mapY(0));
+                ctx.fillStyle = color;
+                ctx.fill();
             }
 
-            // 2. ADIM: Çan Eğrisini Çiz
-            ctx.beginPath();
+            // %99.7 (3 Sigma)
+            fillArea(mu - 3*sigma, mu + 3*sigma, 'rgba(56, 189, 248, 0.1)');
+            // %95 (2 Sigma)
+            fillArea(mu - 2*sigma, mu + 2*sigma, 'rgba(56, 189, 248, 0.2)');
+            // %68 (1 Sigma)
+            fillArea(mu - sigma, mu + sigma, 'rgba(56, 189, 248, 0.4)');
+
+            // Sigma Sınır Çizgileri ve Etiketler
+            ctx.fillStyle = '#1e3a8a';
+            ctx.font = '11px bold sans-serif';
+            ctx.setLineDash([4, 4]);
             
-            // Eğrinin altını boyamak için başlangıç noktasını eksene koy
-            ctx.moveTo(0, yAxisY);
+            for(let i=1; i<=3; i++) {
+                [mu - i*sigma, mu + i*sigma].forEach(xVal => {
+                    let px = mapX(xVal);
+                    let py = mapY(normalPDF(xVal, mu, sigma));
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(30, 58, 138, 0.5)';
+                    ctx.moveTo(px, mapY(0));
+                    ctx.lineTo(px, py);
+                    ctx.stroke();
+                });
+            }
+            ctx.setLineDash([]);
+        }
 
-            // X ekseninde küçük adımlarla ilerle ve eğriyi çiz
-            const step = (xMax - xMin) / width; // Her piksel için bir adım
-            for (let x = xMin; x <= xMax; x += step) {
-                const y = normalPDF(x, mean, std);
-                ctx.lineTo(mapX(x), mapY(y));
+        function drawCurve(mu, sigma) {
+            // Empirik Alanlar (Eğer seçiliyse eğrinin altında kalması için önce çizilir)
+            fillEmpiricalAreas(mu, sigma);
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3;
+            
+            // Eğer empirical kapalıysa, standart açık mavi dolgu yap
+            if (!empiricalCheck.checked) {
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
+                ctx.moveTo(mapX(xMin), mapY(0));
             }
 
-            // Eğriyi kapatıp doldur
-            ctx.lineTo(width, yAxisY);
-            ctx.closePath();
+            let first = true;
+            for (let px = 0; px <= canvas.width; px += 2) {
+                let x = ((px / canvas.width) * (xMax - xMin)) + xMin;
+                let y = normalPDF(x, mu, sigma);
+                let py = mapY(y);
 
-            // Dolgu (Pastel turkuaz/yeşil saydam)
-            ctx.fillStyle = 'rgba(74, 222, 128, 0.15)'; // Açık yeşil transparan
-            ctx.fill();
+                if (first) {
+                    ctx.moveTo(px, py);
+                    first = false;
+                } else {
+                    ctx.lineTo(px, py);
+                }
+            }
 
-            // Sınır Çizgisi (Pastel turkuaz/deniz mavisi)
-            ctx.strokeStyle = '#38bdf8'; // sky-400
-            ctx.lineWidth = 4;
+            if (!empiricalCheck.checked) {
+                ctx.lineTo(mapX(xMax), mapY(0));
+                ctx.fill();
+            }
             ctx.stroke();
 
-            // 3. ADIM: Ortalama (Mean) Çizgisi
-            const meanPx = mapX(mean);
-            const maxPdfVal = normalPDF(mean, mean, std);
-            
+            // Merkez çizgisi (μ)
             ctx.beginPath();
-            ctx.setLineDash([5, 5]); // Kesik çizgi
-            ctx.moveTo(meanPx, yAxisY);
-            ctx.lineTo(meanPx, mapY(maxPdfVal));
-            ctx.strokeStyle = '#0284c7'; // sky-600
+            ctx.strokeStyle = '#38bdf8';
+            ctx.setLineDash([5, 5]);
             ctx.lineWidth = 2;
+            let centerPx = mapX(mu);
+            let centerPy = mapY(normalPDF(mu, mu, sigma));
+            ctx.moveTo(centerPx, mapY(0));
+            ctx.lineTo(centerPx, centerPy);
             ctx.stroke();
-            ctx.setLineDash([]); // Çizgi stilini sıfırla
+            ctx.setLineDash([]);
 
-            // Ortalama değerini küçük bir etiketle belirt
+            // μ sembolü
             ctx.fillStyle = '#0284c7';
-            ctx.font = 'bold 14px Inter';
-            ctx.fillText('μ', meanPx, mapY(maxPdfVal) - 15);
+            ctx.font = '14px sans-serif';
+            ctx.fillText("μ", centerPx, centerPy - 10);
         }
 
-        // Slider değişimlerini dinle
-        sliderMean.addEventListener('input', drawCurve);
-        sliderStd.addEventListener('input', drawCurve);
+        function drawHistogram() {
+            if (totalDataPoints === 0) return;
 
-        // İlk çizimi yap
-        drawCurve();
-        
-        // Input stillerini ayarla (Slider barını mavi ile doldurma efekti için basit bir JS - opsiyonel)
-        function updateSliderBackground(slider) {
-            const val = (slider.value - slider.min) / (slider.max - slider.min) * 100;
-            slider.style.background = `linear-gradient(to right, #3b82f6 ${val}%, #e2e8f0 ${val}%)`;
+            let binWidth = (xMax - xMin) / binCount;
+            let maxExpectedPDF = 0.8; // Y ekseni ölçeğimiz
+
+            // Histogramı Çiz (Alan = 1 olacak şekilde normalize et)
+            for (let i = 0; i < binCount; i++) {
+                if (bins[i] === 0) continue;
+
+                let xStart = xMin + (i * binWidth);
+                
+                // Frekansı Olasılık Yoğunluğuna dönüştür
+                // Density = (Kutudaki Eleman Sayısı) / (Toplam Eleman * Kutu Genişliği)
+                let density = bins[i] / (totalDataPoints * binWidth);
+                
+                let px = mapX(xStart);
+                let pw = (binWidth / (xMax - xMin)) * canvas.width;
+                let py = mapY(density);
+                let ph = mapY(0) - py;
+
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.4)';
+                ctx.strokeStyle = 'rgba(99, 102, 241, 0.8)';
+                ctx.lineWidth = 1;
+
+                ctx.fillRect(px, py, pw, ph);
+                ctx.strokeRect(px, py, pw, ph);
+            }
         }
-        
-        [sliderMean, sliderStd].forEach(slider => {
-            slider.addEventListener('input', function() {
-                updateSliderBackground(this);
-            });
-            // İlk yüklemede arkaplanı ayarla
-            updateSliderBackground(slider);
-        });
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            let mu = parseFloat(muSlider.value);
+            let sigma = parseFloat(sigmaSlider.value);
+
+            drawAxes();
+            drawHistogram(); // Önce veriler (sütunlar)
+            drawCurve(mu, sigma); // Üstüne idealize kılıf (çan eğrisi)
+        }
+
+        // Veri Simülasyonu (Animasyonlu Drop)
+        function simulateDataStep() {
+            if (!isSimulating) return;
+
+            let mu = parseFloat(muSlider.value);
+            let sigma = parseFloat(sigmaSlider.value);
+            let binWidth = (xMax - xMin) / binCount;
+
+            // Her karede 50 nokta düşür
+            for (let i = 0; i < 50; i++) {
+                let val = generateGaussian(mu, sigma);
+                if (val >= xMin && val <= xMax) {
+                    let binIndex = Math.floor((val - xMin) / binWidth);
+                    if (binIndex >= 0 && binIndex < binCount) {
+                        bins[binIndex]++;
+                        totalDataPoints++;
+                    }
+                }
+            }
+
+            draw();
+            animationId = requestAnimationFrame(simulateDataStep);
+        }
+
+        function toggleSimulation() {
+            if (isSimulating) {
+                isSimulating = false;
+                simulateBtn.innerText = "Simulate Real Data Drop";
+                simulateBtn.style.backgroundColor = "var(--accent-blue)";
+                cancelAnimationFrame(animationId);
+            } else {
+                isSimulating = true;
+                simulateBtn.innerText = "Pause Simulation";
+                simulateBtn.style.backgroundColor = "#eab308"; // Sarı/Turuncu
+                simulateDataStep();
+            }
+        }
+
+        function clearData() {
+            isSimulating = false;
+            simulateBtn.innerText = "Simulate Real Data Drop";
+            simulateBtn.style.backgroundColor = "var(--accent-blue)";
+            cancelAnimationFrame(animationId);
+            
+            bins = new Array(binCount).fill(0);
+            totalDataPoints = 0;
+            draw();
+        }
+
+        // Slider Dinleyicileri
+        function updateUI() {
+            let mu = parseFloat(muSlider.value);
+            let sigma = parseFloat(sigmaSlider.value);
+            muValDisplay.innerText = mu.toFixed(1);
+            sigmaValDisplay.innerText = sigma.toFixed(1);
+            
+            // Başlıktaki formülü güncelle N(mu, variance)
+            let variance = (sigma * sigma).toFixed(2);
+            eqDisplay.innerText = `N(μ = ${mu.toFixed(1)}, σ² = ${variance})`;
+            
+            // Parametre değiştiğinde histogram sıfırlansın ki yeni dağılım görülsün
+            if(totalDataPoints > 0 && !isSimulating) {
+                clearData();
+            }
+            
+            draw();
+        }
+
+        muSlider.addEventListener('input', updateUI);
+        sigmaSlider.addEventListener('input', updateUI);
+
+        // İlk çizim
+        updateUI();
+
     </script>
 </body>
 </html>
