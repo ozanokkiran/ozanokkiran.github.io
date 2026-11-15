@@ -1,67 +1,503 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Sine Wave Transformations</title>
-<style>
-  body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #fdf6e3; color: #333; margin-top: 20px; }
-  canvas { background-color: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px; }
-  .controls { margin: 15px auto; padding: 15px; background: white; border-radius: 8px; width: 450px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .slider-container { margin: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-  input[type=range] { width: 65%; }
-  .equation { font-size: 20px; font-weight: bold; color: #268bd2; margin-top: 10px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trigonometric Transformations</title>
+    <style>
+        :root {
+            /* Renk Paleti */
+            --bg-color: #fdf8e9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #555555;
+            --accent-blue: #1e88e5;
+            --curve-color: #d81b60; /* Koyu Pembe/Kırmızı Tonu */
+            --grid-line: #ececec;
+            --axis-line: #666666;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        /* SOL PANEL - Kontroller */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slider-group {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .slider-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Manuel Sayı Girişi */
+        input[type="number"] {
+            padding: 4px 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            width: 70px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 6px;
+            background: #dcdde1;
+            border-radius: 3px;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        /* SAĞ PANEL - Grafik */
+        .right-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .equation-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            margin-bottom: 10px;
+        }
+
+        .canvas-container {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            position: relative;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            pointer-events: none;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 500px;
+            cursor: crosshair;
+        }
+
+    </style>
 </head>
 <body>
-  <h2>Trigonometric Transformations</h2>
-  <p>Explore Amplitude, Period, Phase Shift, and Vertical Shift.</p>
-  <div class="controls">
-    <div class="slider-container"><label>A (Amplitude): <span id="a_val">1.0</span></label><input type="range" id="a" min="0" max="5" step="0.1" value="1" oninput="draw()"></div>
-    <div class="slider-container"><label>B (Period factor): <span id="b_val">1.0</span></label><input type="range" id="b" min="0.1" max="5" step="0.1" value="1" oninput="draw()"></div>
-    <div class="slider-container"><label>C (Phase Shift): <span id="c_val">0.0</span></label><input type="range" id="c" min="-3.14" max="3.14" step="0.1" value="0" oninput="draw()"></div>
-    <div class="slider-container"><label>D (Vertical): <span id="d_val">0.0</span></label><input type="range" id="d" min="-3" max="3" step="0.1" value="0" oninput="draw()"></div>
-  </div>
-  <div class="equation" id="eq">y = 1.0 sin(1.0(x - 0.0)) + 0.0</div>
-  <canvas id="graph" width="600" height="300"></canvas>
-  <script>
-    const canvas = document.getElementById('graph');
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height, originY = h/2, scaleX = 40, scaleY = 40;
 
-    function draw() {
-      const A = parseFloat(document.getElementById('a').value);
-      const B = parseFloat(document.getElementById('b').value);
-      const C = parseFloat(document.getElementById('c').value);
-      const D = parseFloat(document.getElementById('d').value);
-      
-      document.getElementById('a_val').innerText = A.toFixed(1);
-      document.getElementById('b_val').innerText = B.toFixed(1);
-      document.getElementById('c_val').innerText = C.toFixed(1);
-      document.getElementById('d_val').innerText = D.toFixed(1);
-      
-      let signC = C < 0 ? '+ ' + Math.abs(C).toFixed(1) : '- ' + C.toFixed(1);
-      let signD = D < 0 ? '- ' + Math.abs(D).toFixed(1) : '+ ' + D.toFixed(1);
-      document.getElementById('eq').innerText = `y = ${A.toFixed(1)} sin(${B.toFixed(1)}(x ${signC})) ${signD}`;
+    <div class="header">
+        <h1>Trigonometric Transformations</h1>
+        <div class="subtitle">Explore Amplitude, Period, Phase Shift, and Vertical Shift.</div>
+    </div>
 
-      ctx.clearRect(0, 0, w, h);
-      ctx.beginPath(); ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1;
-      for(let i=0; i<w; i+=scaleX) { ctx.moveTo(i,0); ctx.lineTo(i,h); }
-      for(let i=0; i<h; i+=scaleY) { ctx.moveTo(0,i); ctx.lineTo(w,i); }
-      ctx.stroke();
+    <div class="main-container">
+        
+        <!-- SOL PANEL -->
+        <div class="left-panel">
+            <div class="control-card">
+                
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>A (Amplitude):</span>
+                        <input type="number" id="aInput" min="-10" max="10" step="0.1" value="1.0">
+                    </div>
+                    <input type="range" id="aSlider" min="-10" max="10" step="0.1" value="1.0">
+                </div>
 
-      ctx.beginPath(); ctx.strokeStyle = '#555'; ctx.lineWidth = 2;
-      ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h); ctx.stroke();
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>B (Period factor):</span>
+                        <input type="number" id="bInput" min="-10" max="10" step="0.1" value="1.0">
+                    </div>
+                    <input type="range" id="bSlider" min="-10" max="10" step="0.1" value="1.0">
+                </div>
 
-      ctx.beginPath(); ctx.strokeStyle = '#d33682'; ctx.lineWidth = 3;
-      for(let px=0; px<=w; px++) {
-        let x = (px - w/2) / scaleX;
-        let y = A * Math.sin(B * (x - C)) + D;
-        let py = originY - (y * scaleY);
-        px === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      }
-      ctx.stroke();
-    }
-    draw();
-  </script>
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>C (Phase Shift):</span>
+                        <input type="number" id="cInput" min="-10" max="10" step="0.1" value="0.0">
+                    </div>
+                    <input type="range" id="cSlider" min="-10" max="10" step="0.1" value="0.0">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>D (Vertical Shift):</span>
+                        <input type="number" id="dInput" min="-10" max="10" step="0.1" value="0.0">
+                    </div>
+                    <input type="range" id="dSlider" min="-10" max="10" step="0.1" value="0.0">
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SAĞ PANEL -->
+        <div class="right-panel">
+            <div class="equation-display" id="eqDisplay">y = 1.0 sin(1.0(x - 0.0)) + 0.0</div>
+            
+            <div class="canvas-container">
+                <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
+                <canvas id="trigCanvas" width="700" height="500"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('trigCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Input ve Slider Referansları
+        const aInput = document.getElementById('aInput');
+        const bInput = document.getElementById('bInput');
+        const cInput = document.getElementById('cInput');
+        const dInput = document.getElementById('dInput');
+        
+        const aSlider = document.getElementById('aSlider');
+        const bSlider = document.getElementById('bSlider');
+        const cSlider = document.getElementById('cSlider');
+        const dSlider = document.getElementById('dSlider');
+        
+        const eqDisplay = document.getElementById('eqDisplay');
+
+        // Dinamik Viewport
+        let xMin = -10;
+        let xMax = 10;
+        let yMin = -5;
+        let yMax = 5;
+
+        // --- GÜVENLİ DEĞER OKUMA ---
+        function getSafeValue(inputElement) {
+            let val = parseFloat(inputElement.value);
+            return isNaN(val) ? 0 : val;
+        }
+
+        // --- EKSEN KONTROLLERİ ---
+        canvas.addEventListener('wheel', function(event) {
+            event.preventDefault(); 
+            const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
+            
+            xMin *= zoomFactor;
+            xMax *= zoomFactor;
+            yMin *= zoomFactor;
+            yMax *= zoomFactor;
+            
+            if (xMax - xMin < 2) { xMin = -1; xMax = 1; }
+            if (xMax - xMin > 200) { xMin = -100; xMax = 100; }
+            if (yMax - yMin < 1) { yMin = -0.5; yMax = 0.5; }
+            if (yMax - yMin > 100) { yMin = -50; yMax = 50; }
+
+            draw();
+        });
+
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        canvas.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
+            const xRange = xMax - xMin;
+            const yRange = yMax - yMin;
+            const xDelta = (dx / canvas.width) * xRange;
+            const yDelta = (dy / canvas.height) * yRange;
+
+            xMin -= xDelta;
+            xMax -= xDelta;
+            yMin += yDelta; 
+            yMax += yDelta;
+
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', function() {
+            isDragging = false;
+            canvas.style.cursor = 'crosshair';
+        });
+        canvas.addEventListener('mouseleave', function() {
+            isDragging = false;
+            canvas.style.cursor = 'crosshair';
+        });
+
+        // Koordinat Dönüşümleri
+        function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+        function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
+        function unmapX(px) { return (px / canvas.width) * (xMax - xMin) + xMin; }
+
+        function getGridStep(range) {
+            if (range <= 4) return 0.5;
+            if (range <= 10) return 1;
+            if (range <= 25) return 2;
+            if (range <= 50) return 5;
+            if (range <= 100) return 10;
+            return 20;
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.lineWidth = 1;
+            ctx.font = '11px sans-serif';
+            ctx.fillStyle = '#999999';
+
+            let xStep = getGridStep(xMax - xMin);
+            let yStep = getGridStep(yMax - yMin);
+
+            // Dikey çizgiler ve sayılar
+            let startX = Math.ceil(xMin / xStep) * xStep;
+            for (let i = startX; i <= xMax; i += xStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = '#ececec';
+                ctx.moveTo(mapX(i), 0);
+                ctx.lineTo(mapX(i), canvas.height);
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
+            }
+
+            // Yatay çizgiler ve sayılar
+            let startY = Math.ceil(yMin / yStep) * yStep;
+            for (let i = startY; i <= yMax; i += yStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = '#ececec';
+                ctx.moveTo(0, mapY(i));
+                ctx.lineTo(canvas.width, mapY(i));
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
+            }
+
+            // Ana Eksenler (0,0)
+            ctx.beginPath();
+            ctx.strokeStyle = '#666666';
+            ctx.lineWidth = 1.5;
+            ctx.moveTo(0, mapY(0));
+            ctx.lineTo(canvas.width, mapY(0));
+            ctx.moveTo(mapX(0), 0);
+            ctx.lineTo(mapX(0), canvas.height);
+            ctx.stroke();
+            
+            ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
+        }
+
+        // Denklem metnini güzel formatlayan fonksiyon
+        function formatEquation(a, b, c, d) {
+            let eq = "y = ";
+            
+            // a (Amplitude)
+            if (a === -1) eq += "-";
+            else if (a !== 1) eq += a.toFixed(1);
+            
+            eq += " sin(";
+
+            // b (Period)
+            if (b === -1) eq += "-";
+            else if (b !== 1) eq += b.toFixed(1);
+            
+            // c (Phase Shift)
+            if (c > 0) eq += "(x - " + c.toFixed(1) + ")";
+            else if (c < 0) eq += "(x + " + Math.abs(c).toFixed(1) + ")";
+            else eq += "x";
+            
+            eq += ")";
+
+            // d (Vertical Shift)
+            if (d > 0) eq += " + " + d.toFixed(1);
+            else if (d < 0) eq += " - " + Math.abs(d).toFixed(1);
+            
+            return eq;
+        }
+
+        function draw() {
+            drawGrid();
+
+            let a = getSafeValue(aInput);
+            let b = getSafeValue(bInput);
+            let c = getSafeValue(cInput);
+            let d = getSafeValue(dInput);
+
+            eqDisplay.innerText = formatEquation(a, b, c, d);
+            
+            // Eğriyi Çiz (y = A * sin(B(x - C)) + D)
+            ctx.beginPath();
+            ctx.strokeStyle = '#d81b60'; 
+            ctx.lineWidth = 3;
+
+            let first = true;
+            for (let px = 0; px <= canvas.width; px += 2) {
+                let x = unmapX(px);
+                let y = a * Math.sin(b * (x - c)) + d;
+
+                if (isNaN(y) || !isFinite(y)) continue;
+
+                let py = mapY(y);
+
+                if (first) {
+                    ctx.moveTo(px, py);
+                    first = false;
+                } else {
+                    ctx.lineTo(px, py);
+                }
+            }
+            ctx.stroke();
+        }
+
+        // --- GÜVENLİ SENKRONİZASYON ---
+        function syncInputs(slider, input) {
+            slider.addEventListener('input', function() {
+                input.value = parseFloat(this.value).toFixed(1);
+                draw();
+            });
+            
+            input.addEventListener('input', function() {
+                let val = parseFloat(this.value);
+                
+                if(isNaN(val)) {
+                    draw(); 
+                    return; 
+                }
+                
+                if (val > 10) { val = 10; this.value = 10; }
+                if (val < -10) { val = -10; this.value = -10; }
+                
+                slider.value = val;
+                draw();
+            });
+            
+            input.addEventListener('blur', function() {
+                if(this.value === "" || isNaN(parseFloat(this.value))) {
+                    this.value = "0.0";
+                    slider.value = 0;
+                    draw();
+                }
+            });
+        }
+
+        syncInputs(aSlider, aInput);
+        syncInputs(bSlider, bInput);
+        syncInputs(cSlider, cInput);
+        syncInputs(dSlider, dInput);
+
+        window.onload = function() {
+            draw();
+        };
+    </script>
 </body>
 </html>
