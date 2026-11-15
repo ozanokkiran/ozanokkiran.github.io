@@ -3,165 +3,612 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Riemann Sum | Ozan Okkiran</title>
+    <title>Dynamic Riemann Sums</title>
+    <!-- math.js kütüphanesi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root {
-            --bg-color: #faf9f6; /* Kırık beyaz, göz yormayan arka plan */
-            --text-color: #4a4a4a;
-            --primary: #9bb7d4; /* Pastel mavi */
-            --accent: #ffb7b2; /* Pastel somon/kırmızı */
-            --rect-color: rgba(155, 183, 212, 0.6);
-            --rect-border: #7a9cbf;
+            /* Senin görselindeki renk paleti */
+            --bg-color: #f7f7f7;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #777777;
+            --accent-blue: #007bff;
+            --curve-color: #ff9999;
+            --rect-color: rgba(176, 196, 222, 0.7);
+            --rect-border: #8ca3be;
+            --grid-line: #e0e0e0;
+            --axis-line: #888888;
+            --border-color: #e0e0e0;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 2rem;
+            padding: 40px 20px;
             margin: 0;
+            min-height: 100vh;
         }
-        h1 { font-weight: 300; margin-bottom: 0.2rem; }
-        p.subtitle { color: #888; margin-top: 0; margin-bottom: 2rem; font-style: italic; }
-        .container {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
         }
-        canvas {
-            border-left: 2px solid #eaeaea;
-            border-bottom: 2px solid #eaeaea;
-            margin-bottom: 1.5rem;
+
+        h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 2.2rem;
+            font-weight: 700;
         }
-        .controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .main-container {
             width: 100%;
-            max-width: 500px;
+            max-width: 1200px;
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
         }
-        label { font-size: 1.1rem; font-weight: 500; }
-        input[type=range] { 
-            width: 100%; 
-            margin: 20px 0; 
-            cursor: pointer;
+
+        /* SOL PANEL - Grafikler */
+        .left-panel {
+            flex: 1.5;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .stats {
+
+        .canvas-container {
+            width: 100%;
+            position: relative;
+            background-color: #fdfdfd;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            pointer-events: none;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 500px;
+            cursor: crosshair;
+        }
+
+        .results-bar {
+            width: 100%;
             display: flex;
             justify-content: space-around;
-            width: 100%;
-            font-size: 1.1rem;
-            background: #f9fbfd;
-            padding: 15px;
+            margin-top: 20px;
+            padding: 15px 0;
+            background-color: #fcfcfc;
             border-radius: 8px;
-            border: 1px solid #eef2f5;
+            border: 1px solid var(--border-color);
         }
-        .stat-box { text-align: center; }
-        .stat-value { font-weight: bold; color: var(--accent); font-size: 1.4rem; margin-top: 5px; }
-        .exact-value { font-weight: bold; color: var(--primary); font-size: 1.4rem; margin-top: 5px; }
+
+        .result-box {
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 1rem;
+            color: var(--text-main);
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .val-est { color: #ff8585; }
+        .val-exact { color: #7a9cbf; }
+
+        /* SAĞ PANEL - Kontroller */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* Hızlı Ekleme Butonları */
+        .quick-insert-panel {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-btn {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background-color: #e0e0e0;
+            border-color: var(--accent-blue);
+        }
+
+        input[type="text"], input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            font-size: 1.1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-family: monospace;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .limits-container {
+            display: flex;
+            gap: 15px;
+        }
+
+        .limit-box {
+            flex: 1;
+        }
+        
+        .limit-box input {
+            width: calc(100% - 20px);
+            text-align: center;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .n-badge {
+            color: #ff8585;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 6px;
+            background: #dcdde1;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        /* Pedagojik Pano (Arkasındaki Matematik) */
+        .math-card {
+            background-color: #fdfce8;
+            border: 1px solid #f2e293;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .math-card h3 {
+            color: #d35400;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .formula-block {
+            background-color: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed #d35400;
+            text-align: center;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .formula-desc {
+            font-style: italic;
+            color: var(--text-light);
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>Dynamic Riemann Sums</h1>
-    <p class="subtitle">Visualizing Integration: Area under f(x) = -x² + 4x</p>
+    <div class="header">
+        <h1>Dynamic Riemann Sums</h1>
+        <div class="subtitle" id="mainSubtitle">Visualizing Integration: Area under f(x) = -x² + 4x</div>
+    </div>
 
-    <div class="container">
-        <!-- Matematiksel çizimin yapılacağı tuval -->
-        <canvas id="mathCanvas" width="500" height="300"></canvas>
+    <div class="main-container">
         
-        <div class="controls">
-            <label for="nSlider">Number of Rectangles (n) = <span id="nDisplay" style="color: #ffb7b2; font-weight: bold;">10</span></label>
-            <input type="range" id="nSlider" min="2" max="150" value="10">
-            
-            <div class="stats">
-                <div class="stat-box">
-                    <div>Estimated Area (Left Sum)</div>
-                    <div class="stat-value" id="estArea">0.000</div>
+        <!-- SOL PANEL - Grafik ve Sonuçlar -->
+        <div class="left-panel">
+            <div class="canvas-container">
+                <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
+                <canvas id="integralCanvas" width="750" height="500"></canvas>
+            </div>
+
+            <div class="results-bar">
+                <div class="result-box">
+                    <div class="result-label">Estimated Area (Left Sum)</div>
+                    <div id="estAreaDisplay" class="result-value val-est">0.000</div>
                 </div>
-                <div class="stat-box">
-                    <div>Exact Area (Integral)</div>
-                    <div class="exact-value">10.667</div>
+                <div class="result-box">
+                    <div class="result-label">Exact Area (Integral)</div>
+                    <div id="exactAreaDisplay" class="result-value val-exact">0.000</div>
                 </div>
             </div>
         </div>
+
+        <!-- SAĞ PANEL - Kontroller -->
+        <div class="right-panel">
+            <div class="control-card">
+                
+                <div class="control-group">
+                    <label>Function f(x) =</label>
+                    <div class="quick-insert-panel">
+                        <button class="quick-btn" onclick="insertText('x^2')">x²</button>
+                        <button class="quick-btn" onclick="insertText('x^3')">x³</button>
+                        <button class="quick-btn" onclick="insertText('sin(x)')">sin</button>
+                        <button class="quick-btn" onclick="insertText('cos(x)')">cos</button>
+                        <button class="quick-btn" onclick="insertText('sqrt(x)')">√</button>
+                    </div>
+                    <input type="text" id="funcInput" value="-x^2 + 4x">
+                </div>
+
+                <div class="control-group limits-container">
+                    <div class="limit-box">
+                        <label>Lower Limit (a)</label>
+                        <input type="number" id="aLimit" value="0" step="0.5">
+                    </div>
+                    <div class="limit-box">
+                        <label>Upper Limit (b)</label>
+                        <input type="number" id="bLimit" value="4" step="0.5">
+                    </div>
+                </div>
+
+                <div class="control-group" style="margin-bottom: 0;">
+                    <div class="slider-header">
+                        <span>Number of Rectangles (n) = </span>
+                        <span id="nValDisplay" class="n-badge">2</span>
+                    </div>
+                    <input type="range" id="nSlider" min="1" max="100" step="1" value="2">
+                </div>
+
+            </div>
+
+            <div class="math-card">
+                <h3>How is the Exact Area Calculated?</h3>
+                <p>The rectangles give us an <b>Estimated Area</b> (Riemann Sum). As we pack more and more rectangles (increasing <i>n</i>), the approximation gets better.</p>
+                <p>To find the <b>Exact Area</b>, we take the mathematical limit as <i>n</i> goes to infinity. This turns our rectangles into the Definite Integral:</p>
+                <div class="formula-block">
+                    Exact Area = ∫ <sub style="font-size:0.7em;">a</sub><sup style="font-size:0.7em;">b</sup> f(x) dx
+                </div>
+                <div class="formula-desc">
+                    (Computed automatically using Math.js numerical integration)
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        const canvas = document.getElementById('mathCanvas');
+        const canvas = document.getElementById('integralCanvas');
         const ctx = canvas.getContext('2d');
+        
+        const funcInput = document.getElementById('funcInput');
+        const aLimitInput = document.getElementById('aLimit');
+        const bLimitInput = document.getElementById('bLimit');
         const nSlider = document.getElementById('nSlider');
-        const nDisplay = document.getElementById('nDisplay');
-        const estAreaDisplay = document.getElementById('estArea');
+        
+        const nValDisplay = document.getElementById('nValDisplay');
+        const estAreaDisplay = document.getElementById('estAreaDisplay');
+        const exactAreaDisplay = document.getElementById('exactAreaDisplay');
+        const mainSubtitle = document.getElementById('mainSubtitle');
 
-        // Fonksiyonumuz: Parabol f(x) = -x^2 + 4x
-        function f(x) {
-            return -Math.pow(x, 2) + 4 * x;
+        // Viewport
+        let xMin = -1;
+        let xMax = 5;
+        let yMin = -2;
+        let yMax = 5;
+
+        // Matematik formatlayıcı (2*x -> 2x vs.)
+        function formatMathToHTML(exprStr) {
+            return exprStr
+                .replace(/(\d+)\s*\*\s*([a-zA-Z])/g, '$1$2')
+                .replace(/\s*\*\s*/g, '*')                   
+                .replace(/\s*\^\s*/g, '^')                   
+                .replace(/\^([0-9]+)/g, '<sup>$1</sup>');    
         }
 
-        // Grafik sınırları
-        const xMin = 0, xMax = 4;
-        const yMin = 0, yMax = 4.5;
-        
-        // Matematiksel koordinatları Canvas (Piksel) koordinatlarına çeviren fonksiyonlar
-        function mapX(x) { return (x - xMin) / (xMax - xMin) * canvas.width; }
-        function mapY(y) { return canvas.height - (y - yMin) / (yMax - yMin) * canvas.height; }
+        // Hızlı Butonlar
+        function insertText(text) {
+            const input = funcInput;
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const currentValue = input.value;
+            input.value = currentValue.slice(0, start) + text + currentValue.slice(end);
+            input.focus();
+            input.setSelectionRange(start + text.length, start + text.length);
+            draw();
+        }
+
+        // Mouse Pan & Zoom
+        canvas.addEventListener('wheel', function(event) {
+            event.preventDefault(); 
+            const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
+            
+            xMin *= zoomFactor;
+            xMax *= zoomFactor;
+            yMin *= zoomFactor;
+            yMax *= zoomFactor;
+            
+            draw();
+        });
+
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        canvas.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
+            const xDelta = (dx / canvas.width) * (xMax - xMin);
+            const yDelta = (dy / canvas.height) * (yMax - yMin);
+
+            xMin -= xDelta;
+            xMax -= xDelta;
+            yMin += yDelta; 
+            yMax += yDelta;
+
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+
+        // Çizim Dönüşümleri
+        function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+        function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
+        function unmapX(px) { return (px / canvas.width) * (xMax - xMin) + xMin; }
+
+        function getGridStep(range) {
+            if (range <= 4) return 0.5;
+            if (range <= 10) return 1;
+            if (range <= 25) return 2;
+            if (range <= 50) return 5;
+            if (range <= 100) return 10;
+            return 20;
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 1;
+            ctx.font = '11px sans-serif';
+            ctx.fillStyle = '#888888';
+
+            let xStep = getGridStep(xMax - xMin);
+            let yStep = getGridStep(yMax - yMin);
+
+            let startX = Math.ceil(xMin / xStep) * xStep;
+            for (let i = startX; i <= xMax; i += xStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.moveTo(mapX(i), 0);
+                ctx.lineTo(mapX(i), canvas.height);
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
+            }
+
+            let startY = Math.ceil(yMin / yStep) * yStep;
+            for (let i = startY; i <= yMax; i += yStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.moveTo(0, mapY(i));
+                ctx.lineTo(canvas.width, mapY(i));
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
+            }
+
+            // Orijin Ekseni
+            ctx.beginPath();
+            ctx.strokeStyle = 'var(--axis-line)';
+            ctx.lineWidth = 1.5;
+            ctx.moveTo(0, mapY(0));
+            ctx.lineTo(canvas.width, mapY(0));
+            ctx.moveTo(mapX(0), 0);
+            ctx.lineTo(mapX(0), canvas.height);
+            ctx.stroke();
+            ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
+        }
+
+        // Math.js kullanarak Numerical Integration (Gerçek Alan) hesabı (Simpson 1/3 Kuralı)
+        function calculateExactArea(code, a, b) {
+            let n = 1000; // Hassas integral için
+            if(n % 2 !== 0) n++; 
+            let h = (b - a) / n;
+            let sum = code.evaluate({x: a}) + code.evaluate({x: b});
+            
+            for(let i=1; i<n; i++) {
+                let x = a + i*h;
+                sum += code.evaluate({x: x}) * (i%2 === 0 ? 2 : 4);
+            }
+            return (h/3) * sum;
+        }
 
         function draw() {
-            // Her kaydırmada ekranı temizle
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+            drawGrid();
+
+            let exprStr = funcInput.value;
+            let a = parseFloat(aLimitInput.value);
+            let b = parseFloat(bLimitInput.value);
             let n = parseInt(nSlider.value);
-            nDisplay.innerText = n;
-            let dx = (xMax - xMin) / n;
-            let area = 0;
+            
+            if(isNaN(a)) a = 0;
+            if(isNaN(b)) b = 4;
+            
+            nValDisplay.innerText = n;
+            mainSubtitle.innerHTML = `Visualizing Integration: Area under f(x) = ${formatMathToHTML(exprStr)}`;
 
-            // Dikdörtgenleri çizme (Left Riemann Sum)
-            for (let i = 0; i < n; i++) {
-                let x = xMin + i * dx;
-                let height = f(x);
-                area += height * dx;
-                
-                let cx = mapX(x);
-                let cy = mapY(height);
-                let cWidth = mapX(xMin + dx) - mapX(xMin);
-                let cHeight = canvas.height - cy;
+            try {
+                const node = math.parse(exprStr);
+                const code = node.compile();
 
-                // Dikdörtgen renkleri (Pastel Mavi)
-                ctx.fillStyle = 'rgba(155, 183, 212, 0.6)';
-                ctx.fillRect(cx, cy, cWidth, cHeight);
-                ctx.strokeStyle = '#7a9cbf';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(cx, cy, cWidth, cHeight);
+                // 1. DİKDÖRTGENLERİ (RIEMANN SÜTUNLARI) ÇİZ (Sol Toplam)
+                let dx = (b - a) / n;
+                let estimatedArea = 0;
+
+                ctx.fillStyle = 'var(--rect-color)';
+                ctx.strokeStyle = 'var(--rect-border)';
+                ctx.lineWidth = 1.5;
+
+                for (let i = 0; i < n; i++) {
+                    let xi = a + i * dx; // Left Sum (Sol uç noktası)
+                    let y = code.evaluate({ x: xi });
+                    
+                    if (isNaN(y) || !isFinite(y)) continue;
+
+                    estimatedArea += y * dx;
+
+                    let px = mapX(a + i*dx);
+                    let pw = mapX(a + (i+1)*dx) - px;
+                    let py = mapY(y);
+                    let ph = mapY(0) - py;
+
+                    ctx.fillRect(px, py, pw, ph);
+                    ctx.strokeRect(px, py, pw, ph);
+                }
+
+                // 2. FONKSİYON EĞRİSİNİ ÇİZ
+                ctx.beginPath();
+                ctx.strokeStyle = 'var(--curve-color)'; 
+                ctx.lineWidth = 2.5;
+                let first = true;
+                for (let px = 0; px <= canvas.width; px += 2) {
+                    let x = unmapX(px);
+                    let y = code.evaluate({ x: x });
+
+                    if (isNaN(y) || !isFinite(y)) continue;
+
+                    let py = mapY(y);
+                    if (first) {
+                        ctx.moveTo(px, py);
+                        first = false;
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+                ctx.stroke();
+
+                // 3. SONUÇLARI YAZDIR
+                let exactArea = calculateExactArea(code, a, b);
+
+                estAreaDisplay.innerText = estimatedArea.toFixed(3);
+                exactAreaDisplay.innerText = exactArea.toFixed(3);
+
+            } catch (error) {
+                estAreaDisplay.innerText = "Error";
+                exactAreaDisplay.innerText = "Error";
             }
-
-            // Tahmini alanı güncelle
-            estAreaDisplay.innerText = area.toFixed(3);
-
-            // Orijinal Eğriyi (Parabolü) çizme
-            ctx.beginPath();
-            ctx.strokeStyle = '#ffb7b2'; // Pastel Kırmızı
-            ctx.lineWidth = 3;
-            for (let px = 0; px <= canvas.width; px++) {
-                let x = xMin + (px / canvas.width) * (xMax - xMin);
-                let y = f(x);
-                if (px === 0) ctx.moveTo(mapX(x), mapY(y));
-                else ctx.lineTo(mapX(x), mapY(y));
-            }
-            ctx.stroke();
         }
 
-        // Slider değiştikçe grafiği yeniden çiz
+        // Dinleyiciler
+        funcInput.addEventListener('input', draw);
+        aLimitInput.addEventListener('input', draw);
+        bLimitInput.addEventListener('input', draw);
         nSlider.addEventListener('input', draw);
-        
-        // Başlangıç çizimi
-        draw();
+
+        window.onload = draw;
     </script>
 </body>
 </html>
