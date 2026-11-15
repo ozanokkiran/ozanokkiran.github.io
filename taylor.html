@@ -8,14 +8,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root {
-            /* Renk Paleti (Görseldeki krem arka plan) */
             --bg-color: #fdf8e9;
             --card-bg: #ffffff;
             --text-main: #333333;
             --text-light: #555555;
             --accent-blue: #1e88e5;
-            --original-curve: #666666; /* Koyu gri (sinüs) */
-            --taylor-curve: #e91e63; /* Pembe (Taylor) */
+            --original-curve: #666666;
+            --taylor-curve: #e91e63;
             --grid-line: #ececec;
             --axis-line: #666666;
             --border-color: #e0e0e0;
@@ -90,7 +89,6 @@
             margin-bottom: 5px;
         }
 
-        /* Manuel Sayı Girişi */
         input[type="number"] {
             padding: 4px 8px;
             font-size: 1.1rem;
@@ -153,18 +151,54 @@
             font-size: 1.1rem;
             color: #b7791f;
         }
+        
+        .math-explanation .math-var {
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            font-style: italic;
+        }
 
+        /* Yeni Şık Genel Formül Kutusu */
         .formula-block {
             background-color: white;
-            padding: 10px;
+            padding: 15px;
             border-radius: 6px;
             border: 1px dashed #b7791f;
-            text-align: center;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 1.1rem;
+            margin: 15px 0 5px 0;
+            
+            /* Matematiksel Font ve Hizalama */
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.5rem;
             font-weight: bold;
-            margin: 10px 0;
-            overflow-x: auto;
+            color: #2c3e50;
+            
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Formül içi Kesir Yapısı (HTML/CSS) */
+        .formula-block .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 5px;
+            font-size: 1.4rem;
+        }
+        
+        .formula-block .fraction span:first-child {
+            border-bottom: 2px solid #2c3e50;
+            padding: 0 4px;
+        }
+        
+        .summation-symbol {
+            font-size: 2.2rem;
+            font-weight: normal;
+            line-height: 1;
+            position: relative;
+            top: 2px;
         }
 
         /* SAĞ PANEL */
@@ -176,7 +210,6 @@
             gap: 15px;
         }
 
-        /* Matematiksel Denklemlerin Gösterimi */
         .equations-container {
             text-align: center;
             margin-bottom: 10px;
@@ -271,10 +304,16 @@
 
             <div class="math-explanation">
                 <h3>Why does a polynomial look like a wave?</h3>
-                <p>A Taylor series allows us to approximate any smooth function (like sine) using simple polynomials ($x, x^2, x^3...$). By matching the function's value and all its derivatives at a single point (here, $x=0$), the polynomial "learns" the curve's behavior.</p>
+                <p>A Taylor series allows us to approximate any smooth function (like sine) using simple polynomials (<span class="math-var">x, x<sup>2</sup>, x<sup>3</sup>...</span>). By matching the function's value and all its derivatives at a single point (here, <span class="math-var">x=0</span>), the polynomial "learns" the curve's behavior.</p>
                 <p>As you increase the Number of Terms (N), the approximation perfectly hugs the original curve further and further away from the center.</p>
+                
+                <!-- YENİ BÜYÜK ŞIK KESİRLİ FORMÜL -->
                 <div class="formula-block">
-                    sin(x) = &sum; (-1)<sup>n</sup> x<sup>2n+1</sup> / (2n+1)!
+                    sin(x) = <span class="summation-symbol">&sum;</span> (-1)<sup>n</sup>
+                    <div class="fraction">
+                        <span>x<sup>2n+1</sup></span>
+                        <span>(2n+1)!</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -285,7 +324,6 @@
             <div class="equations-container">
                 <div class="original-eq">Original Function: y = sin(x)</div>
                 <div class="taylor-eq" id="taylorEq">
-                    <!-- Javascript ile dinamik matematiksel ifade basılacak -->
                     P(x) = x
                 </div>
             </div>
@@ -306,13 +344,11 @@
         const nSlider = document.getElementById('nSlider');
         const taylorEqDisplay = document.getElementById('taylorEq');
 
-        // Dinamik Viewport
         let xMin = -12;
         let xMax = 12;
         let yMin = -6;
         let yMax = 6;
 
-        // Faktöriyel hesaplama
         function factorial(n) {
             if (n === 0 || n === 1) return 1;
             let result = 1;
@@ -320,7 +356,6 @@
             return result;
         }
 
-        // Fare ile Zoom
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault(); 
             const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
@@ -338,7 +373,6 @@
             draw();
         });
 
-        // Fare ile Pan
         let isDragging = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
@@ -396,7 +430,6 @@
             let xStep = getGridStep(xMax - xMin);
             let yStep = getGridStep(yMax - yMin);
 
-            // Dikey Izgaralar
             let startX = Math.ceil(xMin / xStep) * xStep;
             for (let i = startX; i <= xMax; i += xStep) {
                 if (Math.abs(i) < 1e-5) continue; 
@@ -410,7 +443,6 @@
                 ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
             }
 
-            // Yatay Izgaralar
             let startY = Math.ceil(yMin / yStep) * yStep;
             for (let i = startY; i <= yMax; i += yStep) {
                 if (Math.abs(i) < 1e-5) continue; 
@@ -424,7 +456,6 @@
                 ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
             }
 
-            // ANA EKSENLER
             ctx.beginPath();
             ctx.strokeStyle = 'var(--axis-line)';
             ctx.lineWidth = 1.5; 
@@ -438,15 +469,13 @@
             ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
         }
 
-        // Dinamik Taylor Serisi Formülü Üretme
         function generateTaylorFormulaHTML(n) {
-            let html = 'P(x) = x'; // n=1 durumu
+            let html = 'P(x) = x'; 
             
             for (let i = 1; i < n; i++) {
                 let sign = (i % 2 !== 0) ? '-' : '+';
                 let power = 2 * i + 1;
                 
-                // HTML fraction (kesir) yapısı oluşturuyoruz
                 html += ` ${sign} 
                 <div class="fraction">
                     <span>x<sup>${power}</sup></span>
@@ -456,7 +485,6 @@
             return html;
         }
 
-        // Belirli bir n ve x için Taylor (Maclaurin) Sinüs değerini hesaplar
         function taylorSin(x, n) {
             let sum = 0;
             for (let i = 0; i < n; i++) {
@@ -471,12 +499,10 @@
 
             let n = parseInt(nInput.value) || 1;
             
-            // Başlıktaki Formülü Güncelle
             taylorEqDisplay.innerHTML = generateTaylorFormulaHTML(n);
 
-            // 1. Orijinal Fonksiyonu Çiz (y = sin(x))
             ctx.beginPath();
-            ctx.strokeStyle = '#666666'; // Koyu Gri
+            ctx.strokeStyle = '#666666'; 
             ctx.lineWidth = 2.5;
             let firstOrig = true;
             for (let px = 0; px <= canvas.width; px += 2) {
@@ -493,16 +519,14 @@
             }
             ctx.stroke();
 
-            // 2. Taylor Polinomunu Çiz
             ctx.beginPath();
-            ctx.strokeStyle = '#e91e63'; // Pembe (Taylor)
+            ctx.strokeStyle = '#e91e63'; 
             ctx.lineWidth = 3;
             let firstTaylor = true;
             for (let px = 0; px <= canvas.width; px += 2) {
                 let x = unmapX(px);
                 let y = taylorSin(x, n);
                 
-                // Çok yüksek değerlerde çizimi sınırla ki canvas motoru çökmesin
                 if (isNaN(y) || Math.abs(y) > 1000) continue; 
 
                 let py = mapY(y);
@@ -517,7 +541,6 @@
             ctx.stroke();
         }
 
-        // Input ve Slider Senkronizasyonu
         nSlider.addEventListener('input', function() {
             nInput.value = parseInt(this.value);
             draw();
@@ -546,7 +569,6 @@
             }
         });
 
-        // İlk çizim
         window.onload = draw;
     </script>
 </body>
