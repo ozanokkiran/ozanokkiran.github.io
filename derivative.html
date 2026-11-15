@@ -80,20 +80,21 @@
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 4px 8px;
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 6px 10px;
+            border-radius: 6px;
             font-size: 0.85rem;
-            color: var(--text-light);
+            color: var(--text-main);
             pointer-events: none;
             border: 1px solid var(--border-color);
+            font-weight: 500;
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 450px;
-            cursor: crosshair;
+            cursor: crosshair; /* Varsayılan imleç */
         }
 
         .quick-insert-panel {
@@ -181,7 +182,6 @@
             gap: 8px;
         }
         
-        /* Yeni: Sayı Giriş Kutusu Stilleri */
         input[type="number"] {
             padding: 4px 8px;
             font-size: 1.2rem;
@@ -199,14 +199,12 @@
             border-color: var(--accent-orange);
         }
         
-        /* Chrome, Safari, Edge, Opera için yukarı aşağı oklarını gizle */
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
 
-        /* Firefox için yukarı aşağı oklarını gizle */
         input[type=number] {
             -moz-appearance: textfield;
         }
@@ -298,7 +296,7 @@
         
         <div class="visualization-area">
             <div class="canvas-container">
-                <div class="zoom-hint">Scroll to Zoom In/Out</div>
+                <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
                 <canvas id="graphCanvas" width="800" height="450"></canvas>
             </div>
             
@@ -313,7 +311,7 @@
 
         <div class="input-section">
             <div class="function-input-wrapper">
-                f(x) = <input type="text" id="funcInput" value="x^2 + 3x + 5">
+                f(x) = <input type="text" id="funcInput" value="x^3 + 2x^2 + x + 1">
             </div>
             <select id="presetSelect" onchange="applyPreset()">
                 <option value="">Presets...</option>
@@ -326,21 +324,20 @@
         <div class="slider-section">
             <div class="slider-label">
                 Point x = 
-                <!-- Yeni Manuel Giriş Kutusu -->
-                <input type="number" id="xInputBox" min="-50" max="50" step="0.01" value="-1.10">
+                <input type="number" id="xInputBox" min="-50" max="50" step="0.01" value="1.00">
             </div>
-            <input type="range" id="xSlider" min="-10" max="10" step="0.05" value="-1.10">
+            <input type="range" id="xSlider" min="-10" max="10" step="0.05" value="1.00">
         </div>
 
         <div class="results-panel">
             <div class="result-box">
                 <div class="result-label">Function Value f(x)</div>
-                <div id="fxVal" class="result-value val-fx">0.000</div>
+                <div id="fxVal" class="result-value val-fx">0</div>
             </div>
             <div class="result-box">
                 <div class="result-label">Derivative & Slope f'(x)</div>
                 <div id="derivEq" class="derivative-eq">f'(x) = </div>
-                <div id="slopeVal" class="result-value val-slope">0.000</div>
+                <div id="slopeVal" class="result-value val-slope">0</div>
             </div>
         </div>
 
@@ -353,7 +350,7 @@
         const ctx = canvas.getContext('2d');
         const funcInput = document.getElementById('funcInput');
         const xSlider = document.getElementById('xSlider');
-        const xInputBox = document.getElementById('xInputBox'); // Yeni giriş kutusu referansı
+        const xInputBox = document.getElementById('xInputBox');
         const fxValDisplay = document.getElementById('fxVal');
         const slopeValDisplay = document.getElementById('slopeVal');
         const derivEqDisplay = document.getElementById('derivEq');
@@ -364,10 +361,11 @@
         let yMin = -20;
         let yMax = 20;
 
+        // Daha yumuşak Zoom Olayı
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault(); 
-            
-            const zoomFactor = event.deltaY < 0 ? 0.8 : 1.25;
+            // Hassasiyet düşürüldü: 0.8 yerine 0.9, 1.25 yerine 1.1
+            const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
             
             xMin *= zoomFactor;
             xMax *= zoomFactor;
@@ -385,8 +383,65 @@
             draw();
         });
 
+        // Sürükle-Bırak (Pan) Değişkenleri
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        canvas.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
+            // Pikselleri koordinat birimine çevir
+            const xRange = xMax - xMin;
+            const yRange = yMax - yMin;
+            const xDelta = (dx / canvas.width) * xRange;
+            const yDelta = (dy / canvas.height) * yRange;
+
+            xMin -= xDelta;
+            xMax -= xDelta;
+            // Y ekseni canvas'ta terstir, o yüzden ekliyoruz
+            yMin += yDelta; 
+            yMax += yDelta;
+
+            xSlider.min = Math.floor(xMin);
+            xSlider.max = Math.ceil(xMax);
+
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', function() {
+            isDragging = false;
+            canvas.style.cursor = 'crosshair';
+        });
+
+        canvas.addEventListener('mouseleave', function() {
+            isDragging = false;
+            canvas.style.cursor = 'crosshair';
+        });
+
+        // Matematiksel formatı düzenleyen ve gereksiz boşlukları/yıldızları silen fonksiyon
         function formatMathExpression(exprStr) {
-            return exprStr.replace(/(\d+)\s*\*\s*([a-zA-Z])/g, '$1$2').replace(/\s*\*\s*/g, '*');
+            return exprStr
+                .replace(/(\d+)\s*\*\s*([a-zA-Z])/g, '$1$2') // 2 * x -> 2x
+                .replace(/\s*\*\s*/g, '*')                   // a * b -> a*b
+                .replace(/\s*\^\s*/g, '^');                  // x ^ 3 -> x^3
+        }
+
+        // Akıllı Sayı Formatı: Tam sayıysa .000 göstermez, ondalıksa max 3 basamak gösterir
+        function formatNumber(num) {
+            return parseFloat(num.toFixed(3)).toString();
         }
 
         function insertText(text) {
@@ -480,7 +535,6 @@
             drawGrid();
 
             const exprStr = funcInput.value;
-            // X değerini Slider'dan veya Input kutusundan alabiliriz, her ikisi de senkronize olacak
             let currentX = parseFloat(xInputBox.value); 
 
             try {
@@ -519,8 +573,9 @@
                 let currentY = code.evaluate({ x: currentX });
                 let slope = derivativeCode.evaluate({ x: currentX });
 
-                fxValDisplay.innerText = currentY.toFixed(3);
-                slopeValDisplay.innerText = slope.toFixed(3);
+                // Güncellenen Akıllı Format Fonksiyonunu Çağırıyoruz
+                fxValDisplay.innerText = formatNumber(currentY);
+                slopeValDisplay.innerText = formatNumber(slope);
 
                 const tangentLength = (xMax - xMin) * 0.15;
                 const x1 = currentX - tangentLength;
@@ -554,23 +609,18 @@
 
         funcInput.addEventListener('input', draw);
         
-        // Slider değiştiğinde Input kutusunu güncelle ve çizdir
         xSlider.addEventListener('input', function() {
             xInputBox.value = parseFloat(this.value).toFixed(2);
             draw();
         });
 
-        // Input kutusu değiştiğinde Slider'ı güncelle ve çizdir
         xInputBox.addEventListener('input', function() {
-            // Sınır kontrolü (Giriş kutusundaki değeri -50 ve 50 arasında tut)
             let val = parseFloat(this.value);
-            if(isNaN(val)) return; // Eğer silinirse bir şey yapma
+            if(isNaN(val)) return; 
             
             if (val > 50) { val = 50; this.value = 50.00; }
             if (val < -50) { val = -50; this.value = -50.00; }
 
-            // Slider'ın görsel sınırları dışına çıkıldıysa (örneğin zoom in yapılmışken manuel giriş), 
-            // slider'ın min/max sınırlarını genişlet ki hata vermesin
             if(val > parseFloat(xSlider.max)) { xSlider.max = val; }
             if(val < parseFloat(xSlider.min)) { xSlider.min = val; }
 
