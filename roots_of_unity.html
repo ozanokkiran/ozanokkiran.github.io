@@ -3,171 +3,552 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roots of Unity - Complex Numbers</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Roots of Unity Visualizer</title>
+    <!-- math.js kütüphanesi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        canvas { background-color: #f8fafc; border-radius: 0.5rem; }
+        :root {
+            --bg-color: #f7f9fc;
+            --card-bg: #ffffff;
+            --text-main: #1a202c;
+            --text-light: #718096;
+            --accent-teal: #1abc9c;
+            --accent-yellow: #f1c40f;
+            --accent-blue: #3498db;
+            --grid-line: #e2e8f0;
+            --axis-line: #a0aec0;
+            --border-color: #e2e8f0;
+            --formula-bg: #ebf8ff;
+            --formula-text: #2b6cb0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 30px;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        /* SOL PANEL */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-top: 5px;
+        }
+
+        .subtitle b {
+            color: var(--accent-blue);
+        }
+
+        /* Kontrol Bölümü */
+        .control-group {
+            margin-top: 10px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+
+        .n-badge {
+            color: var(--accent-teal);
+            font-weight: 800;
+            font-size: 1.5rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 8px;
+            background: #cbd5e0;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-teal);
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Ana Formül Kutusu */
+        .formula-box {
+            background-color: var(--formula-bg);
+            border: 1px solid #bee3f8;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        .formula-title {
+            font-size: 0.95rem;
+            color: var(--formula-text);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .main-formula {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            font-weight: bold;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+        }
+
+        /* Pedagojik Açıklama (Yeni) */
+        .math-explanation {
+            background-color: #fffaf0;
+            border-left: 4px solid var(--accent-yellow);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #4a5568;
+        }
+
+        .math-explanation h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.05rem;
+            color: #b7791f;
+        }
+
+        /* Kök Listesi (Yeni) */
+        .roots-list-container {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #fafbfc;
+        }
+
+        .roots-list-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .root-item {
+            font-family: monospace;
+            font-size: 1.1rem;
+            padding: 5px 0;
+            border-bottom: 1px dashed var(--grid-line);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .root-item:last-child {
+            border-bottom: none;
+        }
+
+        .root-angle {
+            color: var(--accent-teal);
+            font-weight: bold;
+        }
+
+        /* Lejant (Legend) */
+        .legend {
+            display: flex;
+            gap: 25px;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        /* SAĞ PANEL - Argand Düzlemi */
+        .right-panel {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .canvas-container {
+            width: 100%;
+            aspect-ratio: 1 / 1; /* Kare olması için */
+            position: relative;
+            background-color: #fdfdfd;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+        }
+        
+        .zoom-hint {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            pointer-events: none;
+            border: 1px solid var(--border-color);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-6 text-slate-800">
+<body>
 
-    <div class="max-w-5xl w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="main-container">
         
-        <!-- Left Panel: Controls and Formula -->
-        <div class="flex flex-col justify-center space-y-8">
+        <!-- SOL PANEL -->
+        <div class="left-panel">
+            
             <div>
-                <h1 class="text-3xl font-semibold text-slate-800 mb-2">Roots of Unity</h1>
-                <p class="text-slate-500 text-sm">Visualizing the roots of <span class="font-semibold text-indigo-600">z<sup>n</sup> = 1</span> in the Argand Plane and De Moivre's Theorem.</p>
+                <h1>Roots of Unity</h1>
+                <div class="subtitle">Visualizing the roots of <b>zⁿ = 1</b> in the Argand Plane and De Moivre's Theorem.</div>
             </div>
 
-            <!-- Slider Control -->
-            <div class="space-y-4">
-                <label class="text-sm font-medium text-slate-600 flex justify-between">
+            <div class="control-group">
+                <div class="slider-header">
                     <span>Number of Roots (n)</span>
-                    <span id="n-label" class="font-bold text-teal-600 text-xl">3</span>
-                </label>
-                <input type="range" id="n-slider" min="2" max="12" value="3" class="w-full accent-teal-500">
+                    <span id="nValDisplay" class="n-badge">3</span>
+                </div>
+                <input type="range" id="nSlider" min="2" max="12" step="1" value="3">
             </div>
 
-            <!-- Dynamic Formula Display -->
-            <div class="bg-indigo-50 p-6 rounded-xl border border-indigo-100">
-                <div class="text-sm font-medium text-indigo-400 mb-3">Euler Form of Roots (k = 0, 1, ..., n-1)</div>
-                <div class="text-2xl font-medium text-indigo-700 font-mono tracking-wide" id="formula-display">
-                    <!-- Populated by JS -->
+            <div class="formula-box">
+                <div class="formula-title">Euler Form of Roots (k = 0, 1, ..., n-1)</div>
+                <div class="main-formula" id="mainFormula">z<sub>k</sub> = e<sup>i(2πk / 3)</sup></div>
+            </div>
+
+            <!-- YENİ: Pedagojik Açıklama -->
+            <div class="math-explanation">
+                <h3>Why do they form a polygon?</h3>
+                By De Moivre's Theorem, the equation $z^n = 1$ is rewritten as $z^n = e^{i(2\pi k)}$. Taking the $n$-th root divides the angle by $n$. This forces all $n$ roots to lie on the unit circle (radius = 1), perfectly spaced by an angle of $2\pi/n$ radians ($360°/n$), creating a regular polygon.
+            </div>
+
+            <!-- YENİ: Kök Listesi -->
+            <div class="roots-list-container">
+                <div class="roots-list-title">Calculated Roots & Angles</div>
+                <div id="rootsList">
+                    <!-- Javascript ile doldurulacak -->
                 </div>
             </div>
 
-            <!-- Legend -->
-            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
-                <div class="flex items-center space-x-3">
-                    <div class="w-4 h-4 bg-teal-400 rounded-full shadow-sm"></div>
-                    <span class="text-sm font-medium text-slate-600">Root Vectors</span>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--accent-teal);"></div>
+                    <span>Root Vectors</span>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <div class="w-4 h-4 bg-amber-400 rounded-full shadow-sm"></div>
-                    <span class="text-sm font-medium text-slate-600">Resulting Polygon</span>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: var(--accent-yellow);"></div>
+                    <span>Resulting Polygon</span>
                 </div>
             </div>
+
         </div>
 
-        <!-- Right Panel: Canvas (Argand Plane) -->
-        <div class="flex justify-center items-center">
-            <div class="relative shadow-inner rounded-lg overflow-hidden border-2 border-slate-100 w-full max-w-[450px]">
-                <canvas id="argand-canvas" width="450" height="450" class="w-full h-auto"></canvas>
+        <!-- SAĞ PANEL - Argand Düzlemi -->
+        <div class="right-panel">
+            <div class="canvas-container">
+                <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
+                <!-- Çözünürlük için width/height yüksek tutulup CSS ile küçültülür -->
+                <canvas id="argandCanvas" width="800" height="800"></canvas>
             </div>
         </div>
 
     </div>
 
     <script>
-        const canvas = document.getElementById('argand-canvas');
+        const canvas = document.getElementById('argandCanvas');
         const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const radius = 160; 
+        const nSlider = document.getElementById('nSlider');
+        const nValDisplay = document.getElementById('nValDisplay');
+        const mainFormula = document.getElementById('mainFormula');
+        const rootsList = document.getElementById('rootsList');
 
-        const slider = document.getElementById('n-slider');
-        const label = document.getElementById('n-label');
-        const formulaDisplay = document.getElementById('formula-display');
+        // Viewport (Argand düzlemi aralığı -2 ile 2 arası)
+        let xMin = -2;
+        let xMax = 2;
+        let yMin = -2;
+        let yMax = 2;
 
-        function drawAxesAndCircle() {
-            // Axes (Re and Im)
-            ctx.beginPath();
-            ctx.moveTo(0, centerY);
-            ctx.lineTo(width, centerY);
-            ctx.moveTo(centerX, 0);
-            ctx.lineTo(centerX, height);
-            ctx.strokeStyle = '#cbd5e1'; 
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([]);
-            ctx.stroke();
-
-            // Axis Labels
-            ctx.fillStyle = '#64748b'; 
-            ctx.font = '14px Inter';
-            ctx.fillText('Re', width - 25, centerY - 10);
-            ctx.fillText('Im', centerX + 10, 20);
-            ctx.fillText('1', centerX + radius - 5, centerY - 10);
-            ctx.fillText('i', centerX + 10, centerY - radius + 5);
-
-            // Unit Circle
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-            ctx.strokeStyle = '#94a3b8'; 
-            ctx.lineWidth = 1;
-            ctx.setLineDash([5, 5]); 
-            ctx.stroke();
-            ctx.setLineDash([]); 
-        }
-
-        function drawRoots(n) {
-            let roots = [];
+        // Fare ile Zoom In/Out
+        canvas.addEventListener('wheel', function(event) {
+            event.preventDefault(); 
+            const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
             
-            // Calculate root coordinates
-            for (let k = 0; k < n; k++) {
-                let angle = (2 * Math.PI * k) / n;
-                roots.push({
-                    x: centerX + radius * Math.cos(angle),
-                    y: centerY - radius * Math.sin(angle) 
-                });
-            }
-
-            // Draw Polygon (Connect Roots)
-            ctx.beginPath();
-            ctx.moveTo(roots[0].x, roots[0].y);
-            for (let k = 1; k < n; k++) {
-                ctx.lineTo(roots[k].x, roots[k].y);
-            }
-            ctx.closePath();
-            ctx.strokeStyle = '#fbbf24'; 
-            ctx.lineWidth = 2.5;
-            ctx.stroke();
-
-            // Draw Vectors and Points
-            roots.forEach((root, index) => {
-                // Vector from center to root
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(root.x, root.y);
-                ctx.strokeStyle = '#2dd4bf'; 
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                // Root Point
-                ctx.beginPath();
-                ctx.arc(root.x, root.y, 6, 0, 2 * Math.PI);
-                ctx.fillStyle = '#0f766e'; 
-                ctx.fill();
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            });
-        }
-
-        function updateFormula(n) {
-            formulaDisplay.innerHTML = `z<sub>k</sub> = e<sup><span class="text-indigo-400">i</span>(2&pi;k / ${n})</sup>`;
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, width, height);
-            drawAxesAndCircle();
-            let n = parseInt(slider.value);
-            drawRoots(n);
-            updateFormula(n);
-        }
-
-        // Event Listener
-        slider.addEventListener('input', (e) => {
-            label.innerText = e.target.value;
+            xMin *= zoomFactor;
+            xMax *= zoomFactor;
+            yMin *= zoomFactor;
+            yMax *= zoomFactor;
+            
             draw();
         });
 
-        // Initial render on page load
-        draw();
+        // Fare ile Pan (Sürükleme)
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        canvas.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
+            // Canvas kare olduğu için range aynı
+            const range = xMax - xMin; 
+            const xDelta = (dx / canvas.offsetWidth) * range;
+            const yDelta = (dy / canvas.offsetHeight) * range;
+
+            xMin -= xDelta;
+            xMax -= xDelta;
+            yMin += yDelta; 
+            yMax += yDelta;
+
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+
+        // Çizim Dönüşümleri (Kare Canvas)
+        function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+        function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
+
+        function drawArgandPlane() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Orijin (Merkez)
+            const originX = mapX(0);
+            const originY = mapY(0);
+
+            // Eksenler (Açık Gri)
+            ctx.beginPath();
+            ctx.strokeStyle = '#cbd5e0';
+            ctx.lineWidth = 2;
+            
+            // Real Axis (X)
+            ctx.moveTo(0, originY);
+            ctx.lineTo(canvas.width, originY);
+            
+            // Imaginary Axis (Y)
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, canvas.height);
+            ctx.stroke();
+
+            // Eksen Etiketleri
+            ctx.fillStyle = '#718096';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText("Re", canvas.width - 30, originY - 10);
+            ctx.fillText("Im", originX + 10, 30);
+
+            // Birim Çember (Unit Circle)
+            ctx.beginPath();
+            ctx.arc(originX, originY, (1 / (xMax - xMin)) * canvas.width, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#a0aec0';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([8, 8]); // Kesik çizgili
+            ctx.stroke();
+            ctx.setLineDash([]); // Sıfırla
+
+            // 1 ve i işaretleri
+            ctx.fillText("1", mapX(1) - 5, originY - 10);
+            ctx.fillText("i", originX + 10, mapY(1) + 5);
+        }
+
+        // Kesir sadeleştirme fonksiyonu (Radyan gösterimi için)
+        function simplifyFraction(numerator, denominator) {
+            const gcd = function(a, b) {
+                return b ? gcd(b, a % b) : a;
+            };
+            const divisor = gcd(numerator, denominator);
+            return [numerator / divisor, denominator / divisor];
+        }
+
+        function getRadianString(k, n) {
+            if (k === 0) return "0";
+            
+            // Açı: (2 * k * pi) / n => (2k / n) * pi
+            let num = 2 * k;
+            let den = n;
+            let [sNum, sDen] = simplifyFraction(num, den);
+
+            if (sNum === 1 && sDen === 1) return "π";
+            if (sNum === 1) return "π/" + sDen;
+            if (sDen === 1) return sNum + "π";
+            return sNum + "π/" + sDen;
+        }
+
+        function updateRootsList(n) {
+            rootsList.innerHTML = ''; // Temizle
+            
+            for (let k = 0; k < n; k++) {
+                let radStr = getRadianString(k, n);
+                let deg = (360 * k / n).toFixed(1);
+                
+                // .0 varsa temizle
+                if(deg.endsWith('.0')) deg = deg.slice(0, -2);
+                
+                let div = document.createElement('div');
+                div.className = 'root-item';
+                div.innerHTML = `
+                    <span>z<sub>${k}</sub></span>
+                    <span class="root-angle">${radStr} rad &nbsp;(${deg}°)</span>
+                `;
+                rootsList.appendChild(div);
+            }
+        }
+
+        function draw() {
+            drawArgandPlane();
+
+            let n = parseInt(nSlider.value);
+            nValDisplay.innerText = n;
+            
+            // Formülü Güncelle
+            mainFormula.innerHTML = `z<sub>k</sub> = e<sup>i(2πk / ${n})</sup>`;
+            
+            // Listeyi Güncelle
+            updateRootsList(n);
+
+            const originX = mapX(0);
+            const originY = mapY(0);
+            const radiusPx = (1 / (xMax - xMin)) * canvas.width; // 1 birimlik yarıçapın piksel karşılığı
+
+            let roots = [];
+
+            // 1. Kökleri Hesapla ve Vektörleri Çiz
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = '#1abc9c'; // Teal (Kök Vektörleri)
+            
+            for (let k = 0; k < n; k++) {
+                let angle = (2 * Math.PI * k) / n;
+                let x = Math.cos(angle);
+                let y = Math.sin(angle);
+                
+                let px = mapX(x);
+                let py = mapY(y);
+                
+                roots.push({px, py, angle});
+
+                // Merkezden köke çizgi (Vektör)
+                ctx.beginPath();
+                ctx.moveTo(originX, originY);
+                ctx.lineTo(px, py);
+                ctx.stroke();
+            }
+
+            // 2. Çokgeni Çiz (Sarı Çizgiler)
+            ctx.beginPath();
+            ctx.strokeStyle = '#f1c40f'; // Yellow (Çokgen sınırları)
+            ctx.lineWidth = 3;
+            ctx.moveTo(roots[0].px, roots[0].py);
+            for (let k = 1; k < n; k++) {
+                ctx.lineTo(roots[k].px, roots[k].py);
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            // 3. Kök Noktalarını (Dots) İşaretle
+            ctx.fillStyle = '#16a085'; // Koyu Teal
+            for (let k = 0; k < n; k++) {
+                ctx.beginPath();
+                ctx.arc(roots[k].px, roots[k].py, 6, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            // 4. İLK KÖK İÇİN (z1) AÇI YAYI ÇİZ (Pedagojik Detay)
+            if(n > 1) {
+                let firstAngle = (2 * Math.PI) / n;
+                let arcRadius = radiusPx * 0.25; // Çemberin %25'i kadar içeride yay çiz
+                
+                ctx.beginPath();
+                ctx.arc(originX, originY, arcRadius, -firstAngle, 0); // Canvas Y ters olduğu için negatif açı
+                ctx.strokeStyle = '#e74c3c'; // Kırmızı Yay
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Açıyı Yayın yanına yaz
+                let midAngle = -firstAngle / 2;
+                let textX = originX + (arcRadius + 15) * Math.cos(midAngle);
+                let textY = originY + (arcRadius + 15) * Math.sin(midAngle);
+                
+                ctx.fillStyle = '#e74c3c';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillText(getRadianString(1, n), textX, textY);
+            }
+        }
+
+        // Olay Dinleyici
+        nSlider.addEventListener('input', draw);
+
+        // Başlangıç
+        window.onload = draw;
     </script>
 </body>
 </html>
