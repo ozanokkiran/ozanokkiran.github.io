@@ -6,7 +6,6 @@
     <title>Interactive Quadratic Explorer</title>
     <style>
         :root {
-            /* Senin ekran görüntündeki renk paleti */
             --bg-color: #fdf8e9;
             --card-bg: #ffffff;
             --text-main: #333333;
@@ -57,7 +56,6 @@
             align-items: flex-start;
         }
 
-        /* SOL PANEL - Kontroller */
         .left-panel {
             flex: 1;
             display: flex;
@@ -92,7 +90,6 @@
             width: 25px;
         }
 
-        /* Manuel Sayı Girişi */
         input[type="number"] {
             padding: 4px 8px;
             font-size: 1.1rem;
@@ -139,7 +136,6 @@
             cursor: pointer;
         }
 
-        /* SAĞ PANEL - Grafik */
         .right-panel {
             flex: 1.5;
             display: flex;
@@ -204,7 +200,6 @@
 
     <div class="main-container">
         
-        <!-- SOL PANEL -->
         <div class="left-panel">
             <div class="control-card">
                 
@@ -235,7 +230,6 @@
             </div>
         </div>
 
-        <!-- SAĞ PANEL -->
         <div class="right-panel">
             <div class="equation-display" id="eqDisplay">y = 0.2x² + 0.0x + 0.0</div>
             <div class="vertex-display" id="vertexDisplay">Vertex: (0.00, 0.00)</div>
@@ -252,7 +246,6 @@
         const canvas = document.getElementById('quadCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Input ve Slider Referansları
         const aInput = document.getElementById('aInput');
         const bInput = document.getElementById('bInput');
         const cInput = document.getElementById('cInput');
@@ -264,13 +257,18 @@
         const eqDisplay = document.getElementById('eqDisplay');
         const vertexDisplay = document.getElementById('vertexDisplay');
 
-        // Dinamik Viewport
         let xMin = -10;
         let xMax = 10;
         let yMin = -10;
         let yMax = 10;
 
-        // Zoom (Fare Tekerleği)
+        // --- GÜVENLİ DEĞER OKUMA (CRASH ÖNLEME) ---
+        function getSafeValue(inputElement) {
+            let val = parseFloat(inputElement.value);
+            return isNaN(val) ? 0 : val;
+        }
+
+        // --- EKSEN KONTROLLERİ ---
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault(); 
             const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
@@ -288,7 +286,6 @@
             draw();
         });
 
-        // Sürükle-Bırak (Pan)
         let isDragging = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
@@ -330,7 +327,6 @@
             canvas.style.cursor = 'crosshair';
         });
 
-        // Koordinat Dönüşümleri
         function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
         function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
         function unmapX(px) { return (px / canvas.width) * (xMax - xMin) + xMin; }
@@ -354,7 +350,6 @@
             let xStep = getGridStep(xMax - xMin);
             let yStep = getGridStep(yMax - yMin);
 
-            // Dikey çizgiler ve sayılar
             let startX = Math.ceil(xMin / xStep) * xStep;
             for (let i = startX; i <= xMax; i += xStep) {
                 if (Math.abs(i) < 1e-5) continue; 
@@ -364,4 +359,151 @@
                 ctx.lineTo(mapX(i), canvas.height);
                 ctx.stroke();
                 
-                let valStr = Number.isInteger(i)
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
+            }
+
+            let startY = Math.ceil(yMin / yStep) * yStep;
+            for (let i = startY; i <= yMax; i += yStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = '#ececec';
+                ctx.moveTo(0, mapY(i));
+                ctx.lineTo(canvas.width, mapY(i));
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
+            }
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#666666';
+            ctx.lineWidth = 1.5;
+            ctx.moveTo(0, mapY(0));
+            ctx.lineTo(canvas.width, mapY(0));
+            ctx.moveTo(mapX(0), 0);
+            ctx.lineTo(mapX(0), canvas.height);
+            ctx.stroke();
+            
+            ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
+        }
+
+        function formatEquation(a, b, c) {
+            let eq = "y = ";
+            
+            if (a === 1) eq += "x² ";
+            else if (a === -1) eq += "-x² ";
+            else if (a !== 0) eq += a.toFixed(1) + "x² ";
+
+            if (b > 0) eq += (a !== 0 ? "+ " : "") + (b === 1 ? "x " : b.toFixed(1) + "x ");
+            else if (b < 0) eq += (a !== 0 ? "- " : "-") + (b === -1 ? "x " : Math.abs(b).toFixed(1) + "x ");
+            
+            if (c > 0) eq += (a !== 0 || b !== 0 ? "+ " : "") + c.toFixed(1);
+            else if (c < 0) eq += (a !== 0 || b !== 0 ? "- " : "-") + Math.abs(c).toFixed(1);
+            
+            if (a === 0 && b === 0 && c === 0) eq = "y = 0";
+            
+            return eq;
+        }
+
+        function draw() {
+            drawGrid();
+
+            // Güvenli okuma
+            let a = getSafeValue(aInput);
+            let b = getSafeValue(bInput);
+            let c = getSafeValue(cInput);
+
+            eqDisplay.innerText = formatEquation(a, b, c);
+            
+            let vx = 0, vy = c;
+            if (a !== 0) {
+                vx = -b / (2 * a);
+                vy = a * vx * vx + b * vx + c;
+                vertexDisplay.innerText = `Vertex: (${vx.toFixed(2)}, ${vy.toFixed(2)})`;
+                vertexDisplay.style.visibility = 'visible';
+            } else {
+                vertexDisplay.style.visibility = 'hidden';
+            }
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#38b29e'; 
+            ctx.lineWidth = 3;
+
+            let first = true;
+            for (let px = 0; px <= canvas.width; px += 2) {
+                let x = unmapX(px);
+                let y = a * x * x + b * x + c;
+
+                // Sonsuzluğa giden hataları önle
+                if (isNaN(y) || !isFinite(y)) continue;
+
+                let py = mapY(y);
+
+                if (first) {
+                    ctx.moveTo(px, py);
+                    first = false;
+                } else {
+                    ctx.lineTo(px, py);
+                }
+            }
+            ctx.stroke();
+
+            if (a !== 0) {
+                ctx.beginPath();
+                ctx.fillStyle = '#e91e63'; 
+                ctx.arc(mapX(vx), mapY(vy), 6, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        // --- GÜVENLİ SENKRONİZASYON ---
+        function syncInputs(slider, input) {
+            slider.addEventListener('input', function() {
+                input.value = parseFloat(this.value).toFixed(1);
+                draw();
+            });
+            
+            input.addEventListener('input', function() {
+                let val = parseFloat(this.value);
+                
+                // Kullanıcı silerse veya geçersiz karakter girerse grafik çökmesin
+                if(isNaN(val)) {
+                    draw(); 
+                    return; 
+                }
+                
+                if (val > 30) { val = 30; this.value = 30; }
+                if (val < -30) { val = -30; this.value = -30; }
+                
+                slider.value = val;
+                draw();
+            });
+            
+            // Kullanıcı kutudan çıkınca, içi boşsa 0'a tamamla
+            input.addEventListener('blur', function() {
+                if(this.value === "" || isNaN(parseFloat(this.value))) {
+                    this.value = "0.0";
+                    slider.value = 0;
+                    draw();
+                }
+            });
+        }
+
+        syncInputs(aSlider, aInput);
+        syncInputs(bSlider, bInput);
+        syncInputs(cSlider, cInput);
+
+        // Sayfa yüklenince ilk çizimi garantile
+        window.onload = function() {
+            aInput.value = "0.2"; aSlider.value = "0.2";
+            bInput.value = "0.0"; bSlider.value = "0.0";
+            cInput.value = "0.0"; cSlider.value = "0.0";
+            draw();
+        };
+    </script>
+</body>
+</html>
