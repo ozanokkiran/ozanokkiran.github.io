@@ -136,7 +136,7 @@
             font-family: 'Cambria Math', 'Times New Roman', serif;
         }
 
-        /* Pedagojik Açıklama (Yeni) */
+        /* Pedagojik Açıklama */
         .math-explanation {
             background-color: #fffaf0;
             border-left: 4px solid var(--accent-yellow);
@@ -152,8 +152,14 @@
             font-size: 1.05rem;
             color: #b7791f;
         }
+        
+        .math-explanation .math-var {
+            font-family: 'Times New Roman', Times, serif;
+            font-weight: bold;
+            font-style: italic;
+        }
 
-        /* Kök Listesi (Yeni) */
+        /* Kök Listesi */
         .roots-list-container {
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -220,7 +226,7 @@
 
         .canvas-container {
             width: 100%;
-            aspect-ratio: 1 / 1; /* Kare olması için */
+            aspect-ratio: 1 / 1;
             position: relative;
             background-color: #fdfdfd;
             border: 1px solid var(--border-color);
@@ -276,13 +282,12 @@
                 <div class="main-formula" id="mainFormula">z<sub>k</sub> = e<sup>i(2πk / 3)</sup></div>
             </div>
 
-            <!-- YENİ: Pedagojik Açıklama -->
+            <!-- DÜZELTİLMİŞ Pedagojik Açıklama -->
             <div class="math-explanation">
                 <h3>Why do they form a polygon?</h3>
-                By De Moivre's Theorem, the equation $z^n = 1$ is rewritten as $z^n = e^{i(2\pi k)}$. Taking the $n$-th root divides the angle by $n$. This forces all $n$ roots to lie on the unit circle (radius = 1), perfectly spaced by an angle of $2\pi/n$ radians ($360°/n$), creating a regular polygon.
+                By De Moivre's Theorem, the equation <span class="math-var">z<sup>n</sup> = 1</span> is rewritten as <span class="math-var">z<sup>n</sup> = e<sup>i(2πk)</sup></span>. Taking the <span class="math-var">n</span>-th root divides the angle by <span class="math-var">n</span>. This forces all <span class="math-var">n</span> roots to lie on the unit circle (radius = 1), perfectly spaced by an angle of <span class="math-var">2π/n</span> radians (<span class="math-var">360°/n</span>), creating a regular polygon.
             </div>
 
-            <!-- YENİ: Kök Listesi -->
             <div class="roots-list-container">
                 <div class="roots-list-title">Calculated Roots & Angles</div>
                 <div id="rootsList">
@@ -307,7 +312,6 @@
         <div class="right-panel">
             <div class="canvas-container">
                 <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
-                <!-- Çözünürlük için width/height yüksek tutulup CSS ile küçültülür -->
                 <canvas id="argandCanvas" width="800" height="800"></canvas>
             </div>
         </div>
@@ -322,13 +326,11 @@
         const mainFormula = document.getElementById('mainFormula');
         const rootsList = document.getElementById('rootsList');
 
-        // Viewport (Argand düzlemi aralığı -2 ile 2 arası)
         let xMin = -2;
         let xMax = 2;
         let yMin = -2;
         let yMax = 2;
 
-        // Fare ile Zoom In/Out
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault(); 
             const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
@@ -341,7 +343,6 @@
             draw();
         });
 
-        // Fare ile Pan (Sürükleme)
         let isDragging = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
@@ -360,7 +361,6 @@
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
 
-            // Canvas kare olduğu için range aynı
             const range = xMax - xMin; 
             const xDelta = (dx / canvas.offsetWidth) * range;
             const yDelta = (dy / canvas.offsetHeight) * range;
@@ -376,52 +376,43 @@
         canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
         canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
 
-        // Çizim Dönüşümleri (Kare Canvas)
         function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
         function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
 
         function drawArgandPlane() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Orijin (Merkez)
             const originX = mapX(0);
             const originY = mapY(0);
 
-            // Eksenler (Açık Gri)
             ctx.beginPath();
             ctx.strokeStyle = '#cbd5e0';
             ctx.lineWidth = 2;
             
-            // Real Axis (X)
             ctx.moveTo(0, originY);
             ctx.lineTo(canvas.width, originY);
             
-            // Imaginary Axis (Y)
             ctx.moveTo(originX, 0);
             ctx.lineTo(originX, canvas.height);
             ctx.stroke();
 
-            // Eksen Etiketleri
             ctx.fillStyle = '#718096';
             ctx.font = 'bold 16px sans-serif';
             ctx.fillText("Re", canvas.width - 30, originY - 10);
             ctx.fillText("Im", originX + 10, 30);
 
-            // Birim Çember (Unit Circle)
             ctx.beginPath();
             ctx.arc(originX, originY, (1 / (xMax - xMin)) * canvas.width, 0, 2 * Math.PI);
             ctx.strokeStyle = '#a0aec0';
             ctx.lineWidth = 1.5;
-            ctx.setLineDash([8, 8]); // Kesik çizgili
+            ctx.setLineDash([8, 8]); 
             ctx.stroke();
-            ctx.setLineDash([]); // Sıfırla
+            ctx.setLineDash([]); 
 
-            // 1 ve i işaretleri
             ctx.fillText("1", mapX(1) - 5, originY - 10);
             ctx.fillText("i", originX + 10, mapY(1) + 5);
         }
 
-        // Kesir sadeleştirme fonksiyonu (Radyan gösterimi için)
         function simplifyFraction(numerator, denominator) {
             const gcd = function(a, b) {
                 return b ? gcd(b, a % b) : a;
@@ -433,7 +424,6 @@
         function getRadianString(k, n) {
             if (k === 0) return "0";
             
-            // Açı: (2 * k * pi) / n => (2k / n) * pi
             let num = 2 * k;
             let den = n;
             let [sNum, sDen] = simplifyFraction(num, den);
@@ -445,13 +435,12 @@
         }
 
         function updateRootsList(n) {
-            rootsList.innerHTML = ''; // Temizle
+            rootsList.innerHTML = ''; 
             
             for (let k = 0; k < n; k++) {
                 let radStr = getRadianString(k, n);
                 let deg = (360 * k / n).toFixed(1);
                 
-                // .0 varsa temizle
                 if(deg.endsWith('.0')) deg = deg.slice(0, -2);
                 
                 let div = document.createElement('div');
@@ -470,21 +459,18 @@
             let n = parseInt(nSlider.value);
             nValDisplay.innerText = n;
             
-            // Formülü Güncelle
             mainFormula.innerHTML = `z<sub>k</sub> = e<sup>i(2πk / ${n})</sup>`;
             
-            // Listeyi Güncelle
             updateRootsList(n);
 
             const originX = mapX(0);
             const originY = mapY(0);
-            const radiusPx = (1 / (xMax - xMin)) * canvas.width; // 1 birimlik yarıçapın piksel karşılığı
+            const radiusPx = (1 / (xMax - xMin)) * canvas.width; 
 
             let roots = [];
 
-            // 1. Kökleri Hesapla ve Vektörleri Çiz
             ctx.lineWidth = 2.5;
-            ctx.strokeStyle = '#1abc9c'; // Teal (Kök Vektörleri)
+            ctx.strokeStyle = '#1abc9c'; 
             
             for (let k = 0; k < n; k++) {
                 let angle = (2 * Math.PI * k) / n;
@@ -496,16 +482,14 @@
                 
                 roots.push({px, py, angle});
 
-                // Merkezden köke çizgi (Vektör)
                 ctx.beginPath();
                 ctx.moveTo(originX, originY);
                 ctx.lineTo(px, py);
                 ctx.stroke();
             }
 
-            // 2. Çokgeni Çiz (Sarı Çizgiler)
             ctx.beginPath();
-            ctx.strokeStyle = '#f1c40f'; // Yellow (Çokgen sınırları)
+            ctx.strokeStyle = '#f1c40f'; 
             ctx.lineWidth = 3;
             ctx.moveTo(roots[0].px, roots[0].py);
             for (let k = 1; k < n; k++) {
@@ -514,26 +498,23 @@
             ctx.closePath();
             ctx.stroke();
 
-            // 3. Kök Noktalarını (Dots) İşaretle
-            ctx.fillStyle = '#16a085'; // Koyu Teal
+            ctx.fillStyle = '#16a085'; 
             for (let k = 0; k < n; k++) {
                 ctx.beginPath();
                 ctx.arc(roots[k].px, roots[k].py, 6, 0, 2 * Math.PI);
                 ctx.fill();
             }
 
-            // 4. İLK KÖK İÇİN (z1) AÇI YAYI ÇİZ (Pedagojik Detay)
             if(n > 1) {
                 let firstAngle = (2 * Math.PI) / n;
-                let arcRadius = radiusPx * 0.25; // Çemberin %25'i kadar içeride yay çiz
+                let arcRadius = radiusPx * 0.25; 
                 
                 ctx.beginPath();
-                ctx.arc(originX, originY, arcRadius, -firstAngle, 0); // Canvas Y ters olduğu için negatif açı
-                ctx.strokeStyle = '#e74c3c'; // Kırmızı Yay
+                ctx.arc(originX, originY, arcRadius, -firstAngle, 0); 
+                ctx.strokeStyle = '#e74c3c'; 
                 ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                // Açıyı Yayın yanına yaz
                 let midAngle = -firstAngle / 2;
                 let textX = originX + (arcRadius + 15) * Math.cos(midAngle);
                 let textY = originY + (arcRadius + 15) * Math.sin(midAngle);
@@ -544,10 +525,8 @@
             }
         }
 
-        // Olay Dinleyici
         nSlider.addEventListener('input', draw);
 
-        // Başlangıç
         window.onload = draw;
     </script>
 </body>
