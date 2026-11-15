@@ -94,7 +94,7 @@
             display: block;
             width: 100%;
             height: 450px;
-            cursor: crosshair; /* Varsayılan imleç */
+            cursor: crosshair; 
         }
 
         .quick-insert-panel {
@@ -257,10 +257,20 @@
             font-size: 1.1rem;
             color: var(--text-main);
             background: #fff;
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
             border: 1px dashed var(--border-color);
             margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .derivative-eq sup {
+            font-size: 0.8rem;
+            line-height: 0;
+            position: relative;
+            top: -0.4em;
         }
 
         .result-value {
@@ -335,9 +345,9 @@
                 <div id="fxVal" class="result-value val-fx">0</div>
             </div>
             <div class="result-box">
-                <div class="result-label">Derivative & Slope f'(x)</div>
+                <div class="result-label">Derivative f'(x)</div>
                 <div id="derivEq" class="derivative-eq">f'(x) = </div>
-                <div id="slopeVal" class="result-value val-slope">0</div>
+                <div id="slopeVal" class="result-value val-slope">Slope = 0</div>
             </div>
         </div>
 
@@ -361,10 +371,8 @@
         let yMin = -20;
         let yMax = 20;
 
-        // Daha yumuşak Zoom Olayı
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault(); 
-            // Hassasiyet düşürüldü: 0.8 yerine 0.9, 1.25 yerine 1.1
             const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
             
             xMin *= zoomFactor;
@@ -383,7 +391,6 @@
             draw();
         });
 
-        // Sürükle-Bırak (Pan) Değişkenleri
         let isDragging = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
@@ -403,7 +410,6 @@
             lastMouseX = e.clientX;
             lastMouseY = e.clientY;
 
-            // Pikselleri koordinat birimine çevir
             const xRange = xMax - xMin;
             const yRange = yMax - yMin;
             const xDelta = (dx / canvas.width) * xRange;
@@ -411,7 +417,6 @@
 
             xMin -= xDelta;
             xMax -= xDelta;
-            // Y ekseni canvas'ta terstir, o yüzden ekliyoruz
             yMin += yDelta; 
             yMax += yDelta;
 
@@ -431,15 +436,16 @@
             canvas.style.cursor = 'crosshair';
         });
 
-        // Matematiksel formatı düzenleyen ve gereksiz boşlukları/yıldızları silen fonksiyon
-        function formatMathExpression(exprStr) {
+        // Matematiksel ifadeleri HTML formatına çevir (Üslü sayılar için)
+        function formatMathToHTML(exprStr) {
             return exprStr
                 .replace(/(\d+)\s*\*\s*([a-zA-Z])/g, '$1$2') // 2 * x -> 2x
                 .replace(/\s*\*\s*/g, '*')                   // a * b -> a*b
-                .replace(/\s*\^\s*/g, '^');                  // x ^ 3 -> x^3
+                .replace(/\s*\^\s*/g, '^')                   // x ^ 3 -> x^3
+                .replace(/\^([0-9]+)/g, '<sup>$1</sup>');    // x^3 -> x<sup>3</sup>
         }
 
-        // Akıllı Sayı Formatı: Tam sayıysa .000 göstermez, ondalıksa max 3 basamak gösterir
+        // Akıllı Sayı Formatı
         function formatNumber(num) {
             return parseFloat(num.toFixed(3)).toString();
         }
@@ -545,8 +551,9 @@
                 const derivativeNode = math.derivative(node, xNode);
                 const derivativeCode = derivativeNode.compile();
                 
-                let formattedDerivative = formatMathExpression(derivativeNode.toString());
-                derivEqDisplay.innerText = "f'(x) = " + formattedDerivative;
+                // innerHTML kullanarak <sup> etiketlerinin çalışmasını sağlıyoruz
+                let formattedDerivativeHTML = formatMathToHTML(derivativeNode.toString());
+                derivEqDisplay.innerHTML = "f'(x) = " + formattedDerivativeHTML;
 
                 ctx.beginPath();
                 ctx.strokeStyle = '#5c8aab'; 
@@ -573,9 +580,9 @@
                 let currentY = code.evaluate({ x: currentX });
                 let slope = derivativeCode.evaluate({ x: currentX });
 
-                // Güncellenen Akıllı Format Fonksiyonunu Çağırıyoruz
                 fxValDisplay.innerText = formatNumber(currentY);
-                slopeValDisplay.innerText = formatNumber(slope);
+                // Açıkça Slope = ... formatında yazdırıyoruz
+                slopeValDisplay.innerText = "Slope = " + formatNumber(slope);
 
                 const tangentLength = (xMax - xMin) * 0.15;
                 const x1 = currentX - tangentLength;
@@ -603,7 +610,7 @@
             } catch (error) {
                 fxValDisplay.innerText = '---';
                 slopeValDisplay.innerText = '---';
-                derivEqDisplay.innerText = "Invalid Expression";
+                derivEqDisplay.innerHTML = "Invalid Expression";
             }
         }
 
