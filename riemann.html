@@ -8,17 +8,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root {
-            /* Renk Paleti */
             --bg-color: #f7f7f7;
             --card-bg: #ffffff;
             --text-main: #333333;
             --text-light: #777777;
             --accent-blue: #007bff;
-            --curve-color: #333333; /* Eğri siyah yapıldı */
-            --rect-color: rgba(128, 128, 128, 0.7); /* Dikdörtgenler gri */
-            --rect-border: #4d4d4d;
+            --curve-color: #333333;
+            --rect-color: rgba(128, 128, 128, 0.5);
+            --rect-border: #333333;
             --grid-line: #e0e0e0;
-            --axis-line: #cc0000; /* KIRMIZI EKSENLER */
             --border-color: #e0e0e0;
         }
 
@@ -61,7 +59,7 @@
             align-items: flex-start;
         }
 
-        /* SOL PANEL - Grafikler */
+        /* SOL PANEL */
         .left-panel {
             flex: 1.5;
             background-color: var(--card-bg);
@@ -132,10 +130,10 @@
             font-weight: bold;
         }
 
-        .val-est { color: #ff8585; }
-        .val-exact { color: #7a9cbf; }
+        .val-est { color: #ff6b6b; }
+        .val-exact { color: #5b8fb9; }
 
-        /* SAĞ PANEL - Kontroller */
+        /* SAĞ PANEL */
         .right-panel {
             flex: 1;
             display: flex;
@@ -162,7 +160,6 @@
             margin-bottom: 10px;
         }
 
-        /* Hızlı Ekleme Butonları */
         .quick-insert-panel {
             display: flex;
             gap: 8px;
@@ -225,7 +222,7 @@
         }
 
         .n-badge {
-            color: #ff8585;
+            color: #ff6b6b;
             font-weight: bold;
             font-size: 1.2rem;
         }
@@ -248,7 +245,7 @@
             cursor: pointer;
         }
 
-        /* Pedagojik Pano (Arkasındaki Matematik) */
+        /* Pedagojik Pano & İNTEGRAL TASARIMI */
         .math-card {
             background-color: #fdfce8;
             border: 1px solid #f2e293;
@@ -267,7 +264,7 @@
 
         .formula-block {
             background-color: white;
-            padding: 10px;
+            padding: 15px;
             border-radius: 6px;
             border: 1px dashed #d35400;
             text-align: center;
@@ -278,28 +275,32 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 5px;
         }
 
-        /* Formül Hizalaması (a ve b indisleri düzeltildi) */
+        /* GARANTİLİ İNTEGRAL HİZALAMASI (Absolute Positioning) */
+        .integral-wrapper {
+            position: relative;
+            display: inline-block;
+            margin: 0 15px;
+            width: 20px;
+        }
         .integral-symbol {
-            font-size: 1.8em;
+            font-size: 3.5rem;
             font-weight: normal;
-            margin-right: 2px;
-            display: inline-flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            line-height: 0.4;
+            line-height: 1;
         }
-
-        .integral-limits {
-            display: inline-flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 2em;
-            font-size: 0.5em;
-            margin-left: -5px; /* İntegral işaretine yaklaştırmak için */
+        .integral-limit-b {
+            position: absolute;
+            top: -5px;
+            left: 15px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .integral-limit-a {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            font-size: 0.9rem;
             font-weight: bold;
         }
 
@@ -309,19 +310,17 @@
             text-align: center;
             font-size: 0.9rem;
         }
-
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>Dynamic Riemann Sums</h1>
-        <div class="subtitle" id="mainSubtitle">Visualizing Integration: Area under f(x) = -x² + 4x</div>
+        <div class="subtitle" id="mainSubtitle">Visualizing Integration: Area under f(x) = -x² + 4x + 2</div>
     </div>
 
     <div class="main-container">
         
-        <!-- SOL PANEL - Grafik ve Sonuçlar -->
         <div class="left-panel">
             <div class="canvas-container">
                 <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
@@ -340,7 +339,6 @@
             </div>
         </div>
 
-        <!-- SAĞ PANEL - Kontroller -->
         <div class="right-panel">
             <div class="control-card">
                 
@@ -353,7 +351,8 @@
                         <button class="quick-btn" onclick="insertText('cos(x)')">cos</button>
                         <button class="quick-btn" onclick="insertText('sqrt(x)')">√</button>
                     </div>
-                    <input type="text" id="funcInput" value="-x^2 + 4x">
+                    <!-- f(0)=0 tuzagindan kurtulmak için +2 eklendi -->
+                    <input type="text" id="funcInput" value="-x^2 + 4x + 2">
                 </div>
 
                 <div class="control-group limits-container">
@@ -380,16 +379,18 @@
             <div class="math-card">
                 <h3>How is the Exact Area Calculated?</h3>
                 <p>The rectangles give us an <b>Estimated Area</b> (Riemann Sum). As we pack more and more rectangles (increasing <i>n</i>), the approximation gets better.</p>
-                <p>To find the <b>Exact Area</b>, we take the mathematical limit as <i>n</i> goes to infinity. This turns our rectangles into the Definite Integral:</p>
+                <p>To find the <b>Exact Area</b>, we take the mathematical limit as <i>n</i> goes to infinity.</p>
+                
                 <div class="formula-block">
                     Exact Area = 
-                    <span class="integral-symbol">∫</span>
-                    <span class="integral-limits">
-                        <span>b</span>
-                        <span>a</span>
-                    </span>
+                    <div class="integral-wrapper">
+                        <span class="integral-symbol">&int;</span>
+                        <span class="integral-limit-b">b</span>
+                        <span class="integral-limit-a">a</span>
+                    </div>
                     f(x) dx
                 </div>
+                
                 <div class="formula-desc">
                     (Computed automatically using numerical integration)
                 </div>
@@ -412,11 +413,10 @@
         const exactAreaDisplay = document.getElementById('exactAreaDisplay');
         const mainSubtitle = document.getElementById('mainSubtitle');
 
-        // Y eksenini -2'den başlattım ki kırmızı X ekseni ortalara gelsin
         let xMin = -1;
         let xMax = 5;
         let yMin = -2; 
-        let yMax = 5;
+        let yMax = 8; // Eğri (+2 yüzünden) yükseldiği için yMax'ı artırdım
 
         function formatMathToHTML(exprStr) {
             return exprStr
@@ -437,6 +437,7 @@
             draw();
         }
 
+        // Fare ile Zoom In/Out
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault(); 
             const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
@@ -449,6 +450,7 @@
             draw();
         });
 
+        // Fare ile Pan (Sürükleme)
         let isDragging = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
@@ -503,6 +505,7 @@
             let xStep = getGridStep(xMax - xMin);
             let yStep = getGridStep(yMax - yMin);
 
+            // Dikey Izgaralar
             let startX = Math.ceil(xMin / xStep) * xStep;
             for (let i = startX; i <= xMax; i += xStep) {
                 if (Math.abs(i) < 1e-5) continue; 
@@ -516,6 +519,7 @@
                 ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
             }
 
+            // Yatay Izgaralar
             let startY = Math.ceil(yMin / yStep) * yStep;
             for (let i = startY; i <= yMax; i += yStep) {
                 if (Math.abs(i) < 1e-5) continue; 
@@ -529,22 +533,22 @@
                 ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
             }
 
-            // Orijin Eksenleri (KIRMIZI VE KALIN)
+            // GARANTİLİ KALIN KIRMIZI EKSENLER
             ctx.beginPath();
-            ctx.strokeStyle = 'var(--axis-line)'; // Kırmızı renk
-            ctx.lineWidth = 2.5; // Daha kalın eksen çizgisi
+            ctx.strokeStyle = '#cc0000'; // JS içine hard-code edildi
+            ctx.lineWidth = 3; // Kalınlık artırıldı
             
-            // X Ekseni (Yatay)
+            // X Ekseni
             ctx.moveTo(0, mapY(0));
             ctx.lineTo(canvas.width, mapY(0));
             
-            // Y Ekseni (Dikey)
+            // Y Ekseni
             ctx.moveTo(mapX(0), 0);
             ctx.lineTo(mapX(0), canvas.height);
             
             ctx.stroke();
             
-            ctx.fillStyle = 'var(--axis-line)';
+            ctx.fillStyle = '#cc0000';
             ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
         }
 
@@ -587,9 +591,8 @@
                 ctx.strokeStyle = 'var(--rect-border)';
                 ctx.lineWidth = 1.5;
 
-                // DİKKAT: Artık i < n döngüsü doğru çalışıyor ve Riemann Sütunlarını tam çiziyor
                 for (let i = 0; i < n; i++) {
-                    let xi = a + i * dx; // Left Sum (Sol uç)
+                    let xi = a + i * dx; // Left Sum
                     let y = code.evaluate({ x: xi });
                     
                     if (isNaN(y) || !isFinite(y)) continue;
@@ -597,11 +600,11 @@
                     estimatedArea += y * dx;
 
                     let px = mapX(xi);
-                    // DİKKAT: Genişlik (pw) piksel bazında hassas hesaplanıyor
                     let pw = mapX(xi + dx) - px; 
                     let py = mapY(y);
                     let ph = mapY(0) - py;
 
+                    // Yüksekliği 0 olanları bile görünür kılmak için border çiz
                     ctx.fillRect(px, py, pw, ph);
                     ctx.strokeRect(px, py, pw, ph);
                 }
@@ -644,7 +647,6 @@
         bLimitInput.addEventListener('input', draw);
         nSlider.addEventListener('input', draw);
 
-        // İlk yüklendiğinde grafiği çizdir
         window.onload = draw;
     </script>
 </body>
