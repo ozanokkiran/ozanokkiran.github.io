@@ -76,7 +76,6 @@
             position: relative;
         }
 
-        /* Zoom ipucu yazısı */
         .zoom-hint {
             position: absolute;
             top: 10px;
@@ -177,11 +176,39 @@
         .slider-label {
             font-size: 1.2rem;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Yeni: Sayı Giriş Kutusu Stilleri */
+        input[type="number"] {
+            padding: 4px 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-orange);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            width: 90px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+        }
+        
+        /* Chrome, Safari, Edge, Opera için yukarı aşağı oklarını gizle */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
-        .slider-val {
-            color: var(--accent-orange);
-            font-weight: bold;
+        /* Firefox için yukarı aşağı oklarını gizle */
+        input[type=number] {
+            -moz-appearance: textfield;
         }
 
         input[type="range"] {
@@ -286,7 +313,7 @@
 
         <div class="input-section">
             <div class="function-input-wrapper">
-                f(x) = <input type="text" id="funcInput" value="5x^4 + x^3">
+                f(x) = <input type="text" id="funcInput" value="x^2 + 3x + 5">
             </div>
             <select id="presetSelect" onchange="applyPreset()">
                 <option value="">Presets...</option>
@@ -297,20 +324,23 @@
         </div>
 
         <div class="slider-section">
-            <div class="slider-label">Point x = <span id="xValDisplay" class="slider-val">-2.00</span></div>
-            <!-- Slider'ın min-max değerleri artık dinamik güncellenecek -->
-            <input type="range" id="xSlider" min="-10" max="10" step="0.05" value="-2">
+            <div class="slider-label">
+                Point x = 
+                <!-- Yeni Manuel Giriş Kutusu -->
+                <input type="number" id="xInputBox" min="-50" max="50" step="0.01" value="-1.10">
+            </div>
+            <input type="range" id="xSlider" min="-10" max="10" step="0.05" value="-1.10">
         </div>
 
         <div class="results-panel">
             <div class="result-box">
                 <div class="result-label">Function Value f(x)</div>
-                <div id="fxVal" class="result-value val-fx">72.000</div>
+                <div id="fxVal" class="result-value val-fx">0.000</div>
             </div>
             <div class="result-box">
                 <div class="result-label">Derivative & Slope f'(x)</div>
-                <div id="derivEq" class="derivative-eq">f'(x) = 20x^3 + 3x^2</div>
-                <div id="slopeVal" class="result-value val-slope">-148.000</div>
+                <div id="derivEq" class="derivative-eq">f'(x) = </div>
+                <div id="slopeVal" class="result-value val-slope">0.000</div>
             </div>
         </div>
 
@@ -323,23 +353,20 @@
         const ctx = canvas.getContext('2d');
         const funcInput = document.getElementById('funcInput');
         const xSlider = document.getElementById('xSlider');
-        const xValDisplay = document.getElementById('xValDisplay');
+        const xInputBox = document.getElementById('xInputBox'); // Yeni giriş kutusu referansı
         const fxValDisplay = document.getElementById('fxVal');
         const slopeValDisplay = document.getElementById('slopeVal');
         const derivEqDisplay = document.getElementById('derivEq');
         const presetSelect = document.getElementById('presetSelect');
 
-        // Dinamik Viewport (Zoom için let olarak tanımlandı)
         let xMin = -10;
         let xMax = 10;
         let yMin = -20;
         let yMax = 20;
 
-        // Zoom Olayı (Mouse Scroll)
         canvas.addEventListener('wheel', function(event) {
-            event.preventDefault(); // Sayfanın kaymasını engelle
+            event.preventDefault(); 
             
-            // Yukarı scroll: Yaklaş (0.8), Aşağı scroll: Uzaklaş (1.25)
             const zoomFactor = event.deltaY < 0 ? 0.8 : 1.25;
             
             xMin *= zoomFactor;
@@ -347,13 +374,11 @@
             yMin *= zoomFactor;
             yMax *= zoomFactor;
             
-            // Limitler (Çok fazla yaklaşmayı veya uzaklaşmayı engelle)
             if (xMax - xMin < 2) { xMin = -1; xMax = 1; }
             if (xMax - xMin > 200) { xMin = -100; xMax = 100; }
             if (yMax - yMin < 4) { yMin = -2; yMax = 2; }
             if (yMax - yMin > 400) { yMin = -200; yMax = 200; }
 
-            // Slider'ın sınırlarını mevcut ekrana göre dinamik ayarla
             xSlider.min = Math.floor(xMin);
             xSlider.max = Math.ceil(xMax);
 
@@ -394,7 +419,6 @@
         function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
         function unmapX(px) { return (px / canvas.width) * (xMax - xMin) + xMin; }
 
-        // Dinamik grid aralığını belirleme algoritması
         function getGridStep(range) {
             if (range <= 4) return 0.5;
             if (range <= 10) return 1;
@@ -414,10 +438,9 @@
             let xStep = getGridStep(xMax - xMin);
             let yStep = getGridStep(yMax - yMin);
 
-            // Dikey çizgiler (X ekseni)
             let startX = Math.ceil(xMin / xStep) * xStep;
             for (let i = startX; i <= xMax; i += xStep) {
-                if (Math.abs(i) < 1e-5) continue; // 0'ı atla
+                if (Math.abs(i) < 1e-5) continue; 
                 ctx.beginPath();
                 ctx.strokeStyle = '#ecf0f1';
                 ctx.moveTo(mapX(i), 0);
@@ -428,10 +451,9 @@
                 ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
             }
 
-            // Yatay çizgiler (Y ekseni)
             let startY = Math.ceil(yMin / yStep) * yStep;
             for (let i = startY; i <= yMax; i += yStep) {
-                if (Math.abs(i) < 1e-5) continue; // 0'ı atla
+                if (Math.abs(i) < 1e-5) continue; 
                 ctx.beginPath();
                 ctx.strokeStyle = '#ecf0f1';
                 ctx.moveTo(0, mapY(i));
@@ -442,7 +464,6 @@
                 ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
             }
 
-            // Orijin (0,0) eksenleri
             ctx.beginPath();
             ctx.strokeStyle = '#bdc3c7';
             ctx.lineWidth = 1.5;
@@ -452,7 +473,6 @@
             ctx.lineTo(mapX(0), canvas.height);
             ctx.stroke();
             
-            // Orijin numarası
             ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
         }
 
@@ -460,8 +480,8 @@
             drawGrid();
 
             const exprStr = funcInput.value;
-            let currentX = parseFloat(xSlider.value);
-            xValDisplay.innerText = currentX.toFixed(2);
+            // X değerini Slider'dan veya Input kutusundan alabiliriz, her ikisi de senkronize olacak
+            let currentX = parseFloat(xInputBox.value); 
 
             try {
                 const node = math.parse(exprStr);
@@ -502,7 +522,6 @@
                 fxValDisplay.innerText = currentY.toFixed(3);
                 slopeValDisplay.innerText = slope.toFixed(3);
 
-                // Tanjant çizgisi uzunluğu artık ekrandaki ölçeğe bağlı
                 const tangentLength = (xMax - xMin) * 0.15;
                 const x1 = currentX - tangentLength;
                 const y1 = currentY - slope * tangentLength;
@@ -534,7 +553,30 @@
         }
 
         funcInput.addEventListener('input', draw);
-        xSlider.addEventListener('input', draw);
+        
+        // Slider değiştiğinde Input kutusunu güncelle ve çizdir
+        xSlider.addEventListener('input', function() {
+            xInputBox.value = parseFloat(this.value).toFixed(2);
+            draw();
+        });
+
+        // Input kutusu değiştiğinde Slider'ı güncelle ve çizdir
+        xInputBox.addEventListener('input', function() {
+            // Sınır kontrolü (Giriş kutusundaki değeri -50 ve 50 arasında tut)
+            let val = parseFloat(this.value);
+            if(isNaN(val)) return; // Eğer silinirse bir şey yapma
+            
+            if (val > 50) { val = 50; this.value = 50.00; }
+            if (val < -50) { val = -50; this.value = -50.00; }
+
+            // Slider'ın görsel sınırları dışına çıkıldıysa (örneğin zoom in yapılmışken manuel giriş), 
+            // slider'ın min/max sınırlarını genişlet ki hata vermesin
+            if(val > parseFloat(xSlider.max)) { xSlider.max = val; }
+            if(val < parseFloat(xSlider.min)) { xSlider.min = val; }
+
+            xSlider.value = val;
+            draw();
+        });
 
         draw();
     </script>
