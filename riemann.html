@@ -8,14 +8,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root {
+            /* Ferah ve Şık Renk Paleti */
             --bg-color: #f7f7f7;
             --card-bg: #ffffff;
             --text-main: #333333;
             --text-light: #777777;
             --accent-blue: #007bff;
             --curve-color: #333333;
-            --rect-color: rgba(128, 128, 128, 0.5);
-            --rect-border: #333333;
+            /* Dikdörtgenler için tekrar pastel mavi şeffaf ton */
+            --rect-color: rgba(176, 196, 222, 0.7); 
+            --rect-border: #8ca3be;
             --grid-line: #e0e0e0;
             --border-color: #e0e0e0;
         }
@@ -277,7 +279,6 @@
             align-items: center;
         }
 
-        /* GARANTİLİ İNTEGRAL HİZALAMASI (Absolute Positioning) */
         .integral-wrapper {
             position: relative;
             display: inline-block;
@@ -351,7 +352,6 @@
                         <button class="quick-btn" onclick="insertText('cos(x)')">cos</button>
                         <button class="quick-btn" onclick="insertText('sqrt(x)')">√</button>
                     </div>
-                    <!-- f(0)=0 tuzagindan kurtulmak için +2 eklendi -->
                     <input type="text" id="funcInput" value="-x^2 + 4x + 2">
                 </div>
 
@@ -416,7 +416,7 @@
         let xMin = -1;
         let xMax = 5;
         let yMin = -2; 
-        let yMax = 8; // Eğri (+2 yüzünden) yükseldiği için yMax'ı artırdım
+        let yMax = 8; 
 
         function formatMathToHTML(exprStr) {
             return exprStr
@@ -505,10 +505,10 @@
             let xStep = getGridStep(xMax - xMin);
             let yStep = getGridStep(yMax - yMin);
 
-            // Dikey Izgaralar
+            // Dikey Izgaralar (Normal Çizgiler)
             let startX = Math.ceil(xMin / xStep) * xStep;
             for (let i = startX; i <= xMax; i += xStep) {
-                if (Math.abs(i) < 1e-5) continue; 
+                if (Math.abs(i) < 1e-5) continue; // 0 Noktasını atla
                 ctx.beginPath();
                 ctx.strokeStyle = 'var(--grid-line)';
                 ctx.moveTo(mapX(i), 0);
@@ -519,10 +519,10 @@
                 ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
             }
 
-            // Yatay Izgaralar
+            // Yatay Izgaralar (Normal Çizgiler)
             let startY = Math.ceil(yMin / yStep) * yStep;
             for (let i = startY; i <= yMax; i += yStep) {
-                if (Math.abs(i) < 1e-5) continue; 
+                if (Math.abs(i) < 1e-5) continue; // 0 Noktasını atla
                 ctx.beginPath();
                 ctx.strokeStyle = 'var(--grid-line)';
                 ctx.moveTo(0, mapY(i));
@@ -533,10 +533,10 @@
                 ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
             }
 
-            // GARANTİLİ KALIN KIRMIZI EKSENLER
+            // SADECE EKSENLERİ KALIN VE KIRMIZI ÇİZ
             ctx.beginPath();
-            ctx.strokeStyle = '#cc0000'; // JS içine hard-code edildi
-            ctx.lineWidth = 3; // Kalınlık artırıldı
+            ctx.strokeStyle = '#cc0000'; // Kırmızı Eksen
+            ctx.lineWidth = 2.5; 
             
             // X Ekseni
             ctx.moveTo(0, mapY(0));
@@ -587,7 +587,7 @@
                 let dx = (b - a) / n;
                 let estimatedArea = 0;
 
-                ctx.fillStyle = 'var(--rect-color)';
+                ctx.fillStyle = 'var(--rect-color)'; // Mavi/Gri Pastel Dolgu
                 ctx.strokeStyle = 'var(--rect-border)';
                 ctx.lineWidth = 1.5;
 
@@ -604,7 +604,6 @@
                     let py = mapY(y);
                     let ph = mapY(0) - py;
 
-                    // Yüksekliği 0 olanları bile görünür kılmak için border çiz
                     ctx.fillRect(px, py, pw, ph);
                     ctx.strokeRect(px, py, pw, ph);
                 }
