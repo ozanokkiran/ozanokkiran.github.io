@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Riemann Sums</title>
-    <!-- math.js kütüphanesi -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root {
-            /* Senin görselindeki renk paleti */
             --bg-color: #f7f7f7;
             --card-bg: #ffffff;
             --text-main: #333333;
@@ -18,7 +16,7 @@
             --rect-color: rgba(176, 196, 222, 0.7);
             --rect-border: #8ca3be;
             --grid-line: #e0e0e0;
-            --axis-line: #888888;
+            --axis-line: #cc0000; /* Kırmızı Eksenler */
             --border-color: #e0e0e0;
         }
 
@@ -161,7 +159,6 @@
             margin-bottom: 10px;
         }
 
-        /* Hızlı Ekleme Butonları */
         .quick-insert-panel {
             display: flex;
             gap: 8px;
@@ -247,7 +244,7 @@
             cursor: pointer;
         }
 
-        /* Pedagojik Pano (Arkasındaki Matematik) */
+        /* Pedagojik Pano */
         .math-card {
             background-color: #fdfce8;
             border: 1px solid #f2e293;
@@ -271,9 +268,35 @@
             border: 1px dashed #d35400;
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             font-weight: bold;
             margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Formül Hizalaması (a ve b indisleri düzeltildi) */
+        .integral-symbol {
+            font-size: 1.8em;
+            font-weight: normal;
+            margin-right: 2px;
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            line-height: 0.4;
+        }
+
+        .integral-limits {
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 2em;
+            font-size: 0.5em;
+            margin-left: -5px; /* İntegral işaretine yaklaştırmak için */
+            font-weight: bold;
         }
 
         .formula-desc {
@@ -294,7 +317,6 @@
 
     <div class="main-container">
         
-        <!-- SOL PANEL - Grafik ve Sonuçlar -->
         <div class="left-panel">
             <div class="canvas-container">
                 <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
@@ -313,7 +335,6 @@
             </div>
         </div>
 
-        <!-- SAĞ PANEL - Kontroller -->
         <div class="right-panel">
             <div class="control-card">
                 
@@ -355,10 +376,16 @@
                 <p>The rectangles give us an <b>Estimated Area</b> (Riemann Sum). As we pack more and more rectangles (increasing <i>n</i>), the approximation gets better.</p>
                 <p>To find the <b>Exact Area</b>, we take the mathematical limit as <i>n</i> goes to infinity. This turns our rectangles into the Definite Integral:</p>
                 <div class="formula-block">
-                    Exact Area = ∫ <sub style="font-size:0.7em;">a</sub><sup style="font-size:0.7em;">b</sup> f(x) dx
+                    Exact Area = 
+                    <span class="integral-symbol">∫</span>
+                    <span class="integral-limits">
+                        <span>b</span>
+                        <span>a</span>
+                    </span>
+                    f(x) dx
                 </div>
                 <div class="formula-desc">
-                    (Computed automatically using Math.js numerical integration)
+                    (Computed automatically using numerical integration)
                 </div>
             </div>
         </div>
@@ -379,13 +406,12 @@
         const exactAreaDisplay = document.getElementById('exactAreaDisplay');
         const mainSubtitle = document.getElementById('mainSubtitle');
 
-        // Viewport
+        // Y eksenini -2'den başlattım ki kırmızı X ekseni ortalara gelsin
         let xMin = -1;
         let xMax = 5;
-        let yMin = -2;
+        let yMin = -2; 
         let yMax = 5;
 
-        // Matematik formatlayıcı (2*x -> 2x vs.)
         function formatMathToHTML(exprStr) {
             return exprStr
                 .replace(/(\d+)\s*\*\s*([a-zA-Z])/g, '$1$2')
@@ -394,7 +420,6 @@
                 .replace(/\^([0-9]+)/g, '<sup>$1</sup>');    
         }
 
-        // Hızlı Butonlar
         function insertText(text) {
             const input = funcInput;
             const start = input.selectionStart;
@@ -406,7 +431,6 @@
             draw();
         }
 
-        // Mouse Pan & Zoom
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault(); 
             const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
@@ -451,7 +475,6 @@
         canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
         canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
 
-        // Çizim Dönüşümleri
         function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
         function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
         function unmapX(px) { return (px / canvas.width) * (xMax - xMin) + xMin; }
@@ -468,8 +491,8 @@
         function drawGrid() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.lineWidth = 1;
-            ctx.font = '11px sans-serif';
-            ctx.fillStyle = '#888888';
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#666666';
 
             let xStep = getGridStep(xMax - xMin);
             let yStep = getGridStep(yMax - yMin);
@@ -500,21 +523,27 @@
                 ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
             }
 
-            // Orijin Ekseni
+            // Orijin Eksenleri (KIRMIZI VE KALIN)
             ctx.beginPath();
-            ctx.strokeStyle = 'var(--axis-line)';
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'var(--axis-line)'; // Kırmızı renk
+            ctx.lineWidth = 2.5; // Daha kalın eksen çizgisi
+            
+            // X Ekseni (Yatay)
             ctx.moveTo(0, mapY(0));
             ctx.lineTo(canvas.width, mapY(0));
+            
+            // Y Ekseni (Dikey)
             ctx.moveTo(mapX(0), 0);
             ctx.lineTo(mapX(0), canvas.height);
+            
             ctx.stroke();
+            
+            ctx.fillStyle = 'var(--axis-line)';
             ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
         }
 
-        // Math.js kullanarak Numerical Integration (Gerçek Alan) hesabı (Simpson 1/3 Kuralı)
         function calculateExactArea(code, a, b) {
-            let n = 1000; // Hassas integral için
+            let n = 1000; 
             if(n % 2 !== 0) n++; 
             let h = (b - a) / n;
             let sum = code.evaluate({x: a}) + code.evaluate({x: b});
@@ -544,7 +573,8 @@
                 const node = math.parse(exprStr);
                 const code = node.compile();
 
-                // 1. DİKDÖRTGENLERİ (RIEMANN SÜTUNLARI) ÇİZ (Sol Toplam)
+                // 1. DİKDÖRTGENLERİ ÇİZ (Sol Toplam)
+                // n=2 iken tam olarak 2 parça çizilmesi için döngü <= i < n olarak düzeltildi
                 let dx = (b - a) / n;
                 let estimatedArea = 0;
 
@@ -553,15 +583,16 @@
                 ctx.lineWidth = 1.5;
 
                 for (let i = 0; i < n; i++) {
-                    let xi = a + i * dx; // Left Sum (Sol uç noktası)
+                    let xi = a + i * dx; // Left Sum
                     let y = code.evaluate({ x: xi });
                     
                     if (isNaN(y) || !isFinite(y)) continue;
 
                     estimatedArea += y * dx;
 
-                    let px = mapX(a + i*dx);
-                    let pw = mapX(a + (i+1)*dx) - px;
+                    let px = mapX(xi);
+                    // Genişlik her sütun için (b-a)/n kadardır
+                    let pw = mapX(xi + dx) - px; 
                     let py = mapY(y);
                     let ph = mapY(0) - py;
 
@@ -572,7 +603,7 @@
                 // 2. FONKSİYON EĞRİSİNİ ÇİZ
                 ctx.beginPath();
                 ctx.strokeStyle = 'var(--curve-color)'; 
-                ctx.lineWidth = 2.5;
+                ctx.lineWidth = 3;
                 let first = true;
                 for (let px = 0; px <= canvas.width; px += 2) {
                     let x = unmapX(px);
@@ -602,7 +633,6 @@
             }
         }
 
-        // Dinleyiciler
         funcInput.addEventListener('input', draw);
         aLimitInput.addEventListener('input', draw);
         bLimitInput.addEventListener('input', draw);
