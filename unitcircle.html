@@ -3,265 +3,580 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unit Circle Explorer | Ozan Okkıran</title>
+    <title>Unit Circle Explorer</title>
+    <!-- math.js kütüphanesi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root {
-            --bg-color: #f4f7f6;
-            --text-color: #2c3e50;
-            --primary: #5d8aa8;
-            --accent: #e07a5f;
+            --bg-color: #f7f9fc;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-light: #7f8c8d;
+            --accent-blue: #3498db;
+            --accent-red: #e74c3c;
+            --accent-green: #2ecc71;
+            --circle-color: #34495e;
+            --triangle-fill: rgba(52, 152, 219, 0.15);
+            --grid-line: #e2e8f0;
+            --axis-line: #cc0000; /* Belirgin Kırmızı Eksenler */
+            --border-color: #e2e8f0;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 2rem;
+            padding: 40px 20px;
             margin: 0;
+            min-height: 100vh;
         }
-        h1 { font-weight: 300; margin-bottom: 0.2rem; }
-        p.subtitle { color: #7f8c8d; margin-top: 0; margin-bottom: 2rem; font-style: italic; }
-        .container {
-            background: white;
-            padding: 2.5rem;
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.05rem;
+            line-height: 1.5;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px; /* Birim çember için daha kompakt, kareye yakın bir görünüm */
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* GRAFİK ALANI */
+        .canvas-container {
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1 / 1; /* Tam kare olması için */
+            position: relative;
+            background-color: #fdfdfd;
+            border: 1px solid var(--border-color);
             border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            max-width: 650px;
-            width: 100%;
+            overflow: hidden;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
         }
+        
+        .zoom-hint {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            pointer-events: none;
+            border: 1px solid var(--border-color);
+            font-weight: bold;
+        }
+
         canvas {
-            border: 1px solid #eaeaea;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            background-color: #fafafa;
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
         }
-        .controls {
+
+        /* KONTROL ALANI */
+        .controls-wrapper {
+            width: 100%;
+            max-width: 600px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 100%;
-            max-width: 500px;
+            gap: 15px;
+            margin-top: 10px;
         }
-        .angle-control {
+
+        .input-group {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
             font-size: 1.2rem;
-            font-weight: 500;
-            width: 100%;
-            position: relative;
+            font-weight: 600;
+            color: var(--text-main);
         }
-        input[type=number] {
-            width: 85px;
-            padding: 8px 10px;
-            font-size: 1.3rem;
+
+        input[type="number"] {
+            padding: 6px 12px;
+            font-size: 1.2rem;
             font-weight: bold;
-            color: var(--primary);
-            border: 2px solid #eaeaea;
-            border-radius: 8px;
+            color: var(--accent-blue);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            width: 80px;
             text-align: center;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
             outline: none;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            border-color: var(--accent-blue);
         }
-        input[type=number]:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(93, 138, 168, 0.2);
-        }
-        /* Esas Ölçü Göstergesi */
-        .principal-badge {
-            color: var(--accent);
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-left: 5px;
-            font-style: italic;
-            opacity: 0; /* Başlangıçta gizli */
-            transition: opacity 0.3s ease;
-        }
-        .principal-badge.visible {
-            opacity: 1;
-        }
-        input[type=range] { 
-            width: 100%; 
-            margin: 25px 0; 
-            cursor: pointer; 
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
+
+        input[type="range"] {
             width: 100%;
-            font-size: 1.1rem;
-            background: #f9fbfd;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #eef2f5;
-            text-align: center;
+            -webkit-appearance: none;
+            height: 8px;
+            background: #cbd5e0;
+            border-radius: 4px;
+            outline: none;
         }
-        .stat-value { font-weight: bold; font-size: 1.4rem; margin-top: 8px; }
-        .cos-val { color: var(--primary); }
-        .sin-val { color: var(--accent); }
-        .angle-val { color: #555; }
-        .back-link { margin-top: 25px; color: var(--primary); text-decoration: none; font-weight: 500;}
-        .back-link:hover { text-decoration: underline; }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* SONUÇLAR ALANI (Görseldeki yapıya uygun) */
+        .results-bar {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            padding: 20px;
+            background-color: #fafbfc;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        .result-box {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .result-label {
+            font-size: 1rem;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .val-rad { color: var(--text-main); }
+        .val-cos { color: var(--accent-blue); }
+        .val-sin { color: var(--accent-red); }
+
+        .footer-link {
+            margin-top: 20px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        
+        .footer-link:hover {
+            color: var(--accent-blue);
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>Unit Circle Explorer</h1>
-    <p class="subtitle">Connecting Angles, Coordinates, and Trigonometric Functions</p>
+    <div class="header">
+        <h1>Unit Circle Explorer</h1>
+        <div class="subtitle">Connecting Angles, Coordinates, and Trigonometric Functions</div>
+    </div>
 
-    <div class="container">
-        <canvas id="mathCanvas" width="500" height="500"></canvas>
+    <div class="main-container">
         
-        <div class="controls">
-            <div class="angle-control">
-                <label for="angleInput">Angle (&theta;) = </label>
-                <input type="number" id="angleInput" value="45">
-                <span>&deg;</span>
-                <span id="principalBadge" class="principal-badge">&rarr; 45&deg;</span>
+        <div class="canvas-container">
+            <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
+            <canvas id="unitCanvas" width="800" height="800"></canvas>
+        </div>
+
+        <div class="controls-wrapper">
+            <div class="input-group">
+                <span>Angle (θ) = </span>
+                <input type="number" id="angleInput" min="-360" max="720" step="1" value="45">
+                <span>°</span>
             </div>
             
-            <input type="range" id="angleSlider" min="0" max="360" value="45">
-            
-            <div class="stats">
-                <div>
-                    <div>Angle (Rad)</div>
-                    <div class="stat-value angle-val" id="radDisplay">&pi;/4</div>
-                </div>
-                <div>
-                    <div>cos(&theta;) [x]</div>
-                    <div class="stat-value cos-val" id="cosDisplay">0.707</div>
-                </div>
-                <div>
-                    <div>sin(&theta;) [y]</div>
-                    <div class="stat-value sin-val" id="sinDisplay">0.707</div>
-                </div>
+            <input type="range" id="angleSlider" min="-360" max="720" step="1" value="45">
+        </div>
+
+        <div class="results-bar">
+            <div class="result-box">
+                <div class="result-label">Angle (Rad)</div>
+                <div id="radVal" class="result-value val-rad">0.25π</div>
+            </div>
+            <div class="result-box">
+                <div class="result-label">cos(θ) [x]</div>
+                <div id="cosVal" class="result-value val-cos">0.707</div>
+            </div>
+            <div class="result-box">
+                <div class="result-label">sin(θ) [y]</div>
+                <div id="sinVal" class="result-value val-sin">0.707</div>
             </div>
         </div>
+
     </div>
-    <a href="index.html" class="back-link">&larr; Back to Portfolio</a>
+    
+    <a href="#" class="footer-link">&larr; Back to Portfolio</a>
 
     <script>
-        const canvas = document.getElementById('mathCanvas');
+        const canvas = document.getElementById('unitCanvas');
         const ctx = canvas.getContext('2d');
-        const angleSlider = document.getElementById('angleSlider');
         const angleInput = document.getElementById('angleInput');
-        const principalBadge = document.getElementById('principalBadge');
+        const angleSlider = document.getElementById('angleSlider');
         
-        const radDisplay = document.getElementById('radDisplay');
-        const cosDisplay = document.getElementById('cosDisplay');
-        const sinDisplay = document.getElementById('sinDisplay');
+        const radValDisplay = document.getElementById('radVal');
+        const cosValDisplay = document.getElementById('cosVal');
+        const sinValDisplay = document.getElementById('sinVal');
 
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2;
-        const radius = 200;
+        // Viewport (Birim çemberi tam gösterecek şekilde -2 ile 2 arası)
+        let xMin = -1.5;
+        let xMax = 1.5;
+        let yMin = -1.5;
+        let yMax = 1.5;
 
-        function draw() {
+        // Fare ile Zoom In/Out
+        canvas.addEventListener('wheel', function(event) {
+            event.preventDefault(); 
+            const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
+            
+            xMin *= zoomFactor;
+            xMax *= zoomFactor;
+            yMin *= zoomFactor;
+            yMax *= zoomFactor;
+            
+            // Limitler
+            if (xMax - xMin < 0.5) { xMin = -0.25; xMax = 0.25; }
+            if (xMax - xMin > 20) { xMin = -10; xMax = 10; }
+            if (yMax - yMin < 0.5) { yMin = -0.25; yMax = 0.25; }
+            if (yMax - yMin > 20) { yMin = -10; yMax = 10; }
+            
+            draw();
+        });
+
+        // Fare ile Pan (Sürükleme)
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        canvas.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
+            // Canvas kare olduğu için range aynı
+            const range = xMax - xMin; 
+            const xDelta = (dx / canvas.offsetWidth) * range;
+            const yDelta = (dy / canvas.offsetHeight) * range;
+
+            xMin -= xDelta;
+            xMax -= xDelta;
+            yMin += yDelta; 
+            yMax += yDelta;
+
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+
+        // Çizim Dönüşümleri (Kare Canvas)
+        function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+        function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
+
+        function getGridStep(range) {
+            if (range <= 2) return 0.25;
+            if (range <= 5) return 0.5;
+            if (range <= 10) return 1;
+            if (range <= 25) return 2;
+            if (range <= 50) return 5;
+            return 10;
+        }
+
+        function drawGridAndAxes() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            let degrees = parseInt(angleInput.value) || 0; 
-            
-            // Esas Ölçü (Principal Angle) Hesaplama: Negatifleri de doğru kapsar
-            let principal = ((degrees % 360) + 360) % 360;
-            
-            // Eğer girilen açı 0-359 aralığında değilse esas ölçüyü göster
-            if (degrees !== principal) {
-                principalBadge.innerHTML = `&rarr; ${principal}&deg;`;
-                principalBadge.classList.add('visible');
-            } else {
-                principalBadge.classList.remove('visible');
+            ctx.lineWidth = 1;
+            ctx.font = '14px sans-serif'; // Sayı fontunu büyüttüm
+            ctx.fillStyle = '#666666';
+
+            let xStep = getGridStep(xMax - xMin);
+            let yStep = getGridStep(yMax - yMin);
+
+            // Dikey Izgaralar (Açık Gri)
+            let startX = Math.ceil(xMin / xStep) * xStep;
+            for (let i = startX; i <= xMax; i += xStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.moveTo(mapX(i), 0);
+                ctx.lineTo(mapX(i), canvas.height);
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(2)).toString();
+                ctx.fillText(valStr, mapX(i) - 10, mapY(0) + 20);
             }
 
-            // Matematiksel işlemler her zaman esas ölçü üzerinden yapılsın
-            let radians = principal * (Math.PI / 180);
-            
-            let cosVal = Math.cos(radians);
-            let sinVal = Math.sin(radians);
-            
-            let px = cx + cosVal * radius;
-            let py = cy - sinVal * radius; 
+            // Yatay Izgaralar (Açık Gri)
+            let startY = Math.ceil(yMin / yStep) * yStep;
+            for (let i = startY; i <= yMax; i += yStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = '#e2e8f0';
+                ctx.moveTo(0, mapY(i));
+                ctx.lineTo(canvas.width, mapY(i));
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(2)).toString();
+                ctx.fillText(valStr, mapX(0) + 8, mapY(i) + 5);
+            }
 
-            // 1. Eksenler
+            // ANA EKSENLER (KALIN VE KIRMIZI)
             ctx.beginPath();
-            ctx.strokeStyle = '#ddd';
-            ctx.lineWidth = 1;
-            ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy);
-            ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height);
+            ctx.strokeStyle = '#cc0000';
+            ctx.lineWidth = 2.5; 
+            
+            // X Ekseni
+            ctx.moveTo(0, mapY(0));
+            ctx.lineTo(canvas.width, mapY(0));
+            
+            // Y Ekseni
+            ctx.moveTo(mapX(0), 0);
+            ctx.lineTo(mapX(0), canvas.height);
+            
+            ctx.stroke();
+            
+            ctx.fillStyle = '#cc0000';
+            ctx.fillText("0", mapX(0) + 8, mapY(0) + 20);
+        }
+
+        function simplifyFraction(numerator, denominator) {
+            const gcd = function(a, b) {
+                return b ? gcd(b, a % b) : a;
+            };
+            const divisor = gcd(Math.abs(numerator), denominator);
+            return [(numerator / divisor), (denominator / divisor)];
+        }
+
+        function formatRadian(deg) {
+            if (deg === 0) return "0";
+            
+            // Açıyı 0-360 arasında tutarak pi gösterimini bul (isteğe bağlı)
+            // Ama -360 veya 720 için de doğru değer göstermeliyiz.
+            let [sNum, sDen] = simplifyFraction(deg, 180);
+            
+            let result = "";
+            if (sNum === 1 && sDen === 1) result = "π";
+            else if (sNum === -1 && sDen === 1) result = "-π";
+            else if (sNum === 1) result = "π/" + sDen;
+            else if (sNum === -1) result = "-π/" + sDen;
+            else if (sDen === 1) result = sNum + "π";
+            else result = sNum + "π/" + sDen;
+
+            // Ondalıklı formunu da ekleyelim (Senin görselindeki gibi 0.25π vs)
+            let decimalForm = (deg / 180);
+            if (decimalForm === 1) return "π";
+            if (decimalForm === -1) return "-π";
+            if (decimalForm === 0) return "0";
+            
+            return decimalForm.toFixed(2).replace(/\.00$/, '') + "π";
+        }
+
+        function draw() {
+            drawGridAndAxes();
+
+            let deg = parseFloat(angleInput.value) || 0;
+            let rad = deg * Math.PI / 180;
+            
+            let cosVal = Math.cos(rad);
+            let sinVal = Math.sin(rad);
+
+            // Alt paneli güncelle
+            radValDisplay.innerText = formatRadian(deg);
+            cosValDisplay.innerText = cosVal.toFixed(3);
+            sinValDisplay.innerText = sinVal.toFixed(3);
+
+            const originX = mapX(0);
+            const originY = mapY(0);
+            const radiusPx = (1 / (xMax - xMin)) * canvas.width; 
+
+            // 1. Birim Çemberi Çiz
+            ctx.beginPath();
+            ctx.arc(originX, originY, radiusPx, 0, 2 * Math.PI);
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 2.5;
             ctx.stroke();
 
-            // 2. Birim Çember
-            ctx.beginPath();
-            ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-            ctx.fillStyle = 'rgba(93, 138, 168, 0.05)';
-            ctx.fill();
-            ctx.strokeStyle = '#5d8aa8';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            // Koordinat noktaları
+            const px = mapX(cosVal);
+            const py = mapY(sinVal);
 
-            // 3. Açı (Yay)
+            // 2. Üçgenin İçini Boya (Görseldeki gibi açık mavi/gri)
             ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.arc(cx, cy, radius * 0.2, 0, -radians, false);
-            ctx.fillStyle = 'rgba(224, 122, 95, 0.3)';
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(px, originY); // x ekseni üzerinde
+            ctx.lineTo(px, py);      // Noktaya dik
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.15)';
             ctx.fill();
 
-            // 4. İzdüşümler (Üçgen)
+            // 3. Üçgenin Kenarlarını Çiz (x: mavi, y: kırmızı, hipotenüs: siyah)
+            // X kenarı (cos)
             ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(px, cy);
-            ctx.strokeStyle = '#5d8aa8';
+            ctx.moveTo(originX, originY);
+            ctx.lineTo(px, originY);
+            ctx.strokeStyle = '#3498db';
             ctx.lineWidth = 3;
             ctx.stroke();
 
+            // Y kenarı (sin)
             ctx.beginPath();
-            ctx.moveTo(px, cy);
+            ctx.moveTo(px, originY);
             ctx.lineTo(px, py);
-            ctx.strokeStyle = '#e07a5f';
+            ctx.strokeStyle = '#e74c3c';
             ctx.lineWidth = 3;
             ctx.stroke();
 
-            // 5. Hipotenüs
+            // Hipotenüs (r=1)
             ctx.beginPath();
-            ctx.moveTo(cx, cy);
+            ctx.moveTo(originX, originY);
             ctx.lineTo(px, py);
-            ctx.strokeStyle = '#4a4a4a';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 3;
             ctx.stroke();
 
-            // 6. Nokta
+            // 4. Noktayı Çiz
             ctx.beginPath();
             ctx.arc(px, py, 6, 0, 2 * Math.PI);
             ctx.fillStyle = '#2c3e50';
             ctx.fill();
 
-            // Değerleri Göster
-            // Radyan gösterimini de esas ölçüye göre sabitledik
-            let frac = (principal / 180).toFixed(2);
-            radDisplay.innerHTML = (frac == 1.00) ? "&pi;" : (frac == 0.00) ? "0" : frac + "&pi;";
+            // 5. AÇI YAYINI (ARC) VE METNİNİ ÇİZ
+            // Not: Canvas Y ekseni ters olduğu için açıları çizerken negatifini alırız
+            let drawRad = -rad; 
+            let arcRadius = radiusPx * 0.25; // Çemberin %25'i
             
-            cosDisplay.innerText = (Math.abs(cosVal) < 1e-10 ? 0 : cosVal).toFixed(3);
-            sinDisplay.innerText = (Math.abs(sinVal) < 1e-10 ? 0 : sinVal).toFixed(3);
+            ctx.beginPath();
+            
+            // Eğer açı negatifse ters yönde çiz
+            if (deg >= 0) {
+                // Tur sayısından fazlasını göstermek için basit tutuyoruz (veya sarmal çizebiliriz ama karmaşık olur)
+                // Görseldeki gibi basit bir yay çizelim
+                let effectiveRad = drawRad % (2 * Math.PI); 
+                if (effectiveRad > 0) effectiveRad -= 2 * Math.PI; // Negatif kalmalı
+                
+                ctx.arc(originX, originY, arcRadius, effectiveRad, 0); 
+            } else {
+                let effectiveRad = drawRad % (2 * Math.PI);
+                if (effectiveRad < 0) effectiveRad += 2 * Math.PI; // Pozitif olmalı (canvas y-ters)
+                
+                ctx.arc(originX, originY, arcRadius, 0, effectiveRad); 
+            }
+            
+            ctx.strokeStyle = 'rgba(231, 76, 60, 0.5)'; // Şeffaf kırmızı yay
+            ctx.lineWidth = 20; // Kalın yay (Görseldeki gibi)
+            ctx.stroke();
+
+            // 6. AÇIYI GRAFİK ÜZERİNDE GÖSTER (Metin)
+            // Metni yayın biraz dışına yerleştir
+            let textRadius = arcRadius + 20;
+            // Açının tam ortasına (açıortaya) yazalım
+            let midRad = -rad / 2;
+            
+            let textX = originX + textRadius * Math.cos(midRad);
+            let textY = originY + textRadius * Math.sin(midRad);
+            
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 16px sans-serif';
+            // Dereceyi yaz
+            ctx.fillText(`${deg}°`, textX, textY);
+            
+            // Çember üzerindeki noktaya da koordinatları yaz (İsteğe bağlı, şık durur)
+            ctx.font = '14px sans-serif';
+            ctx.fillStyle = '#34495e';
+            
+            // Noktanın pozisyonuna göre yazıyı hizala ki çemberin içine girmesin
+            let alignX = (cosVal >= 0) ? 15 : -65;
+            let alignY = (sinVal >= 0) ? -15 : 25;
+            ctx.fillText(`(${cosVal.toFixed(2)}, ${sinVal.toFixed(2)})`, px + alignX, py + alignY);
         }
 
-        angleSlider.addEventListener('input', (e) => {
-            angleInput.value = e.target.value;
-            draw();
-        });
+        // --- GÜVENLİ SENKRONİZASYON ---
+        function syncInputs() {
+            angleSlider.addEventListener('input', function() {
+                angleInput.value = this.value;
+                draw();
+            });
+            
+            angleInput.addEventListener('input', function() {
+                let val = parseInt(this.value);
+                
+                if(isNaN(val)) {
+                    draw(); 
+                    return; 
+                }
+                
+                if (val > 720) { val = 720; this.value = 720; }
+                if (val < -360) { val = -360; this.value = -360; }
+                
+                angleSlider.value = val;
+                draw();
+            });
+            
+            angleInput.addEventListener('blur', function() {
+                if(this.value === "" || isNaN(parseInt(this.value))) {
+                    this.value = "45";
+                    angleSlider.value = 45;
+                    draw();
+                }
+            });
+        }
 
-        angleInput.addEventListener('input', (e) => {
-            let val = parseInt(e.target.value) || 0;
-            // Kaydırıcıyı esas ölçüye sabitle ki saçmalamasın
-            angleSlider.value = ((val % 360) + 360) % 360; 
-            draw();
-        });
+        syncInputs();
 
-        draw();
+        window.onload = draw;
     </script>
 </body>
 </html>
