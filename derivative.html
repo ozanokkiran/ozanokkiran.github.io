@@ -73,12 +73,28 @@
             border-radius: 8px;
             overflow: hidden;
             background-color: #fafbfc;
+            position: relative;
+        }
+
+        /* Zoom ipucu yazısı */
+        .zoom-hint {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            pointer-events: none;
+            border: 1px solid var(--border-color);
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 450px;
+            cursor: crosshair;
         }
 
         .quick-insert-panel {
@@ -255,6 +271,7 @@
         
         <div class="visualization-area">
             <div class="canvas-container">
+                <div class="zoom-hint">Scroll to Zoom In/Out</div>
                 <canvas id="graphCanvas" width="800" height="450"></canvas>
             </div>
             
@@ -269,7 +286,7 @@
 
         <div class="input-section">
             <div class="function-input-wrapper">
-                f(x) = <input type="text" id="funcInput" value="x^2 + 3x + 5">
+                f(x) = <input type="text" id="funcInput" value="5x^4 + x^3">
             </div>
             <select id="presetSelect" onchange="applyPreset()">
                 <option value="">Presets...</option>
@@ -280,19 +297,20 @@
         </div>
 
         <div class="slider-section">
-            <div class="slider-label">Point x = <span id="xValDisplay" class="slider-val">2.00</span></div>
-            <input type="range" id="xSlider" min="-10" max="10" step="0.05" value="2">
+            <div class="slider-label">Point x = <span id="xValDisplay" class="slider-val">-2.00</span></div>
+            <!-- Slider'ın min-max değerleri artık dinamik güncellenecek -->
+            <input type="range" id="xSlider" min="-10" max="10" step="0.05" value="-2">
         </div>
 
         <div class="results-panel">
             <div class="result-box">
                 <div class="result-label">Function Value f(x)</div>
-                <div id="fxVal" class="result-value val-fx">15.000</div>
+                <div id="fxVal" class="result-value val-fx">72.000</div>
             </div>
             <div class="result-box">
                 <div class="result-label">Derivative & Slope f'(x)</div>
-                <div id="derivEq" class="derivative-eq">f'(x) = 2x + 3</div>
-                <div id="slopeVal" class="result-value val-slope">7.000</div>
+                <div id="derivEq" class="derivative-eq">f'(x) = 20x^3 + 3x^2</div>
+                <div id="slopeVal" class="result-value val-slope">-148.000</div>
             </div>
         </div>
 
@@ -311,14 +329,38 @@
         const derivEqDisplay = document.getElementById('derivEq');
         const presetSelect = document.getElementById('presetSelect');
 
-        // Viewport settings
-        const xMin = -10;
-        const xMax = 10;
-        const yMin = -20;
-        const yMax = 20;
+        // Dinamik Viewport (Zoom için let olarak tanımlandı)
+        let xMin = -10;
+        let xMax = 10;
+        let yMin = -20;
+        let yMax = 20;
+
+        // Zoom Olayı (Mouse Scroll)
+        canvas.addEventListener('wheel', function(event) {
+            event.preventDefault(); // Sayfanın kaymasını engelle
+            
+            // Yukarı scroll: Yaklaş (0.8), Aşağı scroll: Uzaklaş (1.25)
+            const zoomFactor = event.deltaY < 0 ? 0.8 : 1.25;
+            
+            xMin *= zoomFactor;
+            xMax *= zoomFactor;
+            yMin *= zoomFactor;
+            yMax *= zoomFactor;
+            
+            // Limitler (Çok fazla yaklaşmayı veya uzaklaşmayı engelle)
+            if (xMax - xMin < 2) { xMin = -1; xMax = 1; }
+            if (xMax - xMin > 200) { xMin = -100; xMax = 100; }
+            if (yMax - yMin < 4) { yMin = -2; yMax = 2; }
+            if (yMax - yMin > 400) { yMin = -200; yMax = 200; }
+
+            // Slider'ın sınırlarını mevcut ekrana göre dinamik ayarla
+            xSlider.min = Math.floor(xMin);
+            xSlider.max = Math.ceil(xMax);
+
+            draw();
+        });
 
         function formatMathExpression(exprStr) {
-            // "2 * x" gibi stringleri "2x" formatına çevirir
             return exprStr.replace(/(\d+)\s*\*\s*([a-zA-Z])/g, '$1$2').replace(/\s*\*\s*/g, '*');
         }
 
@@ -348,51 +390,59 @@
             }
         }
 
-        function mapX(x) {
-            return ((x - xMin) / (xMax - xMin)) * canvas.width;
-        }
+        function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+        function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
+        function unmapX(px) { return (px / canvas.width) * (xMax - xMin) + xMin; }
 
-        function mapY(y) {
-            return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
-        }
-        
-        function unmapX(px) {
-            return (px / canvas.width) * (xMax - xMin) + xMin;
+        // Dinamik grid aralığını belirleme algoritması
+        function getGridStep(range) {
+            if (range <= 4) return 0.5;
+            if (range <= 10) return 1;
+            if (range <= 25) return 2;
+            if (range <= 50) return 5;
+            if (range <= 100) return 10;
+            return 20;
         }
 
         function drawGrid() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             ctx.lineWidth = 1;
-            ctx.font = '10px sans-serif';
+            ctx.font = '11px sans-serif';
             ctx.fillStyle = '#95a5a6';
 
-            for (let i = xMin; i <= xMax; i++) {
-                if (i === 0) continue;
+            let xStep = getGridStep(xMax - xMin);
+            let yStep = getGridStep(yMax - yMin);
+
+            // Dikey çizgiler (X ekseni)
+            let startX = Math.ceil(xMin / xStep) * xStep;
+            for (let i = startX; i <= xMax; i += xStep) {
+                if (Math.abs(i) < 1e-5) continue; // 0'ı atla
                 ctx.beginPath();
                 ctx.strokeStyle = '#ecf0f1';
                 ctx.moveTo(mapX(i), 0);
                 ctx.lineTo(mapX(i), canvas.height);
                 ctx.stroke();
                 
-                if(i % 2 === 0) {
-                    ctx.fillText(i, mapX(i) - 5, mapY(0) + 15);
-                }
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
             }
 
-            for (let i = yMin; i <= yMax; i += 2) {
-                if (i === 0) continue;
+            // Yatay çizgiler (Y ekseni)
+            let startY = Math.ceil(yMin / yStep) * yStep;
+            for (let i = startY; i <= yMax; i += yStep) {
+                if (Math.abs(i) < 1e-5) continue; // 0'ı atla
                 ctx.beginPath();
                 ctx.strokeStyle = '#ecf0f1';
                 ctx.moveTo(0, mapY(i));
                 ctx.lineTo(canvas.width, mapY(i));
                 ctx.stroke();
                 
-                if(i % 5 === 0) {
-                    ctx.fillText(i, mapX(0) + 5, mapY(i) + 4);
-                }
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
             }
 
+            // Orijin (0,0) eksenleri
             ctx.beginPath();
             ctx.strokeStyle = '#bdc3c7';
             ctx.lineWidth = 1.5;
@@ -401,6 +451,9 @@
             ctx.moveTo(mapX(0), 0);
             ctx.lineTo(mapX(0), canvas.height);
             ctx.stroke();
+            
+            // Orijin numarası
+            ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
         }
 
         function draw() {
@@ -449,7 +502,8 @@
                 fxValDisplay.innerText = currentY.toFixed(3);
                 slopeValDisplay.innerText = slope.toFixed(3);
 
-                const tangentLength = 4;
+                // Tanjant çizgisi uzunluğu artık ekrandaki ölçeğe bağlı
+                const tangentLength = (xMax - xMin) * 0.15;
                 const x1 = currentX - tangentLength;
                 const y1 = currentY - slope * tangentLength;
                 const x2 = currentX + tangentLength;
