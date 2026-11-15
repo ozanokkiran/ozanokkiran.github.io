@@ -15,7 +15,7 @@
             --accent-green: #2ecc71;
             --accent-orange: #e67e22;
             --border-color: #ecf0f1;
-            --grid-line: #e0e0e0;
+            --grid-line: #ecf0f1;
             --axis-line: #bdc3c7;
         }
 
@@ -291,7 +291,7 @@
             </div>
             <div class="result-box">
                 <div class="result-label">Derivative & Slope f'(x)</div>
-                <div id="derivEq" class="derivative-eq">f'(x) = 2 * x + 3</div>
+                <div id="derivEq" class="derivative-eq">f'(x) = 2x + 3</div>
                 <div id="slopeVal" class="result-value val-slope">7.000</div>
             </div>
         </div>
@@ -317,13 +317,17 @@
         const yMin = -20;
         const yMax = 20;
 
+        function formatMathExpression(exprStr) {
+            // "2 * x" gibi stringleri "2x" formatına çevirir
+            return exprStr.replace(/(\d+)\s*\*\s*([a-zA-Z])/g, '$1$2').replace(/\s*\*\s*/g, '*');
+        }
+
         function insertText(text) {
             const input = funcInput;
             const start = input.selectionStart;
             const end = input.selectionEnd;
             const currentValue = input.value;
             
-            // Add a space before if it's an operator and not at the beginning
             let insertStr = text;
             if ((text === '+' || text === '-') && start > 0 && currentValue[start-1] !== ' ') {
                 insertStr = ' ' + text + ' ';
@@ -331,7 +335,6 @@
             
             input.value = currentValue.slice(0, start) + insertStr + currentValue.slice(end);
             
-            // Move cursor after inserted text
             const newPos = start + insertStr.length;
             input.focus();
             input.setSelectionRange(newPos, newPos);
@@ -364,16 +367,14 @@
             ctx.font = '10px sans-serif';
             ctx.fillStyle = '#95a5a6';
 
-            // Draw grid and numbers
             for (let i = xMin; i <= xMax; i++) {
                 if (i === 0) continue;
                 ctx.beginPath();
-                ctx.strokeStyle = var(--grid-line);
+                ctx.strokeStyle = '#ecf0f1';
                 ctx.moveTo(mapX(i), 0);
                 ctx.lineTo(mapX(i), canvas.height);
                 ctx.stroke();
                 
-                // X-axis numbers
                 if(i % 2 === 0) {
                     ctx.fillText(i, mapX(i) - 5, mapY(0) + 15);
                 }
@@ -382,20 +383,18 @@
             for (let i = yMin; i <= yMax; i += 2) {
                 if (i === 0) continue;
                 ctx.beginPath();
-                ctx.strokeStyle = var(--grid-line);
+                ctx.strokeStyle = '#ecf0f1';
                 ctx.moveTo(0, mapY(i));
                 ctx.lineTo(canvas.width, mapY(i));
                 ctx.stroke();
                 
-                // Y-axis numbers
                 if(i % 5 === 0) {
                     ctx.fillText(i, mapX(0) + 5, mapY(i) + 4);
                 }
             }
 
-            // Draw main axes
             ctx.beginPath();
-            ctx.strokeStyle = var(--axis-line);
+            ctx.strokeStyle = '#bdc3c7';
             ctx.lineWidth = 1.5;
             ctx.moveTo(0, mapY(0));
             ctx.lineTo(canvas.width, mapY(0));
@@ -415,17 +414,15 @@
                 const node = math.parse(exprStr);
                 const code = node.compile();
                 
-                // Calculate Analytical Derivative
                 const xNode = math.parse('x');
                 const derivativeNode = math.derivative(node, xNode);
                 const derivativeCode = derivativeNode.compile();
                 
-                // Display derivative equation
-                derivEqDisplay.innerText = "f'(x) = " + derivativeNode.toString();
+                let formattedDerivative = formatMathExpression(derivativeNode.toString());
+                derivEqDisplay.innerText = "f'(x) = " + formattedDerivative;
 
-                // Draw function curve
                 ctx.beginPath();
-                ctx.strokeStyle = '#5c8aab'; // Soft blue/gray
+                ctx.strokeStyle = '#5c8aab'; 
                 ctx.lineWidth = 2.5;
 
                 let first = true;
@@ -446,32 +443,29 @@
                 }
                 ctx.stroke();
 
-                // Current point values
                 let currentY = code.evaluate({ x: currentX });
                 let slope = derivativeCode.evaluate({ x: currentX });
 
                 fxValDisplay.innerText = currentY.toFixed(3);
                 slopeValDisplay.innerText = slope.toFixed(3);
 
-                // Draw tangent line
-                const tangentLength = 4; // Length in graph units
+                const tangentLength = 4;
                 const x1 = currentX - tangentLength;
                 const y1 = currentY - slope * tangentLength;
                 const x2 = currentX + tangentLength;
                 const y2 = currentY + slope * tangentLength;
 
                 ctx.beginPath();
-                ctx.strokeStyle = '#27ae60'; // Green
+                ctx.strokeStyle = '#27ae60'; 
                 ctx.lineWidth = 2;
                 ctx.setLineDash([5, 5]);
                 ctx.moveTo(mapX(x1), mapY(y1));
                 ctx.lineTo(mapX(x2), mapY(y2));
                 ctx.stroke();
-                ctx.setLineDash([]); // Reset dash
+                ctx.setLineDash([]); 
 
-                // Draw dot at current point
                 ctx.beginPath();
-                ctx.fillStyle = '#e67e22'; // Orange
+                ctx.fillStyle = '#e67e22'; 
                 ctx.arc(mapX(currentX), mapY(currentY), 6, 0, 2 * Math.PI);
                 ctx.fill();
                 ctx.strokeStyle = 'white';
@@ -479,21 +473,15 @@
                 ctx.stroke();
 
             } catch (error) {
-                // If expression is invalid while typing
                 fxValDisplay.innerText = '---';
                 slopeValDisplay.innerText = '---';
                 derivEqDisplay.innerText = "Invalid Expression";
             }
         }
 
-        // Add CSS variables to window for JS access
-        document.documentElement.style.setProperty('--grid-line', '#ecf0f1');
-        document.documentElement.style.setProperty('--axis-line', '#bdc3c7');
-
         funcInput.addEventListener('input', draw);
         xSlider.addEventListener('input', draw);
 
-        // Initial draw
         draw();
     </script>
 </body>
