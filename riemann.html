@@ -4,21 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Riemann Sums</title>
-    <!-- math.js kütüphanesi -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root {
-            /* Ferah ve Şık Renk Paleti */
             --bg-color: #f7f7f7;
             --card-bg: #ffffff;
             --text-main: #333333;
             --text-light: #777777;
             --accent-blue: #007bff;
-            --curve-color: #333333;
-            /* Dikdörtgenler için tekrar pastel mavi şeffaf ton */
-            --rect-color: rgba(176, 196, 222, 0.7); 
-            --rect-border: #8ca3be;
-            --grid-line: #e0e0e0;
             --border-color: #e0e0e0;
         }
 
@@ -317,7 +310,7 @@
 
     <div class="header">
         <h1>Dynamic Riemann Sums</h1>
-        <div class="subtitle" id="mainSubtitle">Visualizing Integration: Area under f(x) = -x² + 4x + 2</div>
+        <div class="subtitle" id="mainSubtitle">Visualizing Integration: Area under f(x) = -x² + 4x</div>
     </div>
 
     <div class="main-container">
@@ -352,7 +345,8 @@
                         <button class="quick-btn" onclick="insertText('cos(x)')">cos</button>
                         <button class="quick-btn" onclick="insertText('sqrt(x)')">√</button>
                     </div>
-                    <input type="text" id="funcInput" value="-x^2 + 4x + 2">
+                    <!-- Eski fonksiyona dönüldü -->
+                    <input type="text" id="funcInput" value="-x^2 + 4x">
                 </div>
 
                 <div class="control-group limits-container">
@@ -416,7 +410,7 @@
         let xMin = -1;
         let xMax = 5;
         let yMin = -2; 
-        let yMax = 8; 
+        let yMax = 5; 
 
         function formatMathToHTML(exprStr) {
             return exprStr
@@ -437,7 +431,6 @@
             draw();
         }
 
-        // Fare ile Zoom In/Out
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault(); 
             const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
@@ -450,7 +443,6 @@
             draw();
         });
 
-        // Fare ile Pan (Sürükleme)
         let isDragging = false;
         let lastMouseX = 0;
         let lastMouseY = 0;
@@ -505,12 +497,12 @@
             let xStep = getGridStep(xMax - xMin);
             let yStep = getGridStep(yMax - yMin);
 
-            // Dikey Izgaralar (Normal Çizgiler)
+            // Dikey Izgaralar (Açık Gri)
             let startX = Math.ceil(xMin / xStep) * xStep;
             for (let i = startX; i <= xMax; i += xStep) {
-                if (Math.abs(i) < 1e-5) continue; // 0 Noktasını atla
+                if (Math.abs(i) < 1e-5) continue; 
                 ctx.beginPath();
-                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.strokeStyle = '#e0e0e0';
                 ctx.moveTo(mapX(i), 0);
                 ctx.lineTo(mapX(i), canvas.height);
                 ctx.stroke();
@@ -519,12 +511,12 @@
                 ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
             }
 
-            // Yatay Izgaralar (Normal Çizgiler)
+            // Yatay Izgaralar (Açık Gri)
             let startY = Math.ceil(yMin / yStep) * yStep;
             for (let i = startY; i <= yMax; i += yStep) {
-                if (Math.abs(i) < 1e-5) continue; // 0 Noktasını atla
+                if (Math.abs(i) < 1e-5) continue; 
                 ctx.beginPath();
-                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.strokeStyle = '#e0e0e0';
                 ctx.moveTo(0, mapY(i));
                 ctx.lineTo(canvas.width, mapY(i));
                 ctx.stroke();
@@ -533,9 +525,9 @@
                 ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
             }
 
-            // SADECE EKSENLERİ KALIN VE KIRMIZI ÇİZ
+            // ANA EKSENLER (KIRMIZI VE KALIN)
             ctx.beginPath();
-            ctx.strokeStyle = '#cc0000'; // Kırmızı Eksen
+            ctx.strokeStyle = '#cc0000';
             ctx.lineWidth = 2.5; 
             
             // X Ekseni
@@ -583,16 +575,16 @@
                 const node = math.parse(exprStr);
                 const code = node.compile();
 
-                // 1. DİKDÖRTGENLERİ ÇİZ (Sol Toplam)
+                // 1. DİKDÖRTGENLERİ ÇİZ (Pastel Mavi Şeffaf)
                 let dx = (b - a) / n;
                 let estimatedArea = 0;
 
-                ctx.fillStyle = 'var(--rect-color)'; // Mavi/Gri Pastel Dolgu
-                ctx.strokeStyle = 'var(--rect-border)';
+                ctx.fillStyle = 'rgba(176, 196, 222, 0.7)'; 
+                ctx.strokeStyle = '#8ca3be';
                 ctx.lineWidth = 1.5;
 
                 for (let i = 0; i < n; i++) {
-                    let xi = a + i * dx; // Left Sum
+                    let xi = a + i * dx;
                     let y = code.evaluate({ x: xi });
                     
                     if (isNaN(y) || !isFinite(y)) continue;
@@ -608,9 +600,9 @@
                     ctx.strokeRect(px, py, pw, ph);
                 }
 
-                // 2. FONKSİYON EĞRİSİNİ ÇİZ
+                // 2. FONKSİYON EĞRİSİNİ ÇİZ (Siyah Kalın Çizgi)
                 ctx.beginPath();
-                ctx.strokeStyle = 'var(--curve-color)'; 
+                ctx.strokeStyle = '#333333'; 
                 ctx.lineWidth = 3;
                 let first = true;
                 for (let px = 0; px <= canvas.width; px += 2) {
