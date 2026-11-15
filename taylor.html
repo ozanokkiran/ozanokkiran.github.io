@@ -14,8 +14,8 @@
             --accent-blue: #1e88e5;
             --original-curve: #666666;
             --taylor-curve: #e91e63;
-            --grid-line: #ececec;
-            --axis-line: #666666;
+            --grid-line: #e0e0e0;
+            --axis-line: #cc0000;
             --border-color: #e0e0e0;
         }
 
@@ -91,7 +91,6 @@
             margin-bottom: 5px;
         }
         
-        /* Fonksiyon Seçici */
         .func-select {
             padding: 10px 12px;
             font-size: 1.2rem;
@@ -153,7 +152,7 @@
             cursor: pointer;
         }
 
-        /* Pedagojik Açıklama Paneli */
+        /* Pedagojik Açıklama */
         .math-explanation {
             background-color: #fdfce8;
             border-left: 4px solid #f1c40f;
@@ -172,12 +171,6 @@
             margin: 0 0 10px 0;
             font-size: 1.1rem;
             color: #b7791f;
-        }
-        
-        .math-explanation .math-var {
-            font-family: 'Times New Roman', Times, serif;
-            font-weight: bold;
-            font-style: italic;
         }
 
         .formula-block {
@@ -250,7 +243,7 @@
             justify-content: center;
             align-items: center;
             gap: 4px;
-            min-height: 60px; /* Sabit yükseklik, formül büyüyünce ekran zıplamasın */
+            min-height: 60px;
         }
         
         .taylor-eq .fraction {
@@ -336,7 +329,7 @@
 
             <div class="math-explanation">
                 <h3>Why does a polynomial look like this?</h3>
-                <p>A Taylor series allows us to approximate any smooth function using simple polynomials (<span class="math-var">x, x<sup>2</sup>, x<sup>3</sup>...</span>). By matching the function's value and its derivatives at <span class="math-var">x=0</span>, the polynomial perfectly mimics the curve.</p>
+                <p>A Taylor series allows us to approximate any smooth function using simple polynomials (<i>x, x<sup>2</sup>, x<sup>3</sup>...</i>). By matching the function's value and its derivatives at <i>x=0</i>, the polynomial perfectly mimics the curve.</p>
                 <p>As you increase the Number of Terms (N), the approximation perfectly hugs the original curve further away from the center.</p>
                 
                 <div class="formula-block" id="generalFormula">
@@ -355,7 +348,7 @@
             <div class="equations-container">
                 <div class="original-eq" id="originalEqLabel">Original Function: y = sin(x)</div>
                 <div class="taylor-eq" id="taylorEq">
-                    <!-- Dinamik Polinom Formülü Gelecek -->
+                    P(x) = x
                 </div>
             </div>
             
@@ -379,9 +372,8 @@
         const mainSubtitle = document.getElementById('mainSubtitle');
         const generalFormula = document.getElementById('generalFormula');
 
-        // Dinamik Viewport
-        let xMin = -10;
-        let xMax = 10;
+        let xMin = -12;
+        let xMax = 12;
         let yMin = -6;
         let yMax = 6;
 
@@ -392,7 +384,6 @@
             return result;
         }
 
-        // --- UI GÜNCELLEME SİSTEMİ ---
         function updateUITexts(type) {
             if (type === 'sin') {
                 mainSubtitle.innerHTML = `Approximating <b>f(x) = sin(x)</b> using Maclaurin polynomials.`;
@@ -417,7 +408,6 @@
             }
         }
 
-        // --- TAYLOR POLİNOMU DİZGİ (HTML) ÜRETECİ ---
         function generateTaylorFormulaHTML(n, type) {
             let html = 'P(x) = ';
             
@@ -446,7 +436,7 @@
             } else if (type === 'ln') {
                 if (n === 1) return html + 'x';
                 html += 'x';
-                for (let i = 2; i <= n; i++) { // ln(1+x) terimleri x'in kuvveti kadardır
+                for (let i = 2; i <= n; i++) {
                     let sign = (i % 2 === 0) ? '-' : '+';
                     html += ` ${sign} <div class="fraction"><span>x<sup>${i}</sup></span><span>${i}</span></div>`;
                 }
@@ -454,13 +444,12 @@
             return html;
         }
 
-        // --- MATEMATİKSEL DEĞERLENDİRME ---
         function evaluateOriginal(x, type) {
             switch(type) {
                 case 'sin': return Math.sin(x);
                 case 'cos': return Math.cos(x);
                 case 'exp': return Math.exp(x);
-                case 'ln': return Math.log(1 + x); // x <= -1 için NaN döner, canvas es geçer (doğrudur)
+                case 'ln': return Math.log(1 + x); 
             }
         }
 
@@ -478,7 +467,6 @@
             return sum;
         }
 
-        // --- ÇİZİM İŞLEMLERİ ---
         canvas.addEventListener('wheel', function(event) {
             event.preventDefault(); 
             const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
@@ -553,7 +541,6 @@
             let xStep = getGridStep(xMax - xMin);
             let yStep = getGridStep(yMax - yMin);
 
-            // Dikey Izgaralar
             let startX = Math.ceil(xMin / xStep) * xStep;
             for (let i = startX; i <= xMax; i += xStep) {
                 if (Math.abs(i) < 1e-5) continue; 
@@ -567,7 +554,6 @@
                 ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
             }
 
-            // Yatay Izgaralar
             let startY = Math.ceil(yMin / yStep) * yStep;
             for (let i = startY; i <= yMax; i += yStep) {
                 if (Math.abs(i) < 1e-5) continue; 
@@ -581,10 +567,9 @@
                 ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
             }
 
-            // ANA EKSENLER
             ctx.beginPath();
             ctx.strokeStyle = 'var(--axis-line)';
-            ctx.lineWidth = 1.5; 
+            ctx.lineWidth = 2.5; 
             
             ctx.moveTo(0, mapY(0));
             ctx.lineTo(canvas.width, mapY(0));
@@ -604,7 +589,6 @@
             updateUITexts(funcType);
             taylorEqDisplay.innerHTML = generateTaylorFormulaHTML(n, funcType);
 
-            // 1. Orijinal Fonksiyonu Çiz
             ctx.beginPath();
             ctx.strokeStyle = '#666666'; 
             ctx.lineWidth = 2.5;
@@ -613,7 +597,6 @@
                 let x = unmapX(px);
                 let y = evaluateOriginal(x, funcType);
                 
-                // ln(1+x) tanımsız bölge koruması
                 if (isNaN(y) || !isFinite(y)) { firstOrig = true; continue; }
 
                 let py = mapY(y);
@@ -627,16 +610,14 @@
             }
             ctx.stroke();
 
-            // 2. Taylor Polinomunu Çiz
             ctx.beginPath();
-            ctx.strokeStyle = '#e91e63'; // Pembe (Taylor)
+            ctx.strokeStyle = '#e91e63'; 
             ctx.lineWidth = 3;
             let firstTaylor = true;
             for (let px = 0; px <= canvas.width; px += 2) {
                 let x = unmapX(px);
                 let y = evaluateTaylor(x, n, funcType);
                 
-                // Patlayan y değerleri için canvas çökmesini önle
                 if (isNaN(y) || Math.abs(y) > 1000) { firstTaylor = true; continue; } 
 
                 let py = mapY(y);
@@ -651,7 +632,6 @@
             ctx.stroke();
         }
 
-        // --- ETKİLEŞİM DİNLEYİCİLERİ ---
         funcSelect.addEventListener('change', draw);
 
         nSlider.addEventListener('input', function() {
