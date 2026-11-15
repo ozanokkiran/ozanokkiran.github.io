@@ -11,8 +11,9 @@
             --text-main: #2c3e50;
             --text-light: #7f8c8d;
             --accent-purple: #7451eb;
-            --accent-green: #2ecc71;
-            --accent-red: #e74c3c;
+            /* Renk Körü Dostu Palet (Okabe-Ito tabanlı) */
+            --safe-blue: #0072b2; 
+            --safe-orange: #d55e00;
             --border-color: #ecf0f1;
         }
 
@@ -113,8 +114,13 @@
         }
         
         .mini-stat.inside {
-            background: #eafaf1;
-            border-color: #bbf0d3;
+            background: #e6f2ff;
+            border-color: #b3d9ff;
+        }
+        
+        .mini-stat.outside {
+            background: #fff0e6;
+            border-color: #ffcba4;
         }
 
         .mini-stat .mini-title {
@@ -130,7 +136,8 @@
             color: var(--text-main);
         }
 
-        .mini-stat.inside .mini-value { color: var(--accent-green); }
+        .mini-stat.inside .mini-value { color: var(--safe-blue); }
+        .mini-stat.outside .mini-value { color: var(--safe-orange); }
 
         /* Pedagojik Açıklama Alanları */
         .info-panel {
@@ -213,8 +220,8 @@
 
         button:hover { opacity: 0.8; }
 
-        .btn-start { background-color: var(--accent-green); color: white; }
-        .btn-stop { background-color: #f39c12; color: white; }
+        .btn-start { background-color: var(--safe-blue); color: white; }
+        .btn-stop { background-color: var(--safe-orange); color: white; }
         .btn-reset { background-color: #95a5a6; color: white; }
 
         /* Canvas Alanı */
@@ -225,6 +232,19 @@
             padding: 0;
             margin: 0;
             display: flex;
+            position: relative;
+        }
+
+        /* Renk Körü Bilgi Notu */
+        .accessibility-note {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            font-style: italic;
         }
 
         canvas {
@@ -249,19 +269,18 @@
 
             <div class="mini-stats-container">
                 <div class="mini-stat inside">
-                    <div class="mini-title">Points Inside Circle</div>
+                    <div class="mini-title">Inside Circle (Blue •)</div>
                     <div id="insideCount" class="mini-value">0</div>
                 </div>
-                <div class="mini-stat">
-                    <div class="mini-title">Total Points Thrown</div>
-                    <div id="totalCount" class="mini-value">0</div>
+                <div class="mini-stat outside">
+                    <div class="mini-title">Outside Circle (Orange ◾)</div>
+                    <div id="outsideCount" class="mini-value">0</div>
                 </div>
             </div>
 
-            <!-- Pedagojik Açıklamalar -->
             <div class="info-panel">
                 <strong>The Drop Zone (Randomness)</strong>
-                Imagine a square board with a circle perfectly fitted inside it. We drop dots completely randomly across the <b>entire square</b> (not aiming for the circle). Any dot has an equal chance of landing anywhere.
+                Imagine a square board with a circle perfectly fitted inside it. We drop dots completely randomly across the <b>entire square</b> (not aiming for the circle). Any point has an equal chance of landing anywhere.
             </div>
 
             <div class="info-panel">
@@ -289,10 +308,9 @@
         </div>
 
         <div class="right-panel">
-            <!-- Kare formunda görünmesi için sınır çizgisi olan div -->
             <div class="canvas-wrapper">
-                <!-- 500x500 Tam Daire ve Kare Alanı -->
                 <canvas id="mcCanvas" width="500" height="500"></canvas>
+                <div class="accessibility-note">* Colorblind accessible: Inside points are blue circles, outside points are orange squares.</div>
             </div>
         </div>
 
@@ -304,32 +322,29 @@
         
         const piDisplay = document.getElementById('piValue');
         const insideDisplay = document.getElementById('insideCount');
-        const totalDisplay = document.getElementById('totalCount');
+        const outsideDisplay = document.getElementById('outsideCount'); // Total yerine Outside istatistiğini koyduk
         
         const speedSlider = document.getElementById('speedSlider');
         const speedDisplay = document.getElementById('speedDisplay');
 
-        // Çizim alanı (Kare) ve Daire parametreleri
         const width = canvas.width;
         const height = canvas.height;
         const centerX = width / 2;
         const centerY = height / 2;
-        const radius = width / 2; // Kareye teğet olan daire
+        const radius = width / 2; 
 
         let totalPoints = 0;
         let insidePoints = 0;
+        let outsidePoints = 0;
         let animationId = null;
         let isRunning = false;
 
-        // Ekrana dairenin ve karenin sınırlarını çizen fonksiyon
         function drawBackground() {
             ctx.clearRect(0, 0, width, height);
             
-            // Arka planı hafif gri yapalım ki "Atış alanı" belli olsun
             ctx.fillStyle = '#fafbfc';
             ctx.fillRect(0, 0, width, height);
 
-            // Merkez çizgileri (X ve Y ekseni)
             ctx.beginPath();
             ctx.strokeStyle = '#e0e0e0';
             ctx.lineWidth = 1;
@@ -339,7 +354,6 @@
             ctx.lineTo(centerX, height);
             ctx.stroke();
 
-            // Tam Dairenin Çizgisi
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
             ctx.strokeStyle = '#2c3e50';
@@ -356,36 +370,35 @@
 
             const pointsPerFrame = parseInt(speedSlider.value);
 
-            // Performansı artırmak için noktaları path olarak biriktiriyoruz
-            ctx.fillStyle = 'rgba(52, 152, 219, 0.6)'; // Dışarısı için mavi
-            const fillStyleInside = 'rgba(46, 204, 113, 0.6)'; // İçerisi için yeşil
-            const fillStyleOutside = 'rgba(231, 76, 60, 0.6)'; // Dışarısı için kırmızı
+            // Renk Körü Dostu Palet
+            const colorInside = 'rgba(0, 114, 178, 0.6)'; // Güçlü Mavi
+            const colorOutside = 'rgba(213, 94, 0, 0.6)'; // Turuncu/Vermilion
 
             for (let i = 0; i < pointsPerFrame; i++) {
-                // Kare alanında tamamen rastgele atış (Açık kapıyı burada kapatıyoruz)
                 const x = Math.random() * width;
                 const y = Math.random() * height;
 
-                // Noktanın merkeze olan uzaklığı
                 const dist = Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
                 
-                ctx.beginPath();
-                ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
-
                 if (dist <= radius) {
                     insidePoints++;
-                    ctx.fillStyle = fillStyleInside;
+                    // Daire içine düşenler için Yuvarlak (Daire) çiz
+                    ctx.fillStyle = colorInside;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
+                    ctx.fill();
                 } else {
-                    ctx.fillStyle = fillStyleOutside;
+                    outsidePoints++;
+                    // Daire dışına düşenler için Kare çiz (Şekil Ayrımı)
+                    ctx.fillStyle = colorOutside;
+                    ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
                 }
-                ctx.fill();
                 
                 totalPoints++;
             }
 
-            // Hesaplamaları güncelle
             insideDisplay.innerText = formatNumber(insidePoints);
-            totalDisplay.innerText = formatNumber(totalPoints);
+            outsideDisplay.innerText = formatNumber(outsidePoints);
 
             const estimatedPi = 4 * (insidePoints / totalPoints);
             piDisplay.innerText = estimatedPi.toFixed(5);
@@ -411,20 +424,19 @@
             stopSim();
             totalPoints = 0;
             insidePoints = 0;
+            outsidePoints = 0;
             
             insideDisplay.innerText = "0";
-            totalDisplay.innerText = "0";
+            outsideDisplay.innerText = "0";
             piDisplay.innerText = "3.141...";
             
             drawBackground();
         }
 
-        // Slider değerini anlık göster
         speedSlider.addEventListener('input', function() {
             speedDisplay.innerText = this.value;
         });
 
-        // Sayfa yüklendiğinde arka planı çiz
         window.onload = function() {
             drawBackground();
         };
