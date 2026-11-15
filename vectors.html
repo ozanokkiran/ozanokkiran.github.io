@@ -1,74 +1,560 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>2D Vector Addition</title>
-<style>
-  body { font-family: 'Segoe UI', sans-serif; text-align: center; background-color: #fdf6e3; color: #333; margin-top: 20px; }
-  canvas { background-color: white; border: 2px solid #ccc; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-top: 15px; }
-  .controls { margin: 15px auto; padding: 15px; background: white; border-radius: 8px; width: 450px; display:flex; justify-content: space-around; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .vec-box { padding: 10px; border: 1px solid #eee; border-radius: 5px; }
-  input[type=range] { width: 100px; }
-  .legend { font-size: 18px; font-weight: bold; margin-top: 10px; }
-  .u-color { color: #2aa198; } .v-color { color: #cb4b16; } .w-color { color: #d33682; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Vector Addition</title>
+    <!-- math.js kütüphanesi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <style>
+        :root {
+            --bg-color: #fdf8e9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #555555;
+            
+            /* Vektör Renkleri (Görseline uygun) */
+            --vec-u: #1abc9c; /* Turkuaz/Yeşil */
+            --vec-v: #d35400; /* Koyu Turuncu/Kiremit */
+            --vec-res: #e84393; /* Pembe (Resultant) */
+            
+            --grid-line: #ececec;
+            --axis-line: #cc0000; /* Kalın Kırmızı Eksen */
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        /* SOL PANEL - Kontroller */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+        }
+
+        .vector-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        .vector-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .vector-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .vector-title.u { color: var(--vec-u); }
+        .vector-title.v { color: var(--vec-v); }
+
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Manuel Sayı Girişi */
+        input[type="number"] {
+            padding: 4px 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            width: 60px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 6px;
+            background: #dcdde1;
+            border-radius: 3px;
+            outline: none;
+            margin-top: 5px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+        }
+
+        /* Pedagojik Açıklama Paneli */
+        .math-explanation {
+            background-color: #fdfce8;
+            border-left: 4px solid #f1c40f;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #4a5568;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid #f1c40f;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .math-explanation h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            color: #b7791f;
+        }
+
+        /* SAĞ PANEL - Grafik */
+        .right-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Sonuç Gösterimi */
+        .result-display {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--text-main);
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            background-color: var(--card-bg);
+            padding: 15px 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        
+        .result-display .r-vec { color: var(--vec-res); }
+
+        .canvas-container {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            position: relative;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            pointer-events: none;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 550px;
+            cursor: crosshair;
+        }
+
+    </style>
 </head>
 <body>
-  <h2>2D Vector Addition</h2>
-  <div class="controls">
-    <div class="vec-box">
-      <h3 class="u-color">Vector u</h3>
-      x: <span id="ux_val">3</span> <br><input type="range" id="ux" min="-5" max="5" value="3" oninput="draw()"><br>
-      y: <span id="uy_val">2</span> <br><input type="range" id="uy" min="-5" max="5" value="2" oninput="draw()">
+
+    <div class="header">
+        <h1>2D Vector Addition</h1>
+        <div class="subtitle">Visualize the "Head-to-Tail" method of vector addition.</div>
     </div>
-    <div class="vec-box">
-      <h3 class="v-color">Vector v</h3>
-      x: <span id="vx_val">1</span> <br><input type="range" id="vx" min="-5" max="5" value="1" oninput="draw()"><br>
-      y: <span id="vy_val">-3</span> <br><input type="range" id="vy" min="-5" max="5" value="-3" oninput="draw()">
+
+    <div class="main-container">
+        
+        <!-- SOL PANEL -->
+        <div class="left-panel">
+            <div class="control-card">
+                
+                <div class="vector-section">
+                    <div class="vector-title u">Vector u</div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>x component:</span>
+                            <input type="number" id="uxInput" min="-10" max="10" step="1" value="3">
+                        </div>
+                        <input type="range" id="uxSlider" min="-10" max="10" step="1" value="3">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>y component:</span>
+                            <input type="number" id="uyInput" min="-10" max="10" step="1" value="2">
+                        </div>
+                        <input type="range" id="uySlider" min="-10" max="10" step="1" value="2">
+                    </div>
+                </div>
+
+                <div class="vector-section">
+                    <div class="vector-title v">Vector v</div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>x component:</span>
+                            <input type="number" id="vxInput" min="-10" max="10" step="1" value="1">
+                        </div>
+                        <input type="range" id="vxSlider" min="-10" max="10" step="1" value="1">
+                    </div>
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>y component:</span>
+                            <input type="number" id="vyInput" min="-10" max="10" step="1" value="-3">
+                        </div>
+                        <input type="range" id="vySlider" min="-10" max="10" step="1" value="-3">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="math-explanation">
+                <h3>The Head-to-Tail Method</h3>
+                <p>To add vectors geometrically, place the tail of the second vector (<b>v</b>) at the head (tip) of the first vector (<b>u</b>).</p>
+                <p>The <b>Resultant vector (w)</b> is drawn from the tail of the first to the head of the second.</p>
+                <p>Mathematically: <br><b>w = (u<sub>x</sub> + v<sub>x</sub>, u<sub>y</sub> + v<sub>y</sub>)</b></p>
+            </div>
+        </div>
+
+        <!-- SAĞ PANEL -->
+        <div class="right-panel">
+            
+            <div class="result-display" id="resultDisplay">
+                Resultant: <span class="r-vec">w = u + v</span> = (4, -1)
+            </div>
+            
+            <div class="canvas-container">
+                <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
+                <canvas id="vectorCanvas" width="750" height="550"></canvas>
+            </div>
+
+        </div>
+
     </div>
-  </div>
-  <div class="legend">Resultant: <span class="w-color">w = u + v</span> = (<span id="wx_val">4</span>, <span id="wy_val">-1</span>)</div>
-  <canvas id="graph" width="400" height="400"></canvas>
-  <script>
-    const canvas = document.getElementById('graph');
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width, h = canvas.height, originX = w/2, originY = h/2, scale = 30;
 
-    function drawArrow(fromx, fromy, tox, toy, color) {
-      const headlen = 10;
-      const angle = Math.atan2(toy - fromy, tox - fromx);
-      ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 3;
-      ctx.moveTo(fromx, fromy); ctx.lineTo(tox, toy);
-      ctx.lineTo(tox - headlen * Math.cos(angle - Math.PI / 6), toy - headlen * Math.sin(angle - Math.PI / 6));
-      ctx.moveTo(tox, toy);
-      ctx.lineTo(tox - headlen * Math.cos(angle + Math.PI / 6), toy - headlen * Math.sin(angle + Math.PI / 6));
-      ctx.stroke();
-    }
+    <script>
+        const canvas = document.getElementById('vectorCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Input Referansları
+        const uxInput = document.getElementById('uxInput');
+        const uyInput = document.getElementById('uyInput');
+        const vxInput = document.getElementById('vxInput');
+        const vyInput = document.getElementById('vyInput');
+        
+        const uxSlider = document.getElementById('uxSlider');
+        const uySlider = document.getElementById('uySlider');
+        const vxSlider = document.getElementById('vxSlider');
+        const vySlider = document.getElementById('vySlider');
+        
+        const resultDisplay = document.getElementById('resultDisplay');
 
-    function draw() {
-      const ux = parseInt(document.getElementById('ux').value);
-      const uy = parseInt(document.getElementById('uy').value);
-      const vx = parseInt(document.getElementById('vx').value);
-      const vy = parseInt(document.getElementById('vy').value);
-      
-      document.getElementById('ux_val').innerText = ux; document.getElementById('uy_val').innerText = uy;
-      document.getElementById('vx_val').innerText = vx; document.getElementById('vy_val').innerText = vy;
-      document.getElementById('wx_val').innerText = ux + vx; document.getElementById('wy_val').innerText = uy + vy;
+        // Dinamik Viewport
+        let xMin = -8;
+        let xMax = 8;
+        let yMin = -6;
+        let yMax = 6;
 
-      ctx.clearRect(0, 0, w, h);
-      ctx.beginPath(); ctx.strokeStyle = '#eee'; ctx.lineWidth = 1;
-      for(let i=0; i<=w; i+=scale) { ctx.moveTo(i,0); ctx.lineTo(i,h); ctx.moveTo(0,i); ctx.lineTo(w,i); } ctx.stroke();
-      ctx.beginPath(); ctx.strokeStyle = '#777'; ctx.lineWidth = 2;
-      ctx.moveTo(0, originY); ctx.lineTo(w, originY); ctx.moveTo(originX, 0); ctx.lineTo(originX, h); ctx.stroke();
+        // Fare ile Zoom
+        canvas.addEventListener('wheel', function(event) {
+            event.preventDefault(); 
+            const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
+            
+            xMin *= zoomFactor;
+            xMax *= zoomFactor;
+            yMin *= zoomFactor;
+            yMax *= zoomFactor;
+            
+            if (xMax - xMin < 2) { xMin = -1; xMax = 1; }
+            if (xMax - xMin > 100) { xMin = -50; xMax = 50; }
+            if (yMax - yMin < 2) { yMin = -1; yMax = 1; }
+            if (yMax - yMin > 100) { yMin = -50; yMax = 50; }
 
-      let uEnd = { x: originX + ux*scale, y: originY - uy*scale };
-      let vEnd = { x: uEnd.x + vx*scale, y: uEnd.y - vy*scale };
+            draw();
+        });
 
-      drawArrow(originX, originY, uEnd.x, uEnd.y, '#2aa198'); // u
-      drawArrow(uEnd.x, uEnd.y, vEnd.x, vEnd.y, '#cb4b16'); // v (from u tip)
-      drawArrow(originX, originY, vEnd.x, vEnd.y, '#d33682'); // w
-    }
-    draw();
-  </script>
+        // Fare ile Pan
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        canvas.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            const dx = e.clientX - lastMouseX;
+            const dy = e.clientY - lastMouseY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+
+            const xRange = xMax - xMin;
+            const yRange = yMax - yMin;
+            const xDelta = (dx / canvas.width) * xRange;
+            const yDelta = (dy / canvas.height) * yRange;
+
+            xMin -= xDelta;
+            xMax -= xDelta;
+            yMin += yDelta; 
+            yMax += yDelta;
+
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; canvas.style.cursor = 'crosshair'; });
+
+        // Çizim Dönüşümleri
+        function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+        function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
+
+        function getGridStep(range) {
+            if (range <= 4) return 0.5;
+            if (range <= 10) return 1;
+            if (range <= 25) return 2;
+            if (range <= 50) return 5;
+            if (range <= 100) return 10;
+            return 20;
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.lineWidth = 1;
+            ctx.font = '11px sans-serif';
+            ctx.fillStyle = '#999999';
+
+            let xStep = getGridStep(xMax - xMin);
+            let yStep = getGridStep(yMax - yMin);
+
+            // Dikey Izgaralar
+            let startX = Math.ceil(xMin / xStep) * xStep;
+            for (let i = startX; i <= xMax; i += xStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.moveTo(mapX(i), 0);
+                ctx.lineTo(mapX(i), canvas.height);
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
+            }
+
+            // Yatay Izgaralar
+            let startY = Math.ceil(yMin / yStep) * yStep;
+            for (let i = startY; i <= yMax; i += yStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.moveTo(0, mapY(i));
+                ctx.lineTo(canvas.width, mapY(i));
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
+            }
+
+            // ANA EKSENLER (KALIN KIRMIZI)
+            ctx.beginPath();
+            ctx.strokeStyle = 'var(--axis-line)';
+            ctx.lineWidth = 2.5; 
+            
+            ctx.moveTo(0, mapY(0));
+            ctx.lineTo(canvas.width, mapY(0));
+            ctx.moveTo(mapX(0), 0);
+            ctx.lineTo(mapX(0), canvas.height);
+            
+            ctx.stroke();
+            
+            ctx.fillStyle = 'var(--axis-line)';
+            ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
+        }
+
+        // --- OK ÇİZİM (Arrow) YARDIMCI FONKSİYONU ---
+        function drawArrow(x0, y0, x1, y1, color, lineWidth = 4) {
+            const headlen = 15; // Ok ucunun uzunluğu
+            const angle = Math.atan2(y1 - y0, x1 - x0);
+            
+            // Ana Gövde
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = lineWidth;
+            ctx.moveTo(x0, y0);
+            ctx.lineTo(x1, y1);
+            ctx.stroke();
+            
+            // Ok Ucu (Üçgen)
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x1 - headlen * Math.cos(angle - Math.PI / 6), y1 - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(x1 - headlen * Math.cos(angle + Math.PI / 6), y1 - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.fill();
+        }
+
+        // --- GÜVENLİ DEĞER OKUMA ---
+        function getSafeValue(inputElement) {
+            let val = parseFloat(inputElement.value);
+            return isNaN(val) ? 0 : val;
+        }
+
+        function draw() {
+            drawGrid();
+
+            let ux = getSafeValue(uxInput);
+            let uy = getSafeValue(uyInput);
+            let vx = getSafeValue(vxInput);
+            let vy = getSafeValue(vyInput);
+            
+            let wx = ux + vx;
+            let wy = uy + vy;
+
+            // Sonucu Güncelle
+            resultDisplay.innerHTML = `Resultant: <span class="r-vec">w = u + v</span> = (${wx}, ${wy})`;
+
+            // Merkez (0,0) koordinatları
+            const cx = mapX(0);
+            const cy = mapY(0);
+
+            // Vektör bitiş noktaları
+            const pxU = mapX(ux);
+            const pyU = mapY(uy);
+            
+            const pxW = mapX(wx);
+            const pyW = mapY(wy);
+
+            // 1. Vector u (Orijinden ux, uy noktasına)
+            drawArrow(cx, cy, pxU, pyU, '#1abc9c');
+
+            // 2. Vector v (u'nun ucundan w'nun ucuna) - Head to Tail method
+            drawArrow(pxU, pyU, pxW, pyW, '#d35400');
+
+            // 3. Resultant w (Orijinden w'nun ucuna)
+            drawArrow(cx, cy, pxW, pyW, '#e84393');
+        }
+
+        // --- GÜVENLİ SENKRONİZASYON ---
+        function syncInputs(slider, input) {
+            slider.addEventListener('input', function() {
+                input.value = parseFloat(this.value);
+                draw();
+            });
+            
+            input.addEventListener('input', function() {
+                let val = parseFloat(this.value);
+                
+                if(isNaN(val)) {
+                    draw(); 
+                    return; 
+                }
+                
+                if (val > 10) { val = 10; this.value = 10; }
+                if (val < -10) { val = -10; this.value = -10; }
+                
+                slider.value = val;
+                draw();
+            });
+            
+            input.addEventListener('blur', function() {
+                if(this.value === "" || isNaN(parseFloat(this.value))) {
+                    this.value = "0";
+                    slider.value = 0;
+                    draw();
+                }
+            });
+        }
+
+        syncInputs(uxSlider, uxInput);
+        syncInputs(uySlider, uyInput);
+        syncInputs(vxSlider, vxInput);
+        syncInputs(vySlider, vyInput);
+
+        window.onload = draw;
+    </script>
 </body>
 </html>
