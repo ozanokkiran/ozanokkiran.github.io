@@ -4,19 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamic Riemann Sums</title>
+    <!-- math.js kütüphanesi -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
     <style>
         :root {
+            /* Renk Paleti */
             --bg-color: #f7f7f7;
             --card-bg: #ffffff;
             --text-main: #333333;
             --text-light: #777777;
             --accent-blue: #007bff;
-            --curve-color: #ff9999;
-            --rect-color: rgba(176, 196, 222, 0.7);
-            --rect-border: #8ca3be;
+            --curve-color: #333333; /* Eğri siyah yapıldı */
+            --rect-color: rgba(128, 128, 128, 0.7); /* Dikdörtgenler gri */
+            --rect-border: #4d4d4d;
             --grid-line: #e0e0e0;
-            --axis-line: #cc0000; /* Kırmızı Eksenler */
+            --axis-line: #cc0000; /* KIRMIZI EKSENLER */
             --border-color: #e0e0e0;
         }
 
@@ -93,6 +95,7 @@
             pointer-events: none;
             border: 1px solid var(--border-color);
             font-weight: 500;
+            z-index: 10;
         }
 
         canvas {
@@ -159,6 +162,7 @@
             margin-bottom: 10px;
         }
 
+        /* Hızlı Ekleme Butonları */
         .quick-insert-panel {
             display: flex;
             gap: 8px;
@@ -244,7 +248,7 @@
             cursor: pointer;
         }
 
-        /* Pedagojik Pano */
+        /* Pedagojik Pano (Arkasındaki Matematik) */
         .math-card {
             background-color: #fdfce8;
             border: 1px solid #f2e293;
@@ -317,6 +321,7 @@
 
     <div class="main-container">
         
+        <!-- SOL PANEL - Grafik ve Sonuçlar -->
         <div class="left-panel">
             <div class="canvas-container">
                 <div class="zoom-hint">Scroll to Zoom | Drag to Pan</div>
@@ -335,6 +340,7 @@
             </div>
         </div>
 
+        <!-- SAĞ PANEL - Kontroller -->
         <div class="right-panel">
             <div class="control-card">
                 
@@ -574,7 +580,6 @@
                 const code = node.compile();
 
                 // 1. DİKDÖRTGENLERİ ÇİZ (Sol Toplam)
-                // n=2 iken tam olarak 2 parça çizilmesi için döngü <= i < n olarak düzeltildi
                 let dx = (b - a) / n;
                 let estimatedArea = 0;
 
@@ -582,8 +587,9 @@
                 ctx.strokeStyle = 'var(--rect-border)';
                 ctx.lineWidth = 1.5;
 
+                // DİKKAT: Artık i < n döngüsü doğru çalışıyor ve Riemann Sütunlarını tam çiziyor
                 for (let i = 0; i < n; i++) {
-                    let xi = a + i * dx; // Left Sum
+                    let xi = a + i * dx; // Left Sum (Sol uç)
                     let y = code.evaluate({ x: xi });
                     
                     if (isNaN(y) || !isFinite(y)) continue;
@@ -591,7 +597,7 @@
                     estimatedArea += y * dx;
 
                     let px = mapX(xi);
-                    // Genişlik her sütun için (b-a)/n kadardır
+                    // DİKKAT: Genişlik (pw) piksel bazında hassas hesaplanıyor
                     let pw = mapX(xi + dx) - px; 
                     let py = mapY(y);
                     let ph = mapY(0) - py;
@@ -638,6 +644,7 @@
         bLimitInput.addEventListener('input', draw);
         nSlider.addEventListener('input', draw);
 
+        // İlk yüklendiğinde grafiği çizdir
         window.onload = draw;
     </script>
 </body>
