@@ -284,7 +284,7 @@
             <div class="math-explanation">
                 <h3>What is a Slope Field?</h3>
                 <p>A differential equation tells us the <b>slope</b> (gradient) of a function at any given point (x, y). The small arrows represent these slopes.</p>
-                <p><b>Try it:</b> Click anywhere on the grid! You will drop an "initial condition" point $(x_0, y_0)$ into the field.</p>
+                <p><b>Try it:</b> Click anywhere on the grid! You will drop an "initial condition" point (x<sub>0</sub>, y<sub>0</sub>) into the field.</p>
                 <p>The pink line is the <b>Particular Solution</b>, computed using the <i>Runge-Kutta (RK4)</i> algorithm to follow the "current" of the slope field perfectly.</p>
                 
                 <div class="formula-block">
@@ -369,7 +369,7 @@
         });
 
         let isDragging = false;
-        let isMoved = false; // Tıklama (click) ile kaydırmayı (pan) ayırt etmek için
+        let isMoved = false; 
         let lastMouseX = 0;
         let lastMouseY = 0;
         let startMouseX = 0;
@@ -387,7 +387,6 @@
         canvas.addEventListener('mousemove', function(e) {
             if (!isDragging) return;
             
-            // Eğer 3 pikselden fazla sürüklendiyse, bunu "Pan" kabul et
             if (Math.abs(e.clientX - startMouseX) > 3 || Math.abs(e.clientY - startMouseY) > 3) {
                 isMoved = true;
                 canvas.style.cursor = 'grabbing';
@@ -417,7 +416,6 @@
             isDragging = false;
             canvas.style.cursor = 'crosshair';
 
-            // Eğer kaydırma yapılmadıysa (Sadece tıklandıysa), o noktadan eğri çiz
             if (!isMoved) {
                 const rect = canvas.getBoundingClientRect();
                 const scaleX = canvas.width / rect.width;
@@ -464,15 +462,165 @@
             let xStep = getGridStep(xMax - xMin);
             let yStep = getGridStep(yMax - yMin);
 
-            // Dikey Izgaralar
+            // Dikey Izgaralar (JavaScript içine hard-coded renk)
             let startX = Math.ceil(xMin / xStep) * xStep;
             for (let i = startX; i <= xMax; i += xStep) {
                 if (Math.abs(i) < 1e-5) continue; 
                 ctx.beginPath();
-                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.strokeStyle = '#ececec';
                 ctx.moveTo(mapX(i), 0);
                 ctx.lineTo(mapX(i), canvas.height);
                 ctx.stroke();
                 
                 let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
-                ctx.fillText(
+                ctx.fillText(valStr, mapX(i) - 8, mapY(0) + 15);
+            }
+
+            // Yatay Izgaralar
+            let startY = Math.ceil(yMin / yStep) * yStep;
+            for (let i = startY; i <= yMax; i += yStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = '#ececec';
+                ctx.moveTo(0, mapY(i));
+                ctx.lineTo(canvas.width, mapY(i));
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(valStr, mapX(0) + 5, mapY(i) + 4);
+            }
+
+            // ANA EKSENLER (JavaScript içine hard-coded kalın kırmızı renk)
+            ctx.beginPath();
+            ctx.strokeStyle = '#cc0000';
+            ctx.lineWidth = 2; 
+            
+            ctx.moveTo(0, mapY(0));
+            ctx.lineTo(canvas.width, mapY(0));
+            ctx.moveTo(mapX(0), 0);
+            ctx.lineTo(mapX(0), canvas.height);
+            
+            ctx.stroke();
+            
+            ctx.fillStyle = '#cc0000';
+            ctx.fillText("0", mapX(0) + 5, mapY(0) + 15);
+        }
+
+        // --- EĞİM ALANI ÇİZİMİ (SLOPE FIELD) ---
+        function drawSlopeField() {
+            if (!compiledEq) return;
+
+            const density = parseInt(densitySlider.value);
+            const dx = (xMax - xMin) / density;
+            const dy = (yMax - yMin) / (density * (canvas.height / canvas.width));
+            
+            const lineLen = Math.min(canvas.width / density, canvas.height / (density * (canvas.height/canvas.width))) * 0.6;
+
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(52, 152, 219, 0.6)'; 
+            ctx.lineCap = 'round';
+
+            for (let x = xMin; x <= xMax; x += dx) {
+                for (let y = yMin; y <= yMax; y += dy) {
+                    try {
+                        let slope = compiledEq.evaluate({x: x, y: y});
+                        if (isNaN(slope)) continue;
+                        
+                        if (!isFinite(slope)) slope = 1e6; 
+
+                        const angle = Math.atan(slope);
+                        const px = mapX(x);
+                        const py = mapY(y);
+
+                        const dxPx = Math.cos(angle) * (lineLen / 2);
+                        const dyPx = Math.sin(angle) * (lineLen / 2); 
+                        const dyPxCanvas = -dyPx; 
+
+                        ctx.beginPath();
+                        ctx.moveTo(px - dxPx, py - dyPxCanvas);
+                        ctx.lineTo(px + dxPx, py + dyPxCanvas);
+                        ctx.stroke();
+
+                    } catch (e) {}
+                }
+            }
+        }
+
+        // --- RUNGE-KUTTA (RK4) ALGORİTMASI ---
+        function rk4Step(x, y, h) {
+            try {
+                let k1 = compiledEq.evaluate({x: x, y: y});
+                let k2 = compiledEq.evaluate({x: x + h/2, y: y + k1*h/2});
+                let k3 = compiledEq.evaluate({x: x + h/2, y: y + k2*h/2});
+                let k4 = compiledEq.evaluate({x: x + h, y: y + k3*h});
+                
+                if(!isFinite(k1) || !isFinite(k2) || !isFinite(k3) || !isFinite(k4)) return null;
+
+                return y + (h/6) * (k1 + 2*k2 + 2*k3 + k4);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function drawParticularSolutions() {
+            if (!compiledEq) return;
+
+            const stepSize = (xMax - xMin) / 500; 
+
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#e91e63'; 
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            solutionCurves.forEach(pt => {
+                
+                ctx.beginPath();
+                ctx.arc(mapX(pt.x), mapY(pt.y), 5, 0, Math.PI*2);
+                ctx.fillStyle = '#2c3e50';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(mapX(pt.x), mapY(pt.y));
+                let cx = pt.x;
+                let cy = pt.y;
+                for (let i = 0; i < 500; i++) {
+                    let ny = rk4Step(cx, cy, stepSize);
+                    if (ny === null || ny > yMax * 3 || ny < yMin * 3) break; 
+                    cx += stepSize;
+                    cy = ny;
+                    ctx.lineTo(mapX(cx), mapY(cy));
+                }
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(mapX(pt.x), mapY(pt.y));
+                cx = pt.x;
+                cy = pt.y;
+                for (let i = 0; i < 500; i++) {
+                    let ny = rk4Step(cx, cy, -stepSize);
+                    if (ny === null || ny > yMax * 3 || ny < yMin * 3) break;
+                    cx -= stepSize;
+                    cy = ny;
+                    ctx.lineTo(mapX(cx), mapY(cy));
+                }
+                ctx.stroke();
+            });
+        }
+
+        function draw() {
+            drawGrid();
+            drawSlopeField();
+            drawParticularSolutions();
+        }
+
+        funcSelect.addEventListener('change', updateEquation);
+        customInput.addEventListener('input', updateEquation);
+        densitySlider.addEventListener('input', draw);
+
+        window.onload = function() {
+            updateEquation();
+        };
+
+    </script>
+</body>
+</html>
