@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slope Fields & Differential Equations</title>
+    <!-- math.js kütüphanesi -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <style>
+        :root {
+            --bg-color: #fdf8e9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #555555;
+            --accent-blue: #1e88e5;
+            --slope-color: #3498db;
+            --curve-color: #e91e63;
+            --grid-line: #ececec;
+            --axis-line: #cc0000;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        /* SOL PANEL */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .func-select, .func-input {
+            padding: 10px 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-main);
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            font-family: 'Cambria Math', monospace;
+        }
+        
+        .func-select:focus, .func-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .btn-clear {
+            padding: 12px;
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-clear:hover {
+            opacity: 0.8;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 6px;
+            background: #dcdde1;
+            border-radius: 3px;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        /* Pedagojik Açıklama Paneli */
+        .math-explanation {
+            background-color: #fdfce8;
+            border-left: 4px solid #f1c40f;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #4a5568;
+            border: 1px solid var(--border-color);
+            border-left: 4px solid #f1c40f;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .math-explanation h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            color: #b7791f;
+        }
+
+        .formula-block {
+            background-color: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px dashed #b7791f;
+            margin: 15px 0 5px 0;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 2px;
+            font-size: 1.3rem;
+        }
+        
+        .fraction span:first-child {
+            border-bottom: 2px solid #2c3e50;
+            padding: 0 4px;
+        }
+
+        /* SAĞ PANEL */
+        .right-panel {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .equations-container {
+            text-align: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .canvas-container {
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            position: relative;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            pointer-events: none;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+            z-index: 10;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 600px;
+            cursor: crosshair;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Slope Fields & Differential Equations</h1>
+        <div class="subtitle">Visualize the "flow" of differential equations and plot particular solutions.</div>
+    </div>
+
+    <div class="main-container">
+        
+        <!-- SOL PANEL -->
+        <div class="left-panel">
+            <div class="control-card">
+                
+                <div class="control-group">
+                    <div class="control-header">Select Preset Equation:</div>
+                    <select id="funcSelect" class="func-select">
+                        <option value="x - y">dy/dx = x - y (Linear)</option>
+                        <option value="-x / y">dy/dx = -x / y (Circles)</option>
+                        <option value="y * (1 - y)">dy/dx = y(1 - y) (Logistic)</option>
+                        <option value="sin(x) * cos(y)">dy/dx = sin(x) · cos(y)</option>
+                        <option value="x * y">dy/dx = x · y</option>
+                        <option value="custom">Custom Equation...</option>
+                    </select>
+                </div>
+
+                <div class="control-group" id="customInputGroup" style="display: none;">
+                    <div class="control-header">Custom dy/dx = f(x,y):</div>
+                    <input type="text" id="customInput" class="func-input" value="x + y">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-header">Vector Density (Resolution):</div>
+                    <input type="range" id="densitySlider" min="10" max="40" step="2" value="20">
+                </div>
+
+                <button class="btn-clear" onclick="clearCurves()">Clear Solution Curves</button>
+                
+            </div>
+
+            <div class="math-explanation">
+                <h3>What is a Slope Field?</h3>
+                <p>A differential equation tells us the <b>slope</b> (gradient) of a function at any given point (x, y). The small arrows represent these slopes.</p>
+                <p><b>Try it:</b> Click anywhere on the grid! You will drop an "initial condition" point $(x_0, y_0)$ into the field.</p>
+                <p>The pink line is the <b>Particular Solution</b>, computed using the <i>Runge-Kutta (RK4)</i> algorithm to follow the "current" of the slope field perfectly.</p>
+                
+                <div class="formula-block">
+                    <div class="fraction"><span>dy</span><span>dx</span></div>
+                    = f(x, y)
+                </div>
+            </div>
+        </div>
+
+        <!-- SAĞ PANEL -->
+        <div class="right-panel">
+            
+            <div class="equations-container">
+                <div class="formula-block" style="border:none; padding:0; background:transparent; margin:0;" id="eqDisplay">
+                    <div class="fraction"><span>dy</span><span>dx</span></div>
+                    &nbsp;= x - y
+                </div>
+            </div>
+            
+            <div class="canvas-container">
+                <div class="zoom-hint">Click to Plot Curve | Drag to Pan | Scroll to Zoom</div>
+                <canvas id="slopeCanvas" width="750" height="600"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('slopeCanvas');
+        const ctx = canvas.getContext('2d');
+        const funcSelect = document.getElementById('funcSelect');
+        const customInputGroup = document.getElementById('customInputGroup');
+        const customInput = document.getElementById('customInput');
+        const densitySlider = document.getElementById('densitySlider');
+        const eqDisplay = document.getElementById('eqDisplay');
+
+        // Viewport
+        let xMin = -6;
+        let xMax = 6;
+        let yMin = -5;
+        let yMax = 5;
+
+        // Tıklanan Başlangıç Koşulları
+        let solutionCurves = []; 
+
+        let compiledEq = null;
+
+        function updateEquation() {
+            let expr = funcSelect.value;
+            if (expr === 'custom') {
+                customInputGroup.style.display = 'flex';
+                expr = customInput.value;
+            } else {
+                customInputGroup.style.display = 'none';
+            }
+
+            try {
+                compiledEq = math.parse(expr).compile();
+                eqDisplay.innerHTML = `<div class="fraction"><span>dy</span><span>dx</span></div> &nbsp;= ${expr}`;
+                draw();
+            } catch (e) {
+                eqDisplay.innerHTML = `<span style="color:red;">Invalid Equation</span>`;
+            }
+        }
+
+        function clearCurves() {
+            solutionCurves = [];
+            draw();
+        }
+
+        // --- FARE KONTROLLERİ (Pan, Zoom, Tıklama) ---
+        canvas.addEventListener('wheel', function(event) {
+            event.preventDefault(); 
+            const zoomFactor = event.deltaY < 0 ? 0.9 : 1.1; 
+            
+            xMin *= zoomFactor;
+            xMax *= zoomFactor;
+            yMin *= zoomFactor;
+            yMax *= zoomFactor;
+            draw();
+        });
+
+        let isDragging = false;
+        let isMoved = false; // Tıklama (click) ile kaydırmayı (pan) ayırt etmek için
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+        let startMouseX = 0;
+        let startMouseY = 0;
+
+        canvas.addEventListener('mousedown', function(e) {
+            isDragging = true;
+            isMoved = false;
+            startMouseX = e.clientX;
+            startMouseY = e.clientY;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        canvas.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            
+            // Eğer 3 pikselden fazla sürüklendiyse, bunu "Pan" kabul et
+            if (Math.abs(e.clientX - startMouseX) > 3 || Math.abs(e.clientY - startMouseY) > 3) {
+                isMoved = true;
+                canvas.style.cursor = 'grabbing';
+            }
+
+            if (isMoved) {
+                const dx = e.clientX - lastMouseX;
+                const dy = e.clientY - lastMouseY;
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+
+                const xRange = xMax - xMin;
+                const yRange = yMax - yMin;
+                const xDelta = (dx / canvas.offsetWidth) * xRange;
+                const yDelta = (dy / canvas.offsetHeight) * yRange;
+
+                xMin -= xDelta;
+                xMax -= xDelta;
+                yMin += yDelta; 
+                yMax += yDelta;
+
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mouseup', function(e) {
+            isDragging = false;
+            canvas.style.cursor = 'crosshair';
+
+            // Eğer kaydırma yapılmadıysa (Sadece tıklandıysa), o noktadan eğri çiz
+            if (!isMoved) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+
+                const px = (e.clientX - rect.left) * scaleX;
+                const py = (e.clientY - rect.top) * scaleY;
+
+                const mathX = unmapX(px);
+                const mathY = unmapY(py);
+
+                solutionCurves.push({ x: mathX, y: mathY });
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => { 
+            isDragging = false; 
+            canvas.style.cursor = 'crosshair'; 
+        });
+
+        // Koordinat Dönüşümleri
+        function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+        function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
+        function unmapX(px) { return (px / canvas.width) * (xMax - xMin) + xMin; }
+        function unmapY(py) { return yMax - (py / canvas.height) * (yMax - yMin); }
+
+        function getGridStep(range) {
+            if (range <= 4) return 0.5;
+            if (range <= 10) return 1;
+            if (range <= 25) return 2;
+            if (range <= 50) return 5;
+            if (range <= 100) return 10;
+            return 20;
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.lineWidth = 1;
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#999999';
+
+            let xStep = getGridStep(xMax - xMin);
+            let yStep = getGridStep(yMax - yMin);
+
+            // Dikey Izgaralar
+            let startX = Math.ceil(xMin / xStep) * xStep;
+            for (let i = startX; i <= xMax; i += xStep) {
+                if (Math.abs(i) < 1e-5) continue; 
+                ctx.beginPath();
+                ctx.strokeStyle = 'var(--grid-line)';
+                ctx.moveTo(mapX(i), 0);
+                ctx.lineTo(mapX(i), canvas.height);
+                ctx.stroke();
+                
+                let valStr = Number.isInteger(i) ? i.toString() : parseFloat(i.toFixed(1)).toString();
+                ctx.fillText(
