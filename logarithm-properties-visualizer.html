@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logarithm Properties Visualizer</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1320px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 315px;
+            min-width: 280px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 7px;
+        }
+
+        .slider-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .val-badge {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            color: var(--coral);
+            background: #fff5f5;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 2px 0;
+        }
+
+        .preset-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 6px;
+        }
+
+        .preset-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 5px 2px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .preset-btn:hover,
+        .preset-btn.active {
+            background: var(--teal);
+            color: #fff;
+            border-color: var(--teal);
+        }
+
+        .toggle-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .checkbox-label input {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: #eef2f5;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 5px 2px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .law-formula {
+            background: #f8fafc;
+            border-left: 3px solid var(--teal);
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.95rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .verification-box {
+            background: #f0f9fa;
+            border: 1px solid #cce7ea;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+
+        .verif-eq {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            color: #234e52;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .info-pill {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 5px 8px;
+        }
+
+        .info-pill span {
+            display: block;
+            font-size: 0.66rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .info-pill strong {
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            min-height: 520px;
+            background-color: #eef2f5;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s;
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            background: var(--panel-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .swatch {
+            width: 14px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .swatch-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        @media (max-width: 620px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-container {
+                min-height: 380px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Logarithm Properties Visualizer</h1>
+        <p class="subtitle">Logarithmic Curves, Inverse Symmetry &amp; Algebraic Laws</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Base Parameter -->
+            <div class="section-card">
+                <div class="section-title">1. Base Parameter (a)</div>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Base a in y = log<sub>a</sub>(x)</span>
+                        <span class="val-badge" id="baseVal">2.00</span>
+                    </div>
+                    <input type="range" id="baseSlider" min="0.2" max="10" step="0.05" value="2">
+                </div>
+                <div class="preset-row">
+                    <button type="button" class="preset-btn" data-base="0.5">a = 0.5</button>
+                    <button type="button" class="preset-btn active" data-base="2">a = 2</button>
+                    <button type="button" class="preset-btn" data-base="e">a = e</button>
+                    <button type="button" class="preset-btn" data-base="10">a = 10</button>
+                </div>
+            </div>
+
+            <!-- 2. Visual Overlays -->
+            <div class="section-card">
+                <div class="section-title">2. Visual Overlays</div>
+                <div class="toggle-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkInverse" checked>
+                        Inverse y = a<sup>x</sup> &amp; Symmetry (y = x)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkKeyPoints" checked>
+                        Key Points (1, 0) &amp; (a, 1)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkLawVisual" checked>
+                        Plot Active Law Points
+                    </label>
+                </div>
+            </div>
+
+            <!-- 3. Logarithm Laws -->
+            <div class="section-card">
+                <div class="section-title">3. Logarithm Laws Explorer</div>
+                <div class="tabs">
+                    <button type="button" class="tab-btn active" data-law="product">Product</button>
+                    <button type="button" class="tab-btn" data-law="quotient">Quotient</button>
+                    <button type="button" class="tab-btn" data-law="power">Power</button>
+                    <button type="button" class="tab-btn" data-law="base">Change</button>
+                </div>
+
+                <div class="law-formula" id="lawFormula">
+                    log<sub>a</sub>(u &middot; v) = log<sub>a</sub>(u) + log<sub>a</sub>(v)
+                </div>
+
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Value u</span>
+                        <span class="val-badge" id="uVal">2.0</span>
+                    </div>
+                    <input type="range" id="uSlider" min="0.5" max="6" step="0.1" value="2">
+                </div>
+
+                <div class="slider-row" id="vRow">
+                    <div class="slider-header">
+                        <span>Value v</span>
+                        <span class="val-badge" id="vVal">3.0</span>
+                    </div>
+                    <input type="range" id="vSlider" min="0.5" max="5" step="0.1" value="3">
+                </div>
+
+                <div class="slider-row" id="kRow" style="display: none;">
+                    <div class="slider-header">
+                        <span>Exponent k</span>
+                        <span class="val-badge" id="kVal">2.00</span>
+                    </div>
+                    <input type="range" id="kSlider" min="-2" max="3" step="0.25" value="2">
+                </div>
+
+                <div class="verification-box" id="verificationBox"></div>
+            </div>
+
+            <!-- 4. Function Analysis -->
+            <div class="section-card">
+                <div class="section-title">4. Function Analysis</div>
+                <div class="info-grid">
+                    <div class="info-pill">
+                        <span>Domain</span>
+                        <strong>(0, &infin;)</strong>
+                    </div>
+                    <div class="info-pill">
+                        <span>Range</span>
+                        <strong>(&minus;&infin;, &infin;)</strong>
+                    </div>
+                    <div class="info-pill">
+                        <span>Asymptote</span>
+                        <strong>x = 0 (Vertical)</strong>
+                    </div>
+                    <div class="info-pill">
+                        <span>Behavior</span>
+                        <strong id="behaviorText">Strictly Increasing</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="canvas-wrapper">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="graphCanvas"></canvas>
+                <div class="canvas-toolbar">
+                    <button type="button" class="tool-btn" id="btnZoomIn">+ Zoom</button>
+                    <button type="button" class="tool-btn" id="btnZoomOut">&minus; Zoom</button>
+                    <button type="button" class="tool-btn" id="btnReset">Reset View</button>
+                </div>
+                <div class="controls-hint">Scroll: Zoom | Drag: Pan</div>
+            </div>
+
+            <div class="legend-bar">
+                <div class="legend-item">
+                    <div class="swatch" style="background: #2b6cb0;"></div>
+                    <span>y = log<sub>a</sub>(x)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch" style="background: #d96459;"></div>
+                    <span>y = a<sup>x</sup></span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch" style="border-top: 2px dashed #e69a53; height: 0;"></div>
+                    <span>y = x</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dot" style="background: #38a169;"></div>
+                    <span>u &amp; v</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dot" style="background: #7c6992;"></div>
+                    <span>Result</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            function init() {
+                var canvas = document.getElementById('graphCanvas');
+                var ctx = canvas.getContext('2d');
+                var container = document.getElementById('canvasContainer');
+
+                var baseSlider = document.getElementById('baseSlider');
+                var baseVal = document.getElementById('baseVal');
+                var uSlider = document.getElementById('uSlider');
+                var vSlider = document.getElementById('vSlider');
+                var kSlider = document.getElementById('kSlider');
+                var uVal = document.getElementById('uVal');
+                var vVal = document.getElementById('vVal');
+                var kVal = document.getElementById('kVal');
+                var vRow = document.getElementById('vRow');
+                var kRow = document.getElementById('kRow');
+                var chkInverse = document.getElementById('chkInverse');
+                var chkKeyPoints = document.getElementById('chkKeyPoints');
+                var chkLawVisual = document.getElementById('chkLawVisual');
+                var lawFormula = document.getElementById('lawFormula');
+                var verificationBox = document.getElementById('verificationBox');
+                var behaviorText = document.getElementById('behaviorText');
+
+                var presetBtns = document.querySelectorAll('.preset-btn');
+                var tabBtns = document.querySelectorAll('.tab-btn');
+                var btnZoomIn = document.getElementById('btnZoomIn');
+                var btnZoomOut = document.getElementById('btnZoomOut');
+                var btnReset = document.getElementById('btnReset');
+
+                var baseA = 2;
+                var activeLaw = 'product';
+                var offsetX = 0;
+                var offsetY = 0;
+                var scale = 60;
+                var initializedView = false;
+                var isDragging = false;
+                var dragStartX = 0;
+                var dragStartY = 0;
+
+                function logBase(x, a) {
+                    return Math.log(x) / Math.log(a);
+                }
+
+                function formatBase(a) {
+                    if (Math.abs(a - Math.E) < 0.02) return 'e (≈2.72)';
+                    return a.toFixed(2);
+                }
+
+                function shortBase(a) {
+                    if (Math.abs(a - Math.E) < 0.02) return 'e';
+                    if (Math.abs(a - Math.round(a)) < 0.001) return String(Math.round(a));
+                    return a.toFixed(2);
+                }
+
+                function getSize() {
+                    var rect = container.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 640,
+                        h: rect.height > 50 ? rect.height : 520
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    if (!initializedView) {
+                        offsetX = sz.w * 0.30;
+                        offsetY = sz.h * 0.58;
+                        initializedView = true;
+                    }
+                    draw();
+                }
+
+                function resetView() {
+                    var sz = getSize();
+                    offsetX = sz.w * 0.30;
+                    offsetY = sz.h * 0.58;
+                    scale = 60;
+                    draw();
+                }
+
+                function zoomBy(factor) {
+                    var sz = getSize();
+                    var cx = sz.w / 2;
+                    var cy = sz.h / 2;
+                    var newScale = Math.max(15, Math.min(300, scale * factor));
+                    var actual = newScale / scale;
+                    offsetX = cx - (cx - offsetX) * actual;
+                    offsetY = cy - (cy - offsetY) * actual;
+                    scale = newScale;
+                    draw();
+                }
+
+                function toCanvasX(x) { return offsetX + x * scale; }
+                function toCanvasY(y) { return offsetY - y * scale; }
+
+                function highlightPreset() {
+                    presetBtns.forEach(function (btn) {
+                        var v = btn.getAttribute('data-base') === 'e' ? Math.E : parseFloat(btn.getAttribute('data-base'));
+                        if (Math.abs(baseA - v) < 0.03) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                }
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var raw = btn.getAttribute('data-base');
+                        baseA = (raw === 'e') ? Math.E : parseFloat(raw);
+                        baseSlider.value = baseA.toFixed(2);
+                        highlightPreset();
+                        updateAll();
+                    });
+                });
+
+                tabBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        tabBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        activeLaw = btn.getAttribute('data-law');
+
+                        vRow.style.display = (activeLaw === 'product' || activeLaw === 'quotient') ? 'flex' : 'none';
+                        kRow.style.display = (activeLaw === 'power') ? 'flex' : 'none';
+
+                        if (activeLaw === 'product') {
+                            lawFormula.innerHTML = 'log<sub>a</sub>(u &middot; v) = log<sub>a</sub>(u) + log<sub>a</sub>(v)';
+                        } else if (activeLaw === 'quotient') {
+                            lawFormula.innerHTML = 'log<sub>a</sub>(u / v) = log<sub>a</sub>(u) &minus; log<sub>a</sub>(v)';
+                        } else if (activeLaw === 'power') {
+                            lawFormula.innerHTML = 'log<sub>a</sub>(u<sup>k</sup>) = k &middot; log<sub>a</sub>(u)';
+                        } else {
+                            lawFormula.innerHTML = 'log<sub>a</sub>(u) = ln(u) / ln(a)';
+                        }
+                        updateAll();
+                    });
+                });
+
+                btnZoomIn.addEventListener('click', function () { zoomBy(1.25); });
+                btnZoomOut.addEventListener('click', function () { zoomBy(0.8); });
+                btnReset.addEventListener('click', resetView);
+
+                baseSlider.addEventListener('input', function () {
+                    baseA = parseFloat(baseSlider.value);
+                    highlightPreset();
+                    updateAll();
+                });
+
+                [uSlider, vSlider, kSlider].forEach(function (el) {
+                    el.addEventListener('input', updateAll);
+                });
+
+                [chkInverse, chkKeyPoints, chkLawVisual].forEach(function (el) {
+                    el.addEventListener('change', updateAll);
+                });
+
+                canvas.addEventListener('mousedown', function (e) {
+                    isDragging = true;
+                    dragStartX = e.clientX - offsetX;
+                    dragStartY = e.clientY - offsetY;
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (!isDragging) return;
+                    offsetX = e.clientX - dragStartX;
+                    offsetY = e.clientY - dragStartY;
+                    draw();
+                });
+
+                window.addEventListener('mouseup', function () {
+                    isDragging = false;
+                });
+
+                canvas.addEventListener('wheel', function (e) {
+                    e.preventDefault();
+                    var factor = Math.exp(-e.deltaY * 0.0012);
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+
+                    var newScale = Math.max(15, Math.min(300, scale * factor));
+                    var actual = newScale / scale;
+                    offsetX = mx - (mx - offsetX) * actual;
+                    offsetY = my - (my - offsetY) * actual;
+                    scale = newScale;
+                    draw();
+                }, { passive: false });
+
+                function updateVerification() {
+                    var u = parseFloat(uSlider.value);
+                    var v = parseFloat(vSlider.value);
+                    var k = parseFloat(kSlider.value);
+                    var bStr = shortBase(baseA);
+
+                    baseVal.textContent = formatBase(baseA);
+                    uVal.textContent = u.toFixed(1);
+                    vVal.textContent = v.toFixed(1);
+                    kVal.textContent = k.toFixed(2);
+
+                    if (Math.abs(baseA - 1) < 0.025) {
+                        behaviorText.textContent = 'Undefined (a = 1)';
+                        behaviorText.style.color = '#d96459';
+                        verificationBox.innerHTML = '<span style="color:#d96459; font-weight:700;">Base a = 1 is invalid.</span><br>Since 1<sup>y</sup> = 1 for all y, log<sub>1</sub>(x) is not a function.';
+                        return;
+                    }
+
+                    behaviorText.style.color = '#4a6572';
+                    behaviorText.textContent = baseA > 1 ? 'Strictly Increasing' : 'Strictly Decreasing';
+
+                    var logU = logBase(u, baseA);
+                    var logV = logBase(v, baseA);
+
+                    if (activeLaw === 'product') {
+                        var prod = u * v;
+                        var logProd = logBase(prod, baseA);
+                        verificationBox.innerHTML =
+                            '<div>log<sub>' + bStr + '</sub>(' + u.toFixed(1) + ') = <span class="verif-eq">' + logU.toFixed(3) + '</span></div>' +
+                            '<div>log<sub>' + bStr + '</sub>(' + v.toFixed(1) + ') = <span class="verif-eq">' + logV.toFixed(3) + '</span></div>' +
+                            '<hr style="border:0; border-top:1px solid #cce7ea; margin:4px 0;">' +
+                            '<div>LHS: log<sub>' + bStr + '</sub>(' + prod.toFixed(2) + ') = <span class="verif-eq">' + logProd.toFixed(3) + '</span></div>' +
+                            '<div>RHS: ' + logU.toFixed(3) + ' + (' + logV.toFixed(3) + ') = <span class="verif-eq">' + (logU + logV).toFixed(3) + '</span></div>';
+                    } else if (activeLaw === 'quotient') {
+                        var quot = u / v;
+                        var logQuot = logBase(quot, baseA);
+                        verificationBox.innerHTML =
+                            '<div>log<sub>' + bStr + '</sub>(' + u.toFixed(1) + ') = <span class="verif-eq">' + logU.toFixed(3) + '</span></div>' +
+                            '<div>log<sub>' + bStr + '</sub>(' + v.toFixed(1) + ') = <span class="verif-eq">' + logV.toFixed(3) + '</span></div>' +
+                            '<hr style="border:0; border-top:1px solid #cce7ea; margin:4px 0;">' +
+                            '<div>LHS: log<sub>' + bStr + '</sub>(' + quot.toFixed(2) + ') = <span class="verif-eq">' + logQuot.toFixed(3) + '</span></div>' +
+                            '<div>RHS: ' + logU.toFixed(3) + ' &minus; (' + logV.toFixed(3) + ') = <span class="verif-eq">' + (logU - logV).toFixed(3) + '</span></div>';
+                    } else if (activeLaw === 'power') {
+                        var powVal = Math.pow(u, k);
+                        var logPow = logBase(powVal, baseA);
+                        verificationBox.innerHTML =
+                            '<div>u<sup>k</sup> = ' + u.toFixed(1) + '<sup>' + k.toFixed(2) + '</sup> = <span class="verif-eq">' + powVal.toFixed(3) + '</span></div>' +
+                            '<hr style="border:0; border-top:1px solid #cce7ea; margin:4px 0;">' +
+                            '<div>LHS: log<sub>' + bStr + '</sub>(' + powVal.toFixed(2) + ') = <span class="verif-eq">' + logPow.toFixed(3) + '</span></div>' +
+                            '<div>RHS: ' + k.toFixed(2) + ' &times; (' + logU.toFixed(3) + ') = <span class="verif-eq">' + (k * logU).toFixed(3) + '</span></div>';
+                    } else {
+                        var lnU = Math.log(u);
+                        var lnA = Math.log(baseA);
+                        var log10U = Math.log10 ? Math.log10(u) : Math.log(u) / Math.LN10;
+                        var log10A = Math.log10 ? Math.log10(baseA) : Math.log(baseA) / Math.LN10;
+                        verificationBox.innerHTML =
+                            '<div>Direct: log<sub>' + bStr + '</sub>(' + u.toFixed(1) + ') = <span class="verif-eq">' + logU.toFixed(4) + '</span></div>' +
+                            '<div>Natural: ln(' + u.toFixed(1) + ') / ln(' + bStr + ') = <span class="verif-eq">' + (lnU / lnA).toFixed(4) + '</span></div>' +
+                            '<div>Common: log<sub>10</sub>(' + u.toFixed(1) + ') / log<sub>10</sub>(' + bStr + ') = <span class="verif-eq">' + (log10U / log10A).toFixed(4) + '</span></div>';
+                    }
+                }
+
+                function drawPoint(x, y, color, label, labelOffsetY) {
+                    var sz = getSize();
+                    var cx = toCanvasX(x);
+                    var cy = toCanvasY(y);
+                    if (cx < -50 || cx > sz.w + 50 || cy < -50 || cy > sz.h + 50) return;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = color;
+                    ctx.globalAlpha = 0.35;
+                    ctx.setLineDash([4, 4]);
+                    ctx.lineWidth = 1.5;
+                    ctx.moveTo(cx, toCanvasY(0));
+                    ctx.lineTo(cx, cy);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.globalAlpha = 1.0;
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    var textW = ctx.measureText(label).width;
+                    var lx = cx - textW / 2 - 4;
+                    var ly = cy + labelOffsetY - 9;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+                    ctx.fillRect(lx, ly, textW + 8, 17);
+                    ctx.fillStyle = color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(label, cx, ly + 8.5);
+                }
+
+                function draw() {
+                    var sz = getSize();
+                    var W = sz.w;
+                    var H = sz.h;
+
+                    ctx.clearRect(0, 0, W, H);
+
+                    var step = 1;
+                    if (scale < 30) step = 2;
+                    if (scale < 18) step = 5;
+                    if (scale > 130) step = 0.5;
+
+                    var minX = Math.floor(-offsetX / scale / step) * step;
+                    var maxX = Math.ceil((W - offsetX) / scale / step) * step;
+                    var minY = Math.floor(-(H - offsetY) / scale / step) * step;
+                    var maxY = Math.ceil(offsetY / scale / step) * step;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#dce3e8';
+                    ctx.lineWidth = 1;
+                    ctx.fillStyle = '#718096';
+                    ctx.font = "11px 'Segoe UI'";
+
+                    for (var x = minX; x <= maxX; x += step) {
+                        var cx = toCanvasX(x);
+                        ctx.moveTo(cx, 0);
+                        ctx.lineTo(cx, H);
+                        if (Math.abs(x) > 0.001) {
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'top';
+                            var yAxisClamped = Math.max(8, Math.min(H - 20, offsetY + 6));
+                            ctx.fillText(String(Number(x.toFixed(1))), cx, yAxisClamped);
+                        }
+                    }
+
+                    for (var y = minY; y <= maxY; y += step) {
+                        var cy = toCanvasY(y);
+                        ctx.moveTo(0, cy);
+                        ctx.lineTo(W, cy);
+                        if (Math.abs(y) > 0.001) {
+                            ctx.textAlign = 'right';
+                            ctx.textBaseline = 'middle';
+                            var xAxisClamped = Math.max(26, Math.min(W - 8, offsetX - 8));
+                            ctx.fillText(String(Number(y.toFixed(1))), xAxisClamped, cy);
+                        }
+                    }
+                    ctx.stroke();
+
+                    // Main Axes
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#8da2b0';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(offsetX, 0);
+                    ctx.lineTo(offsetX, H);
+                    ctx.moveTo(0, offsetY);
+                    ctx.lineTo(W, offsetY);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('0', offsetX - 6, offsetY + 6);
+
+                    if (Math.abs(baseA - 1) < 0.025) {
+                        ctx.fillStyle = 'rgba(217, 100, 89, 0.12)';
+                        ctx.fillRect(W / 2 - 190, H / 2 - 34, 380, 68);
+                        ctx.strokeStyle = '#d96459';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(W / 2 - 190, H / 2 - 34, 380, 68);
+                        ctx.fillStyle = '#c53030';
+                        ctx.font = "bold 15px 'Segoe UI'";
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('log₁(x) is undefined (Base a cannot equal 1)', W / 2, H / 2 - 8);
+                        ctx.font = "12px 'Segoe UI'";
+                        ctx.fillText('Move the base slider above or below 1 to explore.', W / 2, H / 2 + 12);
+                        return;
+                    }
+
+                    // Vertical Asymptote x = 0
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(43, 108, 176, 0.45)';
+                    ctx.setLineDash([6, 5]);
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(offsetX, 0);
+                    ctx.lineTo(offsetX, H);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    if (chkInverse.checked) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#e69a53';
+                        ctx.setLineDash([6, 6]);
+                        ctx.lineWidth = 2;
+                        var xLeft = -offsetX / scale;
+                        var xRight = (W - offsetX) / scale;
+                        ctx.moveTo(toCanvasX(xLeft), toCanvasY(xLeft));
+                        ctx.lineTo(toCanvasX(xRight), toCanvasY(xRight));
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#d96459';
+                        ctx.lineWidth = 2.5;
+                        var firstExp = true;
+                        for (var px = 0; px <= W; px += 2) {
+                            var xv = (px - offsetX) / scale;
+                            var yv = Math.pow(baseA, xv);
+                            var py = toCanvasY(yv);
+                            if (py < -200 || py > H + 200 || !isFinite(py)) {
+                                firstExp = true;
+                                continue;
+                            }
+                            if (firstExp) {
+                                ctx.moveTo(px, py);
+                                firstExp = false;
+                            } else {
+                                ctx.lineTo(px, py);
+                            }
+                        }
+                        ctx.stroke();
+                    }
+
+                    // Main Curve: y = log_a(x)
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#2b6cb0';
+                    ctx.lineWidth = 3;
+                    var firstLog = true;
+                    for (var lx = 0; lx <= W; lx += 1.5) {
+                        var xval = (lx - offsetX) / scale;
+                        if (xval <= 0.0005) {
+                            firstLog = true;
+                            continue;
+                        }
+                        var yval = logBase(xval, baseA);
+                        var ly = toCanvasY(yval);
+                        if (ly < -300 || ly > H + 300 || !isFinite(ly)) {
+                            firstLog = true;
+                            continue;
+                        }
+                        if (firstLog) {
+                            ctx.moveTo(lx, ly);
+                            firstLog = false;
+                        } else {
+                            ctx.lineTo(lx, ly);
+                        }
+                    }
+                    ctx.stroke();
+
+                    if (chkKeyPoints.checked) {
+                        drawPoint(1, 0, '#2b6cb0', '(1, 0)', 18);
+                        drawPoint(baseA, 1, '#2b6cb0', '(' + shortBase(baseA) + ', 1)', -14);
+                        if (chkInverse.checked) {
+                            drawPoint(0, 1, '#d96459', '(0, 1)', -14);
+                            drawPoint(1, baseA, '#d96459', '(1, ' + shortBase(baseA) + ')', -14);
+                        }
+                    }
+
+                    if (chkLawVisual.checked) {
+                        var u = parseFloat(uSlider.value);
+                        var v = parseFloat(vSlider.value);
+                        var k = parseFloat(kSlider.value);
+
+                        drawPoint(u, logBase(u, baseA), '#38a169', 'u=' + u.toFixed(1), -14);
+
+                        if (activeLaw === 'product') {
+                            drawPoint(v, logBase(v, baseA), '#38a169', 'v=' + v.toFixed(1), 18);
+                            var p = u * v;
+                            drawPoint(p, logBase(p, baseA), '#7c6992', 'u·v=' + p.toFixed(1), -16);
+                        } else if (activeLaw === 'quotient') {
+                            drawPoint(v, logBase(v, baseA), '#38a169', 'v=' + v.toFixed(1), 18);
+                            var q = u / v;
+                            drawPoint(q, logBase(q, baseA), '#7c6992', 'u/v=' + q.toFixed(2), -16);
+                        } else if (activeLaw === 'power') {
+                            var pw = Math.pow(u, k);
+                            if (pw > 0.001 && pw < 1000) {
+                                drawPoint(pw, logBase(pw, baseA), '#7c6992', 'u^k=' + pw.toFixed(2), -16);
+                            }
+                        }
+                    }
+                }
+
+                function updateAll() {
+                    updateVerification();
+                    draw();
+                }
+
+                window.addEventListener('resize', resizeCanvas);
+                highlightPreset();
+                updateVerification();
+                resizeCanvas();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
