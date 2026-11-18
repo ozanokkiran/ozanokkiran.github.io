@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinematics Lab: Projectile Motion</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fdfbf7; /* Soft pastel background */
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #4a6572;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            color: #7a8b94;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 250px;
+            background-color: #f4f6f8;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #4a6572;
+            margin-bottom: 5px;
+        }
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+        }
+        .value-display {
+            font-size: 13px;
+            color: #d96459;
+            font-weight: bold;
+            align-self: flex-end;
+        }
+        canvas {
+            background-color: #eef2f5;
+            border-radius: 8px;
+            border: 1px solid #dce3e8;
+        }
+        button {
+            background-color: #5b9aa0;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #4a8288;
+        }
+        .stats {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff;
+            border-left: 4px solid #f2ae72;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Interactive Kinematics</h1>
+    <p class="subtitle">Parametric Equations of Projectile Motion</p>
+
+    <div class="container">
+        <!-- Controls Panel -->
+        <div class="controls">
+            <div class="control-group">
+                <label for="velocity">Initial Velocity (v₀):</label>
+                <input type="range" id="velocity" min="10" max="100" value="60">
+                <span class="value-display" id="vel-val">60 m/s</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="angle">Launch Angle (θ):</label>
+                <input type="range" id="angle" min="0" max="90" value="45">
+                <span class="value-display" id="ang-val">45°</span>
+            </div>
+
+            <div class="control-group">
+                <label for="gravity">Gravity (g):</label>
+                <input type="range" id="gravity" min="1" max="20" step="0.1" value="9.8">
+                <span class="value-display" id="grav-val">9.8 m/s²</span>
+            </div>
+
+            <button id="fireBtn">Launch Particle</button>
+
+            <div class="stats" id="stats-box">
+                Time (t): 0.00 s<br>
+                Max Height: 0.00 m<br>
+                Distance: 0.00 m
+            </div>
+        </div>
+
+        <!-- Animation Canvas -->
+        <canvas id="simCanvas" width="700" height="400"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Inputs
+        const velInput = document.getElementById('velocity');
+        const angInput = document.getElementById('angle');
+        const gravInput = document.getElementById('gravity');
+        const fireBtn = document.getElementById('fireBtn');
+        
+        // Displays
+        const velVal = document.getElementById('vel-val');
+        const angVal = document.getElementById('ang-val');
+        const gravVal = document.getElementById('grav-val');
+        const statsBox = document.getElementById('stats-box');
+
+        // Simulation Variables
+        let animationId;
+        let isAnimating = false;
+        let time = 0;
+        let v0, theta, g;
+        
+        // Origin point on canvas (bottom left corner with padding)
+        const originX = 30;
+        const originY = canvas.height - 30;
+        const scale = 4; // pixels per meter
+
+        // Update displays on slider move
+        velInput.addEventListener('input', () => velVal.textContent = `${velInput.value} m/s`);
+        angInput.addEventListener('input', () => angVal.textContent = `${angInput.value}°`);
+        gravInput.addEventListener('input', () => gravVal.textContent = `${gravInput.value} m/s²`);
+
+        function drawBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw Axes
+            ctx.beginPath();
+            ctx.strokeStyle = '#a6b8c7';
+            ctx.lineWidth = 2;
+            // Y-axis
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, canvas.height);
+            // X-axis
+            ctx.moveTo(0, originY);
+            ctx.lineTo(canvas.width, originY);
+            ctx.stroke();
+        }
+
+        // Draw the full trajectory path (Parametric Curve)
+        function drawTrajectory() {
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(217, 100, 89, 0.4)'; // Soft red dashed line
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 2;
+
+            let t = 0;
+            let currentX = originX;
+            let currentY = originY;
+
+            ctx.moveTo(originX, originY);
+
+            while (currentY <= originY && currentX <= canvas.width) {
+                // Parametric Equations
+                let x = v0 * Math.cos(theta) * t;
+                let y = (v0 * Math.sin(theta) * t) - (0.5 * g * t * t);
+                
+                currentX = originX + (x * scale);
+                currentY = originY - (y * scale); // Minus because canvas Y goes down
+
+                if (currentY <= originY) {
+                    ctx.lineTo(currentX, currentY);
+                }
+                t += 0.05;
+            }
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset
+        }
+
+        function animate() {
+            drawBackground();
+            drawTrajectory();
+
+            // Calculate current position
+            let x = v0 * Math.cos(theta) * time;
+            let y = (v0 * Math.sin(theta) * time) - (0.5 * g * time * time);
+            
+            let canvasX = originX + (x * scale);
+            let canvasY = originY - (y * scale);
+
+            // Draw Particle
+            ctx.beginPath();
+            ctx.arc(canvasX, canvasY, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#f2ae72'; // Orange ball
+            ctx.fill();
+            ctx.strokeStyle = '#d96459';
+            ctx.stroke();
+
+            // Update Stats
+            let maxHeight = Math.pow(v0 * Math.sin(theta), 2) / (2 * g);
+            let maxDistance = (Math.pow(v0, 2) * Math.sin(2 * theta)) / g;
+            
+            statsBox.innerHTML = `
+                Time (t): ${time.toFixed(2)} s<br>
+                Max Height: ${maxHeight.toFixed(2)} m<br>
+                Total Distance: ${maxDistance.toFixed(2)} m
+            `;
+
+            time += 0.05; // Time step
+
+            // Stop if it hits the ground
+            if (canvasY >= originY && time > 0.1) {
+                isAnimating = false;
+                cancelAnimationFrame(animationId);
+            } else {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        fireBtn.addEventListener('click', () => {
+            if (isAnimating) cancelAnimationFrame(animationId);
+            
+            v0 = parseFloat(velInput.value);
+            theta = parseFloat(angInput.value) * (Math.PI / 180); // Convert to radians
+            g = parseFloat(gravInput.value);
+            time = 0;
+            isAnimating = true;
+            
+            animate();
+        });
+
+        // Initial Draw
+        drawBackground();
+    </script>
+</body>
+</html>
