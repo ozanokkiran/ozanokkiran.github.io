@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f4f8; /* Soft blue-gray background */
+            background-color: #f0f4f8; 
             color: #2d3748;
             display: flex;
             flex-direction: column;
@@ -37,8 +37,13 @@
         }
         .input-group {
             display: flex;
+            flex-direction: column;
             gap: 15px;
             margin-bottom: 25px;
+        }
+        .row-group {
+            display: flex;
+            gap: 15px;
         }
         input[type="number"] {
             flex-grow: 1;
@@ -68,21 +73,53 @@
         button:hover {
             background-color: #3182ce;
         }
+        
+        .curiosity-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #ebf8ff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #bee3f8;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2b6cb0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .curiosity-check:hover {
+            background-color: #bee3f8;
+        }
+        .curiosity-check input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
         .results {
-            display: none; /* Hidden until calculation */
+            display: none; 
             animation: fadeIn 0.4s ease-in-out;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
         .result-box {
             background-color: #ebf8ff;
             border: 1px solid #bee3f8;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
+            transition: all 0.3s;
         }
+        .result-box.is-prime-glow {
+            background-color: #f0fff4;
+            border: 2px solid #68d391;
+            box-shadow: 0 0 15px rgba(104, 211, 145, 0.4);
+        }
+        
         .result-title {
             font-size: 14px;
             font-weight: bold;
@@ -93,6 +130,11 @@
             border-bottom: 1px solid #bee3f8;
             padding-bottom: 5px;
         }
+        .is-prime-glow .result-title {
+            color: #2f855a;
+            border-bottom-color: #9ae6b4;
+        }
+
         .prime-display {
             font-size: 28px;
             font-weight: bold;
@@ -101,10 +143,14 @@
             letter-spacing: 2px;
             font-family: 'Cambria Math', 'Times New Roman', serif;
         }
+        .is-prime-glow .prime-display {
+            color: #276749;
+        }
         .prime-display sup {
             font-size: 16px;
-            color: #e53e3e; /* Red highlight for exponents */
+            color: #e53e3e;
         }
+        
         .all-factors-box {
             background-color: #f7fafc;
             border: 1px solid #e2e8f0;
@@ -128,6 +174,42 @@
             font-weight: bold;
             color: #2d3748;
         }
+        
+        /* Yenilenmiş Dikkat Çekici Merak Kutusu */
+        .nearest-primes-box {
+            display: none;
+            background: linear-gradient(135deg, #2b6cb0, #2c5282);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 15px;
+            color: #ebf8ff;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(43, 108, 176, 0.2);
+            animation: fadeIn 0.4s ease-in-out;
+            line-height: 1.8;
+        }
+        .nearest-primes-box .box-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #90cdf4;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .nearest-primes-box span.val {
+            display: inline-block;
+            font-weight: bold;
+            font-size: 16px;
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin: 0 4px;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
         .error-msg {
             color: #e53e3e;
             font-size: 14px;
@@ -144,30 +226,36 @@
 
     <div class="container">
         <div class="input-group">
-            <input type="number" id="numberInput" placeholder="Enter a positive integer (e.g. 360)" min="1">
-            <button onclick="calculate()">Factorize</button>
+            <div class="row-group">
+                <input type="number" id="numberInput" placeholder="Enter a positive integer (e.g. 360)" min="1">
+                <button onclick="calculate()">Factorize</button>
+            </div>
+            
+            <label class="curiosity-check">
+                <input type="checkbox" id="curiosityCheck"> 
+                💡 Want to dig deeper? (Show prime neighborhood)
+            </label>
         </div>
+        
         <div class="error-msg" id="errorMsg">Please enter a valid positive integer greater than 0.</div>
 
         <div class="results" id="resultsArea">
-            <!-- Prime Factorization (Top Priority) -->
-            <div class="result-box">
-                <div class="result-title">Prime Factorization</div>
-                <div class="prime-display" id="primeDisplay">
-                    <!-- e.g. 2³ × 3² × 5 -->
-                </div>
+            
+            <div class="result-box" id="primeBox">
+                <div class="result-title" id="primeTitle">Prime Factorization</div>
+                <div class="prime-display" id="primeDisplay"></div>
             </div>
 
-            <!-- All Factors List -->
             <div class="all-factors-box">
                 <div class="result-title" style="color: #4a5568; border-bottom-color: #e2e8f0;">All Factors (Divisors)</div>
-                <div class="all-factors-text" id="allFactorsDisplay">
-                    <!-- e.g. 1, 2, 3, 4... -->
-                </div>
+                <div class="all-factors-text" id="allFactorsDisplay"></div>
                 <div class="stats-row">
                     <div>Total number of divisors: <span id="numDivisors">0</span></div>
                 </div>
             </div>
+            
+            <div class="nearest-primes-box" id="nearestPrimesBox"></div>
+            
         </div>
     </div>
 
@@ -175,11 +263,15 @@
         const numberInput = document.getElementById('numberInput');
         const resultsArea = document.getElementById('resultsArea');
         const errorMsg = document.getElementById('errorMsg');
+        const primeBox = document.getElementById('primeBox');
+        const primeTitle = document.getElementById('primeTitle');
         const primeDisplay = document.getElementById('primeDisplay');
         const allFactorsDisplay = document.getElementById('allFactorsDisplay');
         const numDivisorsDisplay = document.getElementById('numDivisors');
+        const curiosityCheck = document.getElementById('curiosityCheck');
+        const nearestPrimesBox = document.getElementById('nearestPrimesBox');
 
-        // Execute on Enter key
+        // Enter tuşuna basıldığında tetikle
         numberInput.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -187,10 +279,53 @@
             }
         });
 
-        function calculate() {
-            const n = parseInt(numberInput.value);
+        // Checkbox değiştiğinde, eğer sonuç ekranı açıksa otomatik hesapla
+        curiosityCheck.addEventListener('change', function() {
+            if (resultsArea.style.display === 'block') {
+                calculate();
+            }
+        });
+
+        function isPrime(num) {
+            if (num <= 1) return false;
+            if (num <= 3) return true;
+            if (num % 2 === 0 || num % 3 === 0) return false;
+            for (let i = 5; i * i <= num; i += 6) {
+                if (num % i === 0 || num % (i + 2) === 0) return false;
+            }
+            return true;
+        }
+
+        function getNearestPrimes(n) {
+            let lower = [];
+            let upper = [];
             
-            // Validation
+            let i = n - 1;
+            while(lower.length < 2 && i > 1) {
+                if(isPrime(i)) lower.push(i);
+                i--;
+            }
+            let j = n + 1;
+            while(upper.length < 2) {
+                if(isPrime(j)) upper.push(j);
+                j++;
+            }
+            
+            return {
+                lower: lower.reverse(),
+                upper: upper
+            };
+        }
+
+        // Büyük sayıları virgüllü formata çeviren yardımcı fonksiyon (Örn: 10000 -> 10,000)
+        function formatNum(num) {
+            return num.toLocaleString('en-US');
+        }
+
+        function calculate() {
+            const nStr = numberInput.value;
+            const n = parseInt(nStr);
+            
             if (isNaN(n) || n < 1 || n > 9007199254740991) {
                 errorMsg.style.display = 'block';
                 resultsArea.style.display = 'none';
@@ -198,67 +333,95 @@
             }
             
             errorMsg.style.display = 'none';
+            primeBox.classList.remove('is-prime-glow');
+            nearestPrimesBox.style.display = 'none';
+            primeTitle.innerText = "Prime Factorization";
 
-            // 1. Prime Factorization Algorithm
             let temp = n;
             let primes = {};
             
-            // Divide by 2
             while (temp % 2 === 0) {
                 primes[2] = (primes[2] || 0) + 1;
                 temp /= 2;
             }
-            // Divide by odd numbers
             for (let i = 3; i * i <= temp; i += 2) {
                 while (temp % i === 0) {
                     primes[i] = (primes[i] || 0) + 1;
                     temp /= i;
                 }
             }
-            // If temp is a prime number greater than 2
             if (temp > 2) {
                 primes[temp] = 1;
             }
 
-            // Formatting Prime String
             let primeStr = "";
             let numDivisors = 1;
             const keys = Object.keys(primes);
+            let isCurrentNumberPrime = false;
             
             if (n === 1) {
                 primeStr = "1";
-            } else if (keys.length === 0) {
-                primeStr = `${n} (Prime)`;
+            } else if (keys.length === 0 || (keys.length === 1 && primes[keys[0]] === 1)) {
+                primeStr = `${formatNum(n)}`;
+                isCurrentNumberPrime = true;
             } else {
                 primeStr = keys.map(p => {
                     let exponent = primes[p];
-                    numDivisors *= (exponent + 1); // Math HL: Number of divisors formula
-                    return exponent > 1 ? `${p}<sup>${exponent}</sup>` : `${p}`;
+                    numDivisors *= (exponent + 1); 
+                    // Tabanları formatla
+                    let formattedP = formatNum(Number(p));
+                    return exponent > 1 ? `${formattedP}<sup>${exponent}</sup>` : `${formattedP}`;
                 }).join(" &times; ");
-                
-                // Add (Prime) tag if it's a single prime to the power of 1
-                if (keys.length === 1 && primes[keys[0]] === 1) {
+            }
+
+            if (curiosityCheck.checked) {
+                if (isCurrentNumberPrime) {
+                    primeBox.classList.add('is-prime-glow');
+                    primeTitle.innerText = "✨ EXCELLENT! YOU FOUND A PRIME NUMBER ✨";
+                } else if (n > 2) {
+                    let neighbors = getNearestPrimes(n);
+                    
+                    let lowerStr = neighbors.lower.length > 0 
+                        ? neighbors.lower.map(num => `<span class="val">${formatNum(num)}</span>`).join(" and ")
+                        : "None (Too small)";
+                        
+                    let upperStr = neighbors.upper.map(num => `<span class="val">${formatNum(num)}</span>`).join(" and ");
+
+                    nearestPrimesBox.innerHTML = `
+                        <div class="box-title">Composite Number Analysis</div>
+                        The nearest prime numbers below are ${lowerStr}<br>
+                        The nearest prime numbers above are ${upperStr}
+                    `;
+                    nearestPrimesBox.style.display = 'block';
+                }
+            } else {
+                if(isCurrentNumberPrime) {
                     primeStr += " <span style='font-size:16px; color:#718096; font-family:Segoe UI;'>(Prime Number)</span>";
                 }
             }
 
-            // 2. All Factors Algorithm
-            let factors = [];
-            for (let i = 1; i * i <= n; i++) {
-                if (n % i === 0) {
-                    factors.push(i);
-                    if (i * i !== n) {
-                        factors.push(n / i);
+            // Sadece çok büyük olmayan sayılar için tüm bölenleri hesapla (Tarayıcı donmasını engellemek için)
+            if (n <= 10000000) {
+                let factors = [];
+                for (let i = 1; i * i <= n; i++) {
+                    if (n % i === 0) {
+                        factors.push(i);
+                        if (i * i !== n) {
+                            factors.push(n / i);
+                        }
                     }
                 }
+                factors.sort((a, b) => a - b);
+                
+                // Bölenleri virgüllü formata çevirip string yap
+                let formattedFactors = factors.map(f => formatNum(f)).join(', ');
+                
+                allFactorsDisplay.innerHTML = formattedFactors;
+                numDivisorsDisplay.innerHTML = formatNum(factors.length);
+            } else {
+                allFactorsDisplay.innerHTML = "<span style='color:#a0aec0; font-style:italic;'>Number is too large to display all individual factors.</span>";
+                numDivisorsDisplay.innerHTML = formatNum(numDivisors); 
             }
-            // Sort factors numerically
-            factors.sort((a, b) => a - b);
-
-            // 3. Update UI
-            primeDisplay.innerHTML = primeStr;
-            allFactorsDisplay.innerHTML = factors.join(', ');
-            numDivisorsDisplay.innerHTML = factors.length; // Same as numDivisors
 
             resultsArea.style.display = 'block';
         }
