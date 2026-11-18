@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composite Function Machine: f(g(x))</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 340px;
+            min-width: 295px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        .fn-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 7px;
+        }
+
+        .fn-row:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .fn-tag {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.02rem;
+            font-weight: 700;
+            width: 52px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .fn-tag.f-col { color: #2b6cb0; }
+        .fn-tag.g-col { color: #38a169; }
+
+        .math-input {
+            flex: 1;
+            padding: 6px 9px;
+            font-family: 'Cambria Math', 'Segoe UI', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 6px;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .math-input:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(91, 154, 160, 0.18);
+        }
+
+        .math-input.active-target {
+            border-color: var(--teal);
+            background: #f7fcfc;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .key-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 5px 3px;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 0.86rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .key-btn:hover {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        .key-btn.clear-btn {
+            background: #fff5f5;
+            color: var(--coral);
+            border-color: #fed7d7;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.74rem;
+        }
+
+        .key-btn.clear-btn:hover {
+            background: var(--coral);
+            color: #ffffff;
+        }
+
+        .error-banner {
+            display: none;
+            margin-top: 7px;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            border-radius: 5px;
+            padding: 6px 8px;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+
+        /* Order & Input Controls */
+        .order-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .order-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 6px;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .order-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 3px;
+        }
+
+        .val-badge {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            color: var(--coral);
+            background: #fff5f5;
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 0.84rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--teal);
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 5px 7px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .preset-btn span {
+            display: block;
+            font-family: 'Cambria Math', 'Segoe UI', sans-serif;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span {
+            color: #cbd5e0;
+        }
+
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.79rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .checkbox-label input {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        .dot-mini {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Right Stage */
+        .stage {
+            flex: 1;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Machine Pipeline Card */
+        .machine-card {
+            background: linear-gradient(135deg, #f8fafc, #eef2f5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+
+        .machine-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .machine-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        .symbolic-badge {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: var(--purple);
+            background: #ffffff;
+            border: 1px solid #d6bcfa;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 2px;
+        }
+
+        .pipe-node {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 8px 10px;
+            text-align: center;
+            min-width: 88px;
+            flex: 1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .pipe-node .node-lbl {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .pipe-node .node-val {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .pipe-machine {
+            background: var(--primary);
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 8px 12px;
+            text-align: center;
+            min-width: 112px;
+            flex: 1.2;
+            box-shadow: 0 3px 10px rgba(74, 101, 114, 0.18);
+        }
+
+        .pipe-machine.inner-m {
+            background: #38a169;
+        }
+
+        .pipe-machine.outer-m {
+            background: #2b6cb0;
+        }
+
+        .pipe-machine .m-name {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        .pipe-machine .m-rule {
+            font-family: 'Cambria Math', 'Segoe UI', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-top: 2px;
+            word-break: break-word;
+        }
+
+        .pipe-node.output-node {
+            border-color: var(--purple);
+            background: #faf5ff;
+        }
+
+        .pipe-node.output-node .node-val {
+            color: var(--purple);
+        }
+
+        .pipe-node.error-node {
+            border-color: var(--coral);
+            background: #fff5f5;
+        }
+
+        .pipe-node.error-node .node-val {
+            color: var(--coral);
+            font-size: 0.84rem;
+        }
+
+        .pipe-arrow {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .commute-note {
+            margin-top: 8px;
+            font-size: 0.79rem;
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 5px 10px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* Canvas */
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            min-height: 410px;
+            background-color: #eef2f5;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .canvas-container.dragging {
+            cursor: grabbing;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.77rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 0.73rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-container {
+                min-height: 340px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Composite Function Machine</h1>
+        <p class="subtitle">IB DP Math AA HL &mdash; Function Pipelines, Domain Restrictions &amp; Non-Commutativity</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Define Functions -->
+            <div class="section-card">
+                <div class="section-title">1. Define f(x) and g(x)</div>
+                <div class="fn-row">
+                    <span class="fn-tag f-col">f(x) =</span>
+                    <input type="text" id="fInput" class="math-input active-target" value="√(x)" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="fn-row">
+                    <span class="fn-tag g-col">g(x) =</span>
+                    <input type="text" id="gInput" class="math-input" value="x² - 4" autocomplete="off" spellcheck="false">
+                </div>
+
+                <div class="keypad">
+                    <button type="button" class="key-btn" data-insert="x">x</button>
+                    <button type="button" class="key-btn" data-insert="x²">x&sup2;</button>
+                    <button type="button" class="key-btn" data-insert="√()">&radic;( )</button>
+                    <button type="button" class="key-btn" data-insert="ln()">ln( )</button>
+                    <button type="button" class="key-btn" data-insert="e^x">e<sup>x</sup></button>
+                    <button type="button" class="key-btn" data-insert="sin()">sin( )</button>
+                    <button type="button" class="key-btn" data-insert="abs()">| |</button>
+                    <button type="button" class="key-btn" data-insert="1/(x)">1/x</button>
+                    <button type="button" class="key-btn" data-insert=" + ">+</button>
+                    <button type="button" class="key-btn" data-insert=" - ">&minus;</button>
+                    <button type="button" class="key-btn clear-btn" id="btnBack">&larr; Del</button>
+                    <button type="button" class="key-btn clear-btn" id="btnClear">Clear</button>
+                </div>
+                <div class="error-banner" id="errorBanner"></div>
+            </div>
+
+            <!-- 2. Composition Order & Input x -->
+            <div class="section-card">
+                <div class="section-title">2. Pipeline Order &amp; Test Input</div>
+                <div class="order-tabs">
+                    <button type="button" class="order-btn active" data-order="fg">(f &compfn; g)(x) = f(g(x))</button>
+                    <button type="button" class="order-btn" data-order="gf">(g &compfn; f)(x) = g(f(x))</button>
+                </div>
+
+                <div class="slider-header">
+                    <span>Input value x</span>
+                    <span class="val-badge" id="xValBadge">3.00</span>
+                </div>
+                <input type="range" id="xSlider" min="-6" max="6" step="0.1" value="3">
+            </div>
+
+            <!-- 3. Quick IB Presets -->
+            <div class="section-card">
+                <div class="section-title">3. Quick IB Examples</div>
+                <div class="preset-grid">
+                    <button type="button" class="preset-btn active" data-f="√(x)" data-g="x² - 4" data-x="3">
+                        Domain Trap
+                        <span>f=&radic;(x) , g=x&sup2;-4</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-f="x² + 1" data-g="2x - 3" data-x="2">
+                        Non-Commutative
+                        <span>f=x&sup2;+1 , g=2x-3</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-f="e^x" data-g="ln(x)" data-x="2">
+                        Inverse Pair
+                        <span>f=e^x , g=ln(x)</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-f="1/(x - 1)" data-g="x²" data-x="1">
+                        Pole in Range
+                        <span>f=1/(x-1) , g=x&sup2;</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. Graph Layers -->
+            <div class="section-card">
+                <div class="section-title">4. Graph Layers</div>
+                <div class="toggle-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkF" checked>
+                        <span class="dot-mini" style="background:#2b6cb0;"></span> f(x)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkG" checked>
+                        <span class="dot-mini" style="background:#38a169;"></span> g(x)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkFG" checked>
+                        <span class="dot-mini" style="background:#7c6992;"></span> f(g(x))
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkGF">
+                        <span class="dot-mini" style="background:#d96459;"></span> g(f(x))
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Interactive Stage -->
+        <div class="stage">
+
+            <!-- Function Machine Pipeline -->
+            <div class="machine-card">
+                <div class="machine-top">
+                    <span class="machine-title">Live Function Machine Pipeline</span>
+                    <span class="symbolic-badge" id="symbolicBadge">f(g(x)) = √(x² - 4)</span>
+                </div>
+                <div class="pipeline" id="pipeline"></div>
+                <div class="commute-note" id="commuteNote"></div>
+            </div>
+
+            <!-- Graph Area -->
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="graphCanvas"></canvas>
+                <div class="canvas-toolbar">
+                    <button type="button" class="tool-btn" id="btnZoomIn">+ Zoom</button>
+                    <button type="button" class="tool-btn" id="btnZoomOut">&minus; Zoom</button>
+                    <button type="button" class="tool-btn" id="btnResetView">Reset View</button>
+                </div>
+                <div class="controls-hint">Scroll: Zoom | Drag: Pan | Click: Set input x</div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            /* =========================================================
+               SAFE REAL-VALUED MATH EXPRESSION PARSER
+            ========================================================= */
+            var FUNCS = {
+                sqrt: function (v) { return v < 0 ? NaN : Math.sqrt(v); },
+                ln: function (v) { return v <= 0 ? NaN : Math.log(v); },
+                log: function (v) { return v <= 0 ? NaN : (Math.log10 ? Math.log10(v) : Math.log(v) / Math.LN10); },
+                abs: Math.abs,
+                sin: Math.sin,
+                cos: Math.cos,
+                tan: Math.tan,
+                exp: Math.exp
+            };
+
+            function compileExpression(rawStr) {
+                var s = (rawStr || '').trim();
+                if (!s) throw new Error('Function expression cannot be empty.');
+
+                s = s.replace(/−/g, '-')
+                     .replace(/×/g, '*')
+                     .replace(/·/g, '*')
+                     .replace(/²/g, '^2')
+                     .replace(/³/g, '^3')
+                     .replace(/π/g, 'pi')
+                     .replace(/\s+/g, '')
+                     .replace(/√\(/g, 'sqrt(')
+                     .replace(/√([0-9.]+|x|pi|e)/gi, 'sqrt($1)');
+
+                var tokens = [];
+                var i = 0;
+                while (i < s.length) {
+                    var ch = s[i];
+                    if (/[0-9.]/.test(ch)) {
+                        var ns = '';
+                        while (i < s.length && /[0-9.]/.test(s[i])) ns += s[i++];
+                        var v = parseFloat(ns);
+                        if (isNaN(v)) throw new Error('Invalid number: ' + ns);
+                        tokens.push({ type: 'NUM', val: v });
+                    } else if (/[a-zA-Z]/.test(ch)) {
+                        var id = '';
+                        while (i < s.length && /[a-zA-Z]/.test(s[i])) id += s[i++];
+                        var low = id.toLowerCase();
+                        if (low === 'x') tokens.push({ type: 'VAR' });
+                        else if (low === 'e') tokens.push({ type: 'NUM', val: Math.E });
+                        else if (low === 'pi') tokens.push({ type: 'NUM', val: Math.PI });
+                        else if (FUNCS[low]) tokens.push({ type: 'FUNC', name: low });
+                        else throw new Error('Unknown identifier: "' + id + '"');
+                    } else if ('+-*/^()'.indexOf(ch) !== -1) {
+                        tokens.push({ type: ch });
+                        i++;
+                    } else {
+                        throw new Error('Unsupported symbol: "' + ch + '"');
+                    }
+                }
+
+                var full = [];
+                for (var k = 0; k < tokens.length; k++) {
+                    full.push(tokens[k]);
+                    if (k < tokens.length - 1) {
+                        var cur = tokens[k].type;
+                        var nxt = tokens[k + 1].type;
+                        var leftOk = (cur === 'NUM' || cur === 'VAR' || cur === ')');
+                        var rightOk = (nxt === 'VAR' || nxt === 'FUNC' || nxt === '(' || (cur === ')' && nxt === 'NUM'));
+                        if (leftOk && rightOk) full.push({ type: '*' });
+                    }
+                }
+
+                var pos = 0;
+                function peek() { return full[pos] || null; }
+                function consume() { return full[pos++]; }
+
+                function parseExpr() {
+                    var node = parseTerm();
+                    while (peek() && (peek().type === '+' || peek().type === '-')) {
+                        var op = consume().type;
+                        node = { op: op, left: node, right: parseTerm() };
+                    }
+                    return node;
+                }
+                function parseTerm() {
+                    var node = parseUnary();
+                    while (peek() && (peek().type === '*' || peek().type === '/')) {
+                        var op = consume().type;
+                        node = { op: op, left: node, right: parseUnary() };
+                    }
+                    return node;
+                }
+                function parseUnary() {
+                    if (peek() && peek().type === '+') { consume(); return parseUnary(); }
+                    if (peek() && peek().type === '-') { consume(); return { op: 'neg', arg: parseUnary() }; }
+                    return parsePower();
+                }
+                function parsePower() {
+                    var base = parsePrimary();
+                    if (peek() && peek().type === '^') {
+                        consume();
+                        return { op: '^', left: base, right: parseUnary() };
+                    }
+                    return base;
+                }
+                function parsePrimary() {
+                    var tok = peek();
+                    if (!tok) throw new Error('Unexpected end of expression.');
+                    if (tok.type === 'NUM') { consume(); return { op: 'num', val: tok.val }; }
+                    if (tok.type === 'VAR') { consume(); return { op: 'var' }; }
+                    if (tok.type === 'FUNC') {
+                        consume();
+                        if (!peek() || peek().type !== '(') throw new Error('Expected "(" after ' + tok.name);
+                        consume();
+                        var arg = parseExpr();
+                        if (!peek() || peek().type !== ')') throw new Error('Missing ")" after ' + tok.name);
+                        consume();
+                        return { op: 'func', name: tok.name, arg: arg };
+                    }
+                    if (tok.type === '(') {
+                        consume();
+                        var inner = parseExpr();
+                        if (!peek() || peek().type !== ')') throw new Error('Missing closing ")".');
+                        consume();
+                        return inner;
+                    }
+                    throw new Error('Unexpected token: ' + tok.type);
+                }
+
+                var ast = parseExpr();
+                if (pos < full.length) throw new Error('Syntax error near "' + full[pos].type + '"');
+
+                function evalNode(n, x) {
+                    switch (n.op) {
+                        case 'num': return n.val;
+                        case 'var': return x;
+                        case 'neg': return -evalNode(n.arg, x);
+                        case '+': return evalNode(n.left, x) + evalNode(n.right, x);
+                        case '-': return evalNode(n.left, x) - evalNode(n.right, x);
+                        case '*': return evalNode(n.left, x) * evalNode(n.right, x);
+                        case '/': {
+                            var d = evalNode(n.right, x);
+                            return Math.abs(d) < 1e-9 ? NaN : evalNode(n.left, x) / d;
+                        }
+                        case '^': return Math.pow(evalNode(n.left, x), evalNode(n.right, x));
+                        case 'func': return FUNCS[n.name](evalNode(n.arg, x));
+                        default: return NaN;
+                    }
+                }
+
+                return function (x) {
+                    if (isNaN(x) || !isFinite(x)) return NaN;
+                    var r = evalNode(ast, x);
+                    return (isFinite(r) && !isNaN(r)) ? r : NaN;
+                };
+            }
+
+            function fmtVal(v) {
+                if (isNaN(v) || !isFinite(v)) return 'Undefined';
+                if (Math.abs(v) < 1e-9) return '0';
+                return Number(v.toFixed(3)).toString();
+            }
+
+            function substituteSymbolic(outerStr, innerStr) {
+                var cleanInner = innerStr.trim();
+                var needsParens = /[+\-*/^]/.test(cleanInner) && !(cleanInner[0] === '(' && cleanInner[cleanInner.length - 1] === ')');
+                var wrapped = needsParens ? '(' + cleanInner + ')' : cleanInner;
+                return outerStr.replace(/\(\s*x\s*\)|\bx\b/gi, function (match) {
+                    if (match[0] === '(') return '(' + cleanInner + ')';
+                    return wrapped;
+                });
+            }
+
+            /* =========================================================
+               UI & GRAPHING ENGINE
+            ========================================================= */
+            function init() {
+                var canvas = document.getElementById('graphCanvas');
+                var ctx = canvas.getContext('2d');
+                var container = document.getElementById('canvasContainer');
+
+                var fInput = document.getElementById('fInput');
+                var gInput = document.getElementById('gInput');
+                var errorBanner = document.getElementById('errorBanner');
+                var keyBtns = document.querySelectorAll('.key-btn[data-insert]');
+                var btnBack = document.getElementById('btnBack');
+                var btnClear = document.getElementById('btnClear');
+                var orderBtns = document.querySelectorAll('.order-btn');
+                var presetBtns = document.querySelectorAll('.preset-btn');
+                var xSlider = document.getElementById('xSlider');
+                var xValBadge = document.getElementById('xValBadge');
+
+                var chkF = document.getElementById('chkF');
+                var chkG = document.getElementById('chkG');
+                var chkFG = document.getElementById('chkFG');
+                var chkGF = document.getElementById('chkGF');
+
+                var symbolicBadge = document.getElementById('symbolicBadge');
+                var pipeline = document.getElementById('pipeline');
+                var commuteNote = document.getElementById('commuteNote');
+                var btnZoomIn = document.getElementById('btnZoomIn');
+                var btnZoomOut = document.getElementById('btnZoomOut');
+                var btnResetView = document.getElementById('btnResetView');
+
+                var activeInput = fInput;
+
+                var state = {
+                    fFn: null,
+                    gFn: null,
+                    order: 'fg',
+                    x: 3,
+                    offsetX: 0,
+                    offsetY: 0,
+                    scale: 46,
+                    initializedView: false,
+                    isDragging: false,
+                    dragMoved: false,
+                    dragStartX: 0,
+                    dragStartY: 0
+                };
+
+                function setActiveInput(el) {
+                    activeInput = el;
+                    fInput.classList.toggle('active-target', el === fInput);
+                    gInput.classList.toggle('active-target', el === gInput);
+                }
+
+                fInput.addEventListener('focus', function () { setActiveInput(fInput); });
+                gInput.addEventListener('focus', function () { setActiveInput(gInput); });
+
+                function insertText(txt) {
+                    var el = activeInput;
+                    var start = el.selectionStart !== null ? el.selectionStart : el.value.length;
+                    var end = el.selectionEnd !== null ? el.selectionEnd : el.value.length;
+                    el.value = el.value.slice(0, start) + txt + el.value.slice(end);
+                    var pos = start + txt.length;
+                    if (txt.slice(-2) === '()') pos -= 1;
+                    el.focus();
+                    el.setSelectionRange(pos, pos);
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                    compileAll();
+                }
+
+                keyBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        insertText(btn.getAttribute('data-insert'));
+                    });
+                });
+
+                btnBack.addEventListener('click', function () {
+                    activeInput.value = activeInput.value.slice(0, -1);
+                    activeInput.focus();
+                    compileAll();
+                });
+
+                btnClear.addEventListener('click', function () {
+                    activeInput.value = '';
+                    activeInput.focus();
+                });
+
+                function compileAll() {
+                    try {
+                        var ff = compileExpression(fInput.value);
+                        var gg = compileExpression(gInput.value);
+                        state.fFn = ff;
+                        state.gFn = gg;
+                        errorBanner.style.display = 'none';
+                        updatePipeline();
+                        draw();
+                    } catch (err) {
+                        errorBanner.textContent = err.message;
+                        errorBanner.style.display = 'block';
+                    }
+                }
+
+                function updatePipeline() {
+                    if (!state.fFn || !state.gFn) return;
+                    var x = state.x;
+                    xValBadge.textContent = x.toFixed(2);
+
+                    var fStr = fInput.value.trim();
+                    var gStr = gInput.value.trim();
+
+                    var isFG = state.order === 'fg';
+                    var innerName = isFG ? 'g' : 'f';
+                    var outerName = isFG ? 'f' : 'g';
+                    var innerRule = isFG ? gStr : fStr;
+                    var outerRule = isFG ? fStr : gStr;
+                    var innerFn = isFG ? state.gFn : state.fFn;
+                    var outerFn = isFG ? state.fFn : state.gFn;
+
+                    var midVal = innerFn(x);
+                    var outVal = isNaN(midVal) ? NaN : outerFn(midVal);
+
+                    symbolicBadge.textContent = outerName + '(' + innerName + '(x)) = ' + substituteSymbolic(outerRule, innerRule);
+
+                    var midErr = isNaN(midVal);
+                    var outErr = isNaN(outVal);
+
+                    pipeline.innerHTML =
+                        '<div class="pipe-node">' +
+                            '<div class="node-lbl">Input x</div>' +
+                            '<div class="node-val">' + fmtVal(x) + '</div>' +
+                        '</div>' +
+                        '<div class="pipe-arrow">&rarr;</div>' +
+                        '<div class="pipe-machine inner-m">' +
+                            '<div class="m-name">Inner: ' + innerName + '(x)</div>' +
+                            '<div class="m-rule">' + innerRule + '</div>' +
+                        '</div>' +
+                        '<div class="pipe-arrow">&rarr;</div>' +
+                        '<div class="pipe-node' + (midErr ? ' error-node' : '') + '">' +
+                            '<div class="node-lbl">' + innerName + '(' + fmtVal(x) + ')</div>' +
+                            '<div class="node-val">' + (midErr ? 'Domain Error' : fmtVal(midVal)) + '</div>' +
+                        '</div>' +
+                        '<div class="pipe-arrow">&rarr;</div>' +
+                        '<div class="pipe-machine outer-m">' +
+                            '<div class="m-name">Outer: ' + outerName + '(u)</div>' +
+                            '<div class="m-rule">' + outerRule + '</div>' +
+                        '</div>' +
+                        '<div class="pipe-arrow">&rarr;</div>' +
+                        '<div class="pipe-node ' + (outErr ? 'error-node' : 'output-node') + '">' +
+                            '<div class="node-lbl">' + outerName + '(' + innerName + '(' + fmtVal(x) + '))</div>' +
+                            '<div class="node-val">' + (outErr ? 'Domain Error' : fmtVal(outVal)) + '</div>' +
+                        '</div>';
+
+                    var fgVal = state.fFn(state.gFn(x));
+                    var gfVal = state.gFn(state.fFn(x));
+                    var same = (!isNaN(fgVal) && !isNaN(gfVal) && Math.abs(fgVal - gfVal) < 1e-4);
+
+                    commuteNote.innerHTML =
+                        '<span><strong>f(g(' + fmtVal(x) + '))</strong> = ' + fmtVal(fgVal) + '</span>' +
+                        '<span><strong>g(f(' + fmtVal(x) + '))</strong> = ' + fmtVal(gfVal) + '</span>' +
+                        '<span style="font-weight:700; color:' + (same ? '#38a169' : '#d96459') + ';">' +
+                            (same ? 'Equal at this x' : 'f(g(x)) ≠ g(f(x))') +
+                        '</span>';
+                }
+
+                /* =========================================================
+                   CANVAS DRAWING
+                ========================================================= */
+                function getSize() {
+                    var rect = container.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 640,
+                        h: rect.height > 50 ? rect.height : 410
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    if (!state.initializedView) {
+                        state.offsetX = sz.w / 2;
+                        state.offsetY = sz.h / 2;
+                        state.initializedView = true;
+                    }
+                    draw();
+                }
+
+                function resetView() {
+                    var sz = getSize();
+                    state.offsetX = sz.w / 2;
+                    state.offsetY = sz.h / 2;
+                    state.scale = 46;
+                    draw();
+                }
+
+                function zoomBy(factor) {
+                    var sz = getSize();
+                    var cx = sz.w / 2, cy = sz.h / 2;
+                    var newScale = Math.max(12, Math.min(240, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = cx - (cx - state.offsetX) * actual;
+                    state.offsetY = cy - (cy - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }
+
+                function toCX(x) { return state.offsetX + x * state.scale; }
+                function toCY(y) { return state.offsetY - y * state.scale; }
+
+                function plotCurve(fn, color, width, dashed) {
+                    var sz = getSize(), W = sz.w, H = sz.h;
+                    ctx.beginPath();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = width;
+                    if (dashed) ctx.setLineDash([6, 4]);
+                    else ctx.setLineDash([]);
+
+                    var first = true;
+                    var prevPy = null;
+
+                    for (var px = 0; px <= W; px += 1.5) {
+                        var xv = (px - state.offsetX) / state.scale;
+                        var yv = fn(xv);
+                        if (isNaN(yv) || !isFinite(yv)) {
+                            first = true;
+                            prevPy = null;
+                            continue;
+                        }
+                        var py = toCY(yv);
+                        if (py < -H * 2 || py > H * 3 || (prevPy !== null && Math.abs(py - prevPy) > H * 0.8)) {
+                            first = true;
+                        }
+                        if (py >= -H * 2 && py <= H * 3) {
+                            if (first) { ctx.moveTo(px, py); first = false; }
+                            else { ctx.lineTo(px, py); }
+                            prevPy = py;
+                        } else {
+                            first = true;
+                            prevPy = null;
+                        }
+                    }
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                function drawMarker(x, y, color, label) {
+                    if (isNaN(y) || !isFinite(y)) return;
+                    var cx = toCX(x), cy = toCY(y);
+                    var sz = getSize();
+                    if (cx < -30 || cx > sz.w + 30 || cy < -30 || cy > sz.h + 30) return;
+
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    var tw = ctx.measureText(label).width + 8;
+                    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+                    ctx.fillRect(cx - tw / 2, cy - 24, tw, 16);
+                    ctx.fillStyle = color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(label, cx, cy - 16);
+                }
+
+                function draw() {
+                    var sz = getSize(), W = sz.w, H = sz.h;
+                    ctx.clearRect(0, 0, W, H);
+
+                    var step = 1;
+                    if (state.scale < 28) step = 2;
+                    if (state.scale < 16) step = 5;
+                    if (state.scale > 110) step = 0.5;
+
+                    var minX = Math.floor(-state.offsetX / state.scale / step) * step;
+                    var maxX = Math.ceil((W - state.offsetX) / state.scale / step) * step;
+                    var minY = Math.floor(-(H - state.offsetY) / state.scale / step) * step;
+                    var maxY = Math.ceil(state.offsetY / state.scale / step) * step;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#dce3e8';
+                    ctx.lineWidth = 1;
+                    ctx.fillStyle = '#718096';
+                    ctx.font = "11px 'Segoe UI'";
+
+                    for (var gx = minX; gx <= maxX; gx += step) {
+                        var cx = toCX(gx);
+                        ctx.moveTo(cx, 0); ctx.lineTo(cx, H);
+                        if (Math.abs(gx) > 1e-6) {
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'top';
+                            ctx.fillText(fmtVal(gx), cx, Math.max(8, Math.min(H - 18, state.offsetY + 6)));
+                        }
+                    }
+                    for (var gy = minY; gy <= maxY; gy += step) {
+                        var cy = toCY(gy);
+                        ctx.moveTo(0, cy); ctx.lineTo(W, cy);
+                        if (Math.abs(gy) > 1e-6) {
+                            ctx.textAlign = 'right';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(fmtVal(gy), Math.max(26, Math.min(W - 8, state.offsetX - 8)), cy);
+                        }
+                    }
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#8da2b0';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(state.offsetX, 0); ctx.lineTo(state.offsetX, H);
+                    ctx.moveTo(0, state.offsetY); ctx.lineTo(W, state.offsetY);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('0', state.offsetX - 6, state.offsetY + 6);
+
+                    if (!state.fFn || !state.gFn) return;
+
+                    var xPx = toCX(state.x);
+                    if (xPx >= 0 && xPx <= W) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'rgba(74, 101, 114, 0.35)';
+                        ctx.setLineDash([4, 4]);
+                        ctx.lineWidth = 1.5;
+                        ctx.moveTo(xPx, 0);
+                        ctx.lineTo(xPx, H);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+
+                    if (chkF.checked) plotCurve(state.fFn, 'rgba(43, 108, 176, 0.55)', 2, true);
+                    if (chkG.checked) plotCurve(state.gFn, 'rgba(56, 161, 105, 0.55)', 2, true);
+                    if (chkFG.checked) plotCurve(function (x) { return state.fFn(state.gFn(x)); }, '#7c6992', 3, false);
+                    if (chkGF.checked) plotCurve(function (x) { return state.gFn(state.fFn(x)); }, '#d96459', 2.8, false);
+
+                    var isFG = state.order === 'fg';
+                    if (isFG) {
+                        var gxVal = state.gFn(state.x);
+                        var fgVal = state.fFn(gxVal);
+                        if (chkG.checked) drawMarker(state.x, gxVal, '#38a169', 'g(' + fmtVal(state.x) + ')=' + fmtVal(gxVal));
+                        if (chkFG.checked) drawMarker(state.x, fgVal, '#7c6992', 'f(g)=' + fmtVal(fgVal));
+                    } else {
+                        var fxVal = state.fFn(state.x);
+                        var gfVal = state.gFn(fxVal);
+                        if (chkF.checked) drawMarker(state.x, fxVal, '#2b6cb0', 'f(' + fmtVal(state.x) + ')=' + fmtVal(fxVal));
+                        if (chkGF.checked) drawMarker(state.x, gfVal, '#d96459', 'g(f)=' + fmtVal(gfVal));
+                    }
+                }
+
+                /* =========================================================
+                   EVENTS
+                ========================================================= */
+                [fInput, gInput].forEach(function (inp) {
+                    inp.addEventListener('input', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        compileAll();
+                    });
+                });
+
+                orderBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        orderBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.order = btn.getAttribute('data-order');
+                        if (state.order === 'fg') chkFG.checked = true;
+                        else chkGF.checked = true;
+                        updatePipeline();
+                        draw();
+                    });
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        fInput.value = btn.getAttribute('data-f');
+                        gInput.value = btn.getAttribute('data-g');
+                        state.x = parseFloat(btn.getAttribute('data-x'));
+                        xSlider.value = String(state.x);
+                        resetView();
+                        compileAll();
+                    });
+                });
+
+                xSlider.addEventListener('input', function () {
+                    state.x = parseFloat(xSlider.value);
+                    updatePipeline();
+                    draw();
+                });
+
+                [chkF, chkG, chkFG, chkGF].forEach(function (c) {
+                    c.addEventListener('change', draw);
+                });
+
+                btnZoomIn.addEventListener('click', function () { zoomBy(1.25); });
+                btnZoomOut.addEventListener('click', function () { zoomBy(0.8); });
+                btnResetView.addEventListener('click', resetView);
+
+                canvas.addEventListener('mousedown', function (e) {
+                    state.isDragging = true;
+                    state.dragMoved = false;
+                    state.dragStartX = e.clientX - state.offsetX;
+                    state.dragStartY = e.clientY - state.offsetY;
+                    container.classList.add('dragging');
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (!state.isDragging) return;
+                    var dx = Math.abs((e.clientX - state.dragStartX) - state.offsetX);
+                    var dy = Math.abs((e.clientY - state.dragStartY) - state.offsetY);
+                    if (dx > 3 || dy > 3) state.dragMoved = true;
+                    state.offsetX = e.clientX - state.dragStartX;
+                    state.offsetY = e.clientY - state.dragStartY;
+                    draw();
+                });
+
+                window.addEventListener('mouseup', function (e) {
+                    if (!state.isDragging) return;
+                    state.isDragging = false;
+                    container.classList.remove('dragging');
+                    if (!state.dragMoved) {
+                        var rect = canvas.getBoundingClientRect();
+                        if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                            var clickedX = (e.clientX - rect.left - state.offsetX) / state.scale;
+                            clickedX = Math.max(-6, Math.min(6, Math.round(clickedX * 10) / 10));
+                            state.x = clickedX;
+                            xSlider.value = String(clickedX);
+                            updatePipeline();
+                            draw();
+                        }
+                    }
+                });
+
+                canvas.addEventListener('wheel', function (e) {
+                    e.preventDefault();
+                    var factor = Math.exp(-e.deltaY * 0.0012);
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+                    var newScale = Math.max(12, Math.min(240, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = mx - (mx - state.offsetX) * actual;
+                    state.offsetY = my - (my - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }, { passive: false });
+
+                window.addEventListener('resize', resizeCanvas);
+                resizeCanvas();
+                compileAll();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
