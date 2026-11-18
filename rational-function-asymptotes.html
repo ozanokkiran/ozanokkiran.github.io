@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rational Function Asymptotes Lab</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 340px;
+            min-width: 295px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        /* Fraction Editor */
+        .fraction-editor {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .fx-label {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .frac-inputs {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .frac-bar {
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .math-input {
+            width: 100%;
+            padding: 7px 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.94rem;
+            font-weight: 700;
+            color: var(--text-main);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 6px;
+            text-align: center;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .math-input:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(91, 154, 160, 0.18);
+        }
+
+        .math-input.active-target {
+            border-color: var(--teal);
+            background: #f7fcfc;
+        }
+
+        .input-hint {
+            font-size: 0.71rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            text-align: center;
+        }
+
+        /* Quick Math Keypad */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .key-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 6px 4px;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .key-btn:hover {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        .key-btn.clear-btn {
+            background: #fff5f5;
+            color: var(--coral);
+            border-color: #fed7d7;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.78rem;
+        }
+
+        .key-btn.clear-btn:hover {
+            background: var(--coral);
+            color: #ffffff;
+        }
+
+        .plot-btn {
+            width: 100%;
+            margin-top: 8px;
+            background: var(--teal);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .plot-btn:hover {
+            background: #488187;
+        }
+
+        .error-banner {
+            display: none;
+            margin-top: 7px;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            border-radius: 5px;
+            padding: 6px 8px;
+            font-size: 0.77rem;
+            font-weight: 600;
+        }
+
+        /* Presets */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 7px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .preset-btn span.p-sub {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span.p-sub {
+            color: #cbd5e0;
+        }
+
+        /* Toggles */
+        .toggle-row {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .checkbox-label input {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        /* Analysis */
+        .analysis-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .analysis-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 5px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-item span.lbl {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .analysis-item strong {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            color: var(--primary);
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .analysis-item strong.va { color: var(--coral); }
+        .analysis-item strong.ha { color: #c07024; }
+        .analysis-item strong.hole { color: var(--purple); }
+        .analysis-item strong.int { color: var(--green); }
+
+        .division-note {
+            margin-top: 6px;
+            background: #fffaf0;
+            border: 1px solid #fbd38d;
+            border-radius: 5px;
+            padding: 6px 8px;
+            font-size: 0.77rem;
+            color: #9c4221;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            text-align: center;
+        }
+
+        /* Right Graph Area */
+        .canvas-wrapper {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            min-height: 550px;
+            background-color: #eef2f5;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s;
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .probe-readout {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary);
+            pointer-events: none;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            background: var(--panel-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.79rem;
+            color: var(--primary);
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .swatch {
+            width: 15px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .swatch-dashed {
+            width: 15px;
+            height: 0;
+            border-top: 2px dashed;
+        }
+
+        .swatch-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        .swatch-hole {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2.5px solid var(--purple);
+            background: #ffffff;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-container {
+                min-height: 380px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Rational Function Asymptotes Lab</h1>
+        <p class="subtitle">IB DP Math AA HL &mdash; Free-Form Polynomial Input, Asymptotes &amp; Removable Discontinuities</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Custom Function Builder -->
+            <div class="section-card">
+                <div class="section-title">1. Enter Rational Function</div>
+                <div class="fraction-editor">
+                    <span class="fx-label">f(x) =</span>
+                    <div class="frac-inputs">
+                        <input type="text" id="numInput" class="math-input active-target" value="x^2 - x + 2" placeholder="Numerator P(x)" autocomplete="off" spellcheck="false">
+                        <div class="frac-bar"></div>
+                        <input type="text" id="denInput" class="math-input" value="x - 1" placeholder="Denominator Q(x)" autocomplete="off" spellcheck="false">
+                    </div>
+                </div>
+                <div class="input-hint">Supports polynomials &amp; factors: e.g. 2x^2-3, (x+3)(x-2), x^3-1</div>
+
+                <div class="keypad" id="keypad">
+                    <button type="button" class="key-btn" data-insert="x">x</button>
+                    <button type="button" class="key-btn" data-insert="x^2">x&sup2;</button>
+                    <button type="button" class="key-btn" data-insert="x^3">x&sup3;</button>
+                    <button type="button" class="key-btn" data-insert="^">^</button>
+                    <button type="button" class="key-btn" data-insert="(">(</button>
+                    <button type="button" class="key-btn" data-insert=")">)</button>
+                    <button type="button" class="key-btn" data-insert=" + ">+</button>
+                    <button type="button" class="key-btn" data-insert=" - ">&minus;</button>
+                    <button type="button" class="key-btn" data-insert="(x - )">(x&minus;a)</button>
+                    <button type="button" class="key-btn" data-insert="(x + )">(x+a)</button>
+                    <button type="button" class="key-btn clear-btn" id="btnBack">&larr; Del</button>
+                    <button type="button" class="key-btn clear-btn" id="btnClear">Clear</button>
+                </div>
+
+                <button type="button" class="plot-btn" id="btnPlot">Plot &amp; Analyze Function</button>
+                <div class="error-banner" id="errorBanner"></div>
+            </div>
+
+            <!-- 2. IB Quick Presets -->
+            <div class="section-card">
+                <div class="section-title">2. Quick IB Examples</div>
+                <div class="preset-grid" id="presetGrid">
+                    <button type="button" class="preset-btn" data-num="2x - 3" data-den="x - 2">
+                        Horizontal HA
+                        <span class="p-sub">(2x-3)/(x-2)</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-num="2x" data-den="(x+2)(x-3)">
+                        Double VA
+                        <span class="p-sub">2x / ((x+2)(x-3))</span>
+                    </button>
+                    <button type="button" class="preset-btn active" data-num="x^2 - x + 2" data-den="x - 1">
+                        Oblique (HL)
+                        <span class="p-sub">(x&sup2;-x+2)/(x-1)</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-num="-2(x+3)(x-2)" data-den="(x+3)(x+2)">
+                        Hole &amp; VA
+                        <span class="p-sub">-2(x+3)(x-2)/...</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-num="x^3 - 1" data-den="x^2 - 4">
+                        Cubic / Quad
+                        <span class="p-sub">(x&sup3;-1)/(x&sup2;-4)</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-num="x^3 + 2" data-den="x">
+                        Parabolic Asym.
+                        <span class="p-sub">(x&sup3;+2)/x</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Display Options -->
+            <div class="section-card">
+                <div class="section-title">3. Display Options</div>
+                <div class="toggle-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkAsymptotes" checked>
+                        Show Asymptote Lines &amp; Labels
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkIntercepts" checked>
+                        Show Intercepts &amp; Holes
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkProbe" checked>
+                        Hover Coordinate Probe
+                    </label>
+                </div>
+            </div>
+
+            <!-- 4. Live Analysis -->
+            <div class="section-card">
+                <div class="section-title">4. Asymptote &amp; Feature Analysis</div>
+                <div class="analysis-list" id="analysisList"></div>
+                <div class="division-note" id="divisionNote" style="display: none;"></div>
+            </div>
+
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="canvas-wrapper">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="graphCanvas"></canvas>
+                <div class="probe-readout" id="probeReadout">Hover over graph to inspect (x, f(x))</div>
+                <div class="canvas-toolbar">
+                    <button type="button" class="tool-btn" id="btnZoomIn">+ Zoom</button>
+                    <button type="button" class="tool-btn" id="btnZoomOut">&minus; Zoom</button>
+                    <button type="button" class="tool-btn" id="btnReset">Reset View</button>
+                </div>
+                <div class="controls-hint">Scroll: Zoom | Drag: Pan</div>
+            </div>
+
+            <div class="legend-bar">
+                <div class="legend-item">
+                    <div class="swatch" style="background: #2b6cb0;"></div>
+                    <span>y = f(x)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dashed" style="border-color: #d96459;"></div>
+                    <span>Vertical Asymptote</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dashed" style="border-color: #e69a53;"></div>
+                    <span>Horizontal / Oblique / Curve</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dot" style="background: #38a169;"></div>
+                    <span>Intercepts</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-hole"></div>
+                    <span>Hole (Removable)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            /* =========================================================
+               SYMBOLIC POLYNOMIAL PARSER & ALGEBRA ENGINE (DEGREE <= 8)
+               Polynomials are stored as arrays [c0, c1, c2, ...]
+               representing c0 + c1*x + c2*x^2 + ...
+            ========================================================= */
+            function polyTrim(p) {
+                var res = p.slice();
+                while (res.length > 1 && Math.abs(res[res.length - 1]) < 1e-9) {
+                    res.pop();
+                }
+                for (var i = 0; i < res.length; i++) {
+                    if (Math.abs(res[i]) < 1e-10) res[i] = 0;
+                }
+                return res;
+            }
+
+            function polyDeg(p) {
+                var t = polyTrim(p);
+                if (t.length === 1 && Math.abs(t[0]) < 1e-9) return -1;
+                return t.length - 1;
+            }
+
+            function polyAdd(a, b) {
+                var len = Math.max(a.length, b.length);
+                var out = [];
+                for (var i = 0; i < len; i++) {
+                    out.push((a[i] || 0) + (b[i] || 0));
+                }
+                return polyTrim(out);
+            }
+
+            function polySub(a, b) {
+                var len = Math.max(a.length, b.length);
+                var out = [];
+                for (var i = 0; i < len; i++) {
+                    out.push((a[i] || 0) - (b[i] || 0));
+                }
+                return polyTrim(out);
+            }
+
+            function polyMul(a, b) {
+                var out = new Array(a.length + b.length - 1).fill(0);
+                for (var i = 0; i < a.length; i++) {
+                    for (var j = 0; j < b.length; j++) {
+                        out[i + j] += a[i] * b[j];
+                    }
+                }
+                return polyTrim(out);
+            }
+
+            function polyPow(base, exp) {
+                if (exp < 0 || exp > 8 || Math.abs(exp - Math.round(exp)) > 1e-9) {
+                    throw new Error('Exponents must be integers between 0 and 8.');
+                }
+                var e = Math.round(exp);
+                var res = [1];
+                for (var i = 0; i < e; i++) {
+                    res = polyMul(res, base);
+                }
+                return res;
+            }
+
+            function polyEval(p, x) {
+                var sum = 0;
+                for (var i = p.length - 1; i >= 0; i--) {
+                    sum = sum * x + p[i];
+                }
+                return sum;
+            }
+
+            function polyDivMod(num, den) {
+                var n = polyTrim(num);
+                var d = polyTrim(den);
+                var degD = polyDeg(d);
+                if (degD < 0) throw new Error('Denominator cannot be zero.');
+                var rem = n.slice();
+                var degN = polyDeg(rem);
+                if (degN < degD) return { q: [0], r: rem };
+
+                var q = new Array(degN - degD + 1).fill(0);
+                var leadD = d[degD];
+                for (var i = degN - degD; i >= 0; i--) {
+                    var coeff = rem[i + degD] / leadD;
+                    q[i] = coeff;
+                    for (var j = 0; j <= degD; j++) {
+                        rem[i + j] -= coeff * d[j];
+                    }
+                }
+                return { q: polyTrim(q), r: polyTrim(rem) };
+            }
+
+            // Divide polynomial by (x - r) using synthetic division
+            function divideByLinear(p, r) {
+                var deg = p.length - 1;
+                if (deg <= 0) return [0];
+                var q = new Array(deg).fill(0);
+                q[deg - 1] = p[deg];
+                for (var i = deg - 2; i >= 0; i--) {
+                    q[i] = p[i + 1] + q[i + 1] * r;
+                }
+                return polyTrim(q);
+            }
+
+            // Recursive-descent polynomial parser
+            function parsePolynomial(rawStr) {
+                var s = (rawStr || '').trim();
+                if (!s) throw new Error('Expression cannot be empty.');
+
+                // Normalize unicode symbols
+                s = s.replace(/−/g, '-')
+                     .replace(/×/g, '*')
+                     .replace(/·/g, '*')
+                     .replace(/²/g, '^2')
+                     .replace(/³/g, '^3')
+                     .replace(/⁴/g, '^4')
+                     .replace(/X/g, 'x')
+                     .replace(/\s+/g, '');
+
+                // Tokenize
+                var tokens = [];
+                var idx = 0;
+                while (idx < s.length) {
+                    var ch = s[idx];
+                    if (/[0-9.]/.test(ch)) {
+                        var numStr = '';
+                        while (idx < s.length && /[0-9.]/.test(s[idx])) {
+                            numStr += s[idx++];
+                        }
+                        var val = parseFloat(numStr);
+                        if (isNaN(val)) throw new Error('Invalid number: ' + numStr);
+                        tokens.push({ type: 'NUM', val: val });
+                    } else if (ch === 'x') {
+                        tokens.push({ type: 'VAR' });
+                        idx++;
+                    } else if ('+-*^()'.indexOf(ch) !== -1) {
+                        tokens.push({ type: ch });
+                        idx++;
+                    } else {
+                        throw new Error('Unsupported symbol: "' + ch + '"');
+                    }
+                }
+
+                // Insert implicit multiplication
+                var fullTokens = [];
+                for (var i = 0; i < tokens.length; i++) {
+                    fullTokens.push(tokens[i]);
+                    if (i < tokens.length - 1) {
+                        var curr = tokens[i].type;
+                        var next = tokens[i + 1].type;
+                        var leftCanMul = (curr === 'NUM' || curr === 'VAR' || curr === ')');
+                        var rightCanMul = (next === 'VAR' || next === '(' || (curr === ')' && next === 'NUM'));
+                        if (leftCanMul && rightCanMul) {
+                            fullTokens.push({ type: '*' });
+                        }
+                    }
+                }
+
+                var pos = 0;
+                function peek() { return fullTokens[pos] || null; }
+                function consume() { return fullTokens[pos++]; }
+
+                function parseExpr() {
+                    var left = parseTerm();
+                    while (peek() && (peek().type === '+' || peek().type === '-')) {
+                        var op = consume().type;
+                        var right = parseTerm();
+                        left = (op === '+') ? polyAdd(left, right) : polySub(left, right);
+                    }
+                    return left;
+                }
+
+                function parseTerm() {
+                    var left = parseUnary();
+                    while (peek() && peek().type === '*') {
+                        consume();
+                        var right = parseUnary();
+                        left = polyMul(left, right);
+                    }
+                    return left;
+                }
+
+                function parseUnary() {
+                    if (peek() && peek().type === '+') {
+                        consume();
+                        return parseUnary();
+                    }
+                    if (peek() && peek().type === '-') {
+                        consume();
+                        return polyMul([-1], parseUnary());
+                    }
+                    return parsePower();
+                }
+
+                function parsePower() {
+                    var base = parsePrimary();
+                    if (peek() && peek().type === '^') {
+                        consume();
+                        var expPoly = parseUnary();
+                        if (polyDeg(expPoly) > 0) {
+                            throw new Error('Exponent cannot contain x.');
+                        }
+                        var expVal = expPoly[0] || 0;
+                        return polyPow(base, expVal);
+                    }
+                    return base;
+                }
+
+                function parsePrimary() {
+                    var tok = peek();
+                    if (!tok) throw new Error('Unexpected end of expression.');
+                    if (tok.type === 'NUM') {
+                        consume();
+                        return [tok.val];
+                    }
+                    if (tok.type === 'VAR') {
+                        consume();
+                        return [0, 1];
+                    }
+                    if (tok.type === '(') {
+                        consume();
+                        var inside = parseExpr();
+                        if (!peek() || peek().type !== ')') {
+                            throw new Error('Missing closing parenthesis ")".');
+                        }
+                        consume();
+                        return inside;
+                    }
+                    throw new Error('Unexpected token: "' + tok.type + '"');
+                }
+
+                var poly = parseExpr();
+                if (pos < fullTokens.length) {
+                    throw new Error('Unexpected syntax near "' + fullTokens[pos].type + '"');
+                }
+                if (polyDeg(poly) > 8) {
+                    throw new Error('Polynomial degree exceeds limit (max 8).');
+                }
+                return polyTrim(poly);
+            }
+
+            // Complex arithmetic for Durand-Kerner root finder
+            function cAdd(a, b) { return [a[0] + b[0], a[1] + b[1]]; }
+            function cSub(a, b) { return [a[0] - b[0], a[1] - b[1]]; }
+            function cMul(a, b) { return [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]]; }
+            function cDiv(a, b) {
+                var d = b[0] * b[0] + b[1] * b[1];
+                if (d < 1e-18) return [0, 0];
+                return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d];
+            }
+            function cEvalPoly(p, z) {
+                var res = [0, 0];
+                for (var i = p.length - 1; i >= 0; i--) {
+                    res = cAdd(cMul(res, z), [p[i], 0]);
+                }
+                return res;
+            }
+
+            // Find all real roots with multiplicities (hybrid exact + Durand-Kerner)
+            function findRealRoots(poly) {
+                var p = polyTrim(poly);
+                var roots = [];
+
+                // 1. Check simple rational candidates (integers & halves in [-12, 12])
+                for (var c = -24; c <= 24; c++) {
+                    var cand = c / 2;
+                    while (polyDeg(p) >= 1 && Math.abs(polyEval(p, cand)) < 1e-6) {
+                        roots.push(cand);
+                        p = divideByLinear(p, cand);
+                    }
+                }
+
+                // 2. Remaining degree 1 or 2 exact
+                var deg = polyDeg(p);
+                if (deg === 1) {
+                    roots.push(-p[0] / p[1]);
+                    return roots.sort(function (a, b) { return a - b; });
+                }
+                if (deg === 2) {
+                    var a = p[2], b = p[1], cc = p[0];
+                    var disc = b * b - 4 * a * cc;
+                    if (Math.abs(disc) < 1e-7) {
+                        roots.push(-b / (2 * a));
+                        roots.push(-b / (2 * a));
+                    } else if (disc > 0) {
+                        var sq = Math.sqrt(disc);
+                        roots.push((-b - sq) / (2 * a));
+                        roots.push((-b + sq) / (2 * a));
+                    }
+                    return roots.sort(function (a, b) { return a - b; });
+                }
+
+                // 3. Degree >= 3: Durand-Kerner
+                if (deg >= 3) {
+                    var lead = p[deg];
+                    var monic = p.map(function (v) { return v / lead; });
+                    var z = [];
+                    var radius = 1.4;
+                    for (var k = 0; k < deg; k++) {
+                        var angle = (2 * Math.PI * k) / deg + 0.37;
+                        z.push([radius * Math.cos(angle), radius * Math.sin(angle)]);
+                    }
+
+                    for (var iter = 0; iter < 180; iter++) {
+                        var maxDelta = 0;
+                        for (var i = 0; i < deg; i++) {
+                            var numVal = cEvalPoly(monic, z[i]);
+                            var prod = [1, 0];
+                            for (var j = 0; j < deg; j++) {
+                                if (i !== j) prod = cMul(prod, cSub(z[i], z[j]));
+                            }
+                            var delta = cDiv(numVal, prod);
+                            z[i] = cSub(z[i], delta);
+                            var mag = Math.hypot(delta[0], delta[1]);
+                            if (mag > maxDelta) maxDelta = mag;
+                        }
+                        if (maxDelta < 1e-9) break;
+                    }
+
+                    for (var rIdx = 0; rIdx < deg; rIdx++) {
+                        if (Math.abs(z[rIdx][1]) < 1e-3) {
+                            var rv = z[rIdx][0];
+                            if (Math.abs(polyEval(monic, rv)) < 1e-2) {
+                                roots.push(rv);
+                            }
+                        }
+                    }
+                }
+
+                return roots.sort(function (a, b) { return a - b; });
+            }
+
+            function fmtNum(v) {
+                if (Math.abs(v) < 1e-7) return '0';
+                if (Math.abs(v - Math.round(v)) < 1e-5) return String(Math.round(v));
+                return v.toFixed(2).replace(/\.?0+$/, '');
+            }
+
+            function polyToString(p) {
+                var t = polyTrim(p);
+                var deg = polyDeg(t);
+                if (deg < 0) return '0';
+                var out = '';
+                for (var i = deg; i >= 0; i--) {
+                    var c = t[i];
+                    if (Math.abs(c) < 1e-7) continue;
+                    var neg = c < 0;
+                    var absC = Math.abs(c);
+                    var sign = '';
+                    if (out === '') {
+                        sign = neg ? '-' : '';
+                    } else {
+                        sign = neg ? ' - ' : ' + ';
+                    }
+                    var coeffStr = (i > 0 && Math.abs(absC - 1) < 1e-6) ? '' : fmtNum(absC);
+                    var varStr = '';
+                    if (i === 1) varStr = 'x';
+                    else if (i === 2) varStr = 'x²';
+                    else if (i === 3) varStr = 'x³';
+                    else if (i > 3) varStr = 'x^' + i;
+                    out += sign + coeffStr + varStr;
+                }
+                return out || '0';
+            }
+
+            /* =========================================================
+               UI & GRAPHING ENGINE
+            ========================================================= */
+            function init() {
+                var canvas = document.getElementById('graphCanvas');
+                var ctx = canvas.getContext('2d');
+                var container = document.getElementById('canvasContainer');
+
+                var numInput = document.getElementById('numInput');
+                var denInput = document.getElementById('denInput');
+                var btnPlot = document.getElementById('btnPlot');
+                var btnBack = document.getElementById('btnBack');
+                var btnClear = document.getElementById('btnClear');
+                var errorBanner = document.getElementById('errorBanner');
+                var analysisList = document.getElementById('analysisList');
+                var divisionNote = document.getElementById('divisionNote');
+                var probeReadout = document.getElementById('probeReadout');
+
+                var keyBtns = document.querySelectorAll('.key-btn[data-insert]');
+                var presetBtns = document.querySelectorAll('.preset-btn');
+                var chkAsymptotes = document.getElementById('chkAsymptotes');
+                var chkIntercepts = document.getElementById('chkIntercepts');
+                var chkProbe = document.getElementById('chkProbe');
+                var btnZoomIn = document.getElementById('btnZoomIn');
+                var btnZoomOut = document.getElementById('btnZoomOut');
+                var btnReset = document.getElementById('btnReset');
+
+                var activeInput = numInput;
+                var currentModel = null;
+
+                var state = {
+                    offsetX: 0,
+                    offsetY: 0,
+                    scale: 42,
+                    initializedView: false,
+                    isDragging: false,
+                    dragStartX: 0,
+                    dragStartY: 0,
+                    hoverX: null
+                };
+
+                function setActiveInput(el) {
+                    activeInput = el;
+                    numInput.classList.toggle('active-target', el === numInput);
+                    denInput.classList.toggle('active-target', el === denInput);
+                }
+
+                numInput.addEventListener('focus', function () { setActiveInput(numInput); });
+                denInput.addEventListener('focus', function () { setActiveInput(denInput); });
+
+                function insertAtCursor(text) {
+                    var el = activeInput;
+                    var start = el.selectionStart !== null ? el.selectionStart : el.value.length;
+                    var end = el.selectionEnd !== null ? el.selectionEnd : el.value.length;
+                    el.value = el.value.slice(0, start) + text + el.value.slice(end);
+                    var newPos = start + text.length;
+                    if (text === '(x - )' || text === '(x + )') {
+                        newPos = start + text.length - 1; // place cursor before ')'
+                    }
+                    el.focus();
+                    el.setSelectionRange(newPos, newPos);
+                    clearPresetHighlight();
+                }
+
+                keyBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        insertAtCursor(btn.getAttribute('data-insert'));
+                    });
+                });
+
+                btnBack.addEventListener('click', function () {
+                    var el = activeInput;
+                    var start = el.selectionStart !== null ? el.selectionStart : el.value.length;
+                    var end = el.selectionEnd !== null ? el.selectionEnd : el.value.length;
+                    if (start !== end) {
+                        el.value = el.value.slice(0, start) + el.value.slice(end);
+                        el.focus();
+                        el.setSelectionRange(start, start);
+                    } else if (start > 0) {
+                        el.value = el.value.slice(0, start - 1) + el.value.slice(start);
+                        el.focus();
+                        el.setSelectionRange(start - 1, start - 1);
+                    }
+                    clearPresetHighlight();
+                });
+
+                btnClear.addEventListener('click', function () {
+                    activeInput.value = '';
+                    activeInput.focus();
+                    clearPresetHighlight();
+                });
+
+                function clearPresetHighlight() {
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                }
+
+                function analyzeRational(numStr, denStr) {
+                    var P = parsePolynomial(numStr);
+                    var Q = parsePolynomial(denStr);
+                    if (polyDeg(Q) < 0) throw new Error('Denominator Q(x) cannot be zero.');
+
+                    // Simplify common real roots to detect holes vs vertical asymptotes
+                    var qRoots = findRealRoots(Q);
+                    var pSimp = P.slice();
+                    var qSimp = Q.slice();
+                    var holes = [];
+                    var vas = [];
+
+                    // Group qRoots by proximity
+                    var uniqueQ = [];
+                    qRoots.forEach(function (r) {
+                        var found = uniqueQ.find(function (u) { return Math.abs(u.val - r) < 1e-3; });
+                        if (found) found.mult++;
+                        else uniqueQ.push({ val: r, mult: 1 });
+                    });
+
+                    uniqueQ.forEach(function (item) {
+                        var r = item.val;
+                        var mQ = item.mult;
+                        var mP = 0;
+                        while (polyDeg(pSimp) >= 1 && Math.abs(polyEval(pSimp, r)) < 1e-4) {
+                            pSimp = divideByLinear(pSimp, r);
+                            mP++;
+                        }
+                        var cancelCount = Math.min(mP, mQ);
+                        for (var k = 0; k < cancelCount; k++) {
+                            qSimp = divideByLinear(qSimp, r);
+                        }
+                        if (mQ > mP) {
+                            vas.push(r);
+                        } else if (mQ > 0) {
+                            // Removable discontinuity (hole)
+                            holes.push({ x: r, y: null });
+                        }
+                    });
+
+                    // Evaluate y-coordinates of holes using simplified P/Q
+                    holes.forEach(function (h) {
+                        var qv = polyEval(qSimp, h.x);
+                        h.y = Math.abs(qv) > 1e-7 ? (polyEval(pSimp, h.x) / qv) : NaN;
+                    });
+                    holes = holes.filter(function (h) { return isFinite(h.y) && !isNaN(h.y); });
+
+                    // x-intercepts from remaining roots of pSimp
+                    var pRoots = findRealRoots(pSimp);
+                    var xInts = [];
+                    pRoots.forEach(function (r) {
+                        var isExcluded = vas.some(function (v) { return Math.abs(v - r) < 1e-3; }) ||
+                                         holes.some(function (h) { return Math.abs(h.x - r) < 1e-3; });
+                        var dup = xInts.some(function (x) { return Math.abs(x - r) < 1e-3; });
+                        if (!isExcluded && !dup) xInts.push(r);
+                    });
+
+                    // y-intercept
+                    var yInt = null;
+                    var q0 = polyEval(Q, 0);
+                    if (Math.abs(q0) > 1e-7) {
+                        yInt = polyEval(P, 0) / q0;
+                    }
+
+                    // End behavior via polynomial long division on simplified P/Q
+                    var divRes = polyDivMod(pSimp, qSimp);
+                    var degP = polyDeg(pSimp);
+                    var degQ = polyDeg(qSimp);
+                    var endType = 'None';
+                    var asymPoly = null; // polynomial representing HA, Oblique, or Curvilinear asymptote
+                    var divHTML = '';
+
+                    if (degP < degQ) {
+                        endType = 'Horizontal';
+                        asymPoly = [0];
+                    } else if (degP === degQ) {
+                        endType = 'Horizontal';
+                        asymPoly = [pSimp[degP] / qSimp[degQ]];
+                    } else if (degP === degQ + 1) {
+                        endType = 'Oblique (Slant)';
+                        asymPoly = divRes.q;
+                    } else if (degP === degQ + 2) {
+                        endType = 'Curvilinear (Parabolic)';
+                        asymPoly = divRes.q;
+                    } else {
+                        endType = 'Higher-Degree (' + (degP - degQ) + ')';
+                        asymPoly = divRes.q;
+                    }
+
+                    if (degP >= degQ && degQ >= 1) {
+                        var qStr = polyToString(divRes.q);
+                        var rDeg = polyDeg(divRes.r);
+                        if (rDeg < 0) {
+                            divHTML = 'Exact division: f(x) = <strong>' + qStr + '</strong> (with excluded domain points)';
+                        } else {
+                            divHTML = 'Division form: f(x) = <strong>' + qStr + '</strong> + (' + polyToString(divRes.r) + ') / (' + polyToString(qSimp) + ')';
+                        }
+                    } else if (holes.length > 0) {
+                        divHTML = 'Simplified form: f(x) = (' + polyToString(pSimp) + ') / (' + polyToString(qSimp) + ')';
+                    }
+
+                    var evalFn = function (x) {
+                        for (var hi = 0; hi < holes.length; hi++) {
+                            if (Math.abs(x - holes[hi].x) < 1e-5) return NaN;
+                        }
+                        var denVal = polyEval(qSimp, x);
+                        if (Math.abs(denVal) < 1e-7) return NaN;
+                        return polyEval(pSimp, x) / denVal;
+                    };
+
+                    return {
+                        P: P,
+                        Q: Q,
+                        pSimp: pSimp,
+                        qSimp: qSimp,
+                        vas: vas,
+                        holes: holes,
+                        xInts: xInts,
+                        yInt: yInt,
+                        endType: endType,
+                        asymPoly: asymPoly,
+                        divHTML: divHTML,
+                        evalFn: evalFn
+                    };
+                }
+
+                function updateAnalysisUI(m) {
+                    var vaText = m.vas.length > 0
+                        ? m.vas.map(function (v) { return 'x = ' + fmtNum(v); }).join(', ')
+                        : 'None';
+
+                    var endText = m.asymPoly ? 'y = ' + polyToString(m.asymPoly) : 'None';
+
+                    var holeText = m.holes.length > 0
+                        ? m.holes.map(function (h) { return '(' + fmtNum(h.x) + ', ' + fmtNum(h.y) + ')'; }).join(', ')
+                        : 'None';
+
+                    var xIntText = m.xInts.length > 0
+                        ? m.xInts.map(function (x) { return '(' + fmtNum(x) + ', 0)'; }).join(', ')
+                        : 'None';
+
+                    var yIntText = (m.yInt !== null && isFinite(m.yInt))
+                        ? '(0, ' + fmtNum(m.yInt) + ')'
+                        : 'None';
+
+                    var excl = m.vas.concat(m.holes.map(function (h) { return h.x; }));
+                    var uniqueExcl = [];
+                    excl.forEach(function (v) {
+                        if (!uniqueExcl.some(function (u) { return Math.abs(u - v) < 1e-4; })) uniqueExcl.push(v);
+                    });
+                    uniqueExcl.sort(function (a, b) { return a - b; });
+                    var domText = uniqueExcl.length > 0
+                        ? 'x ≠ ' + uniqueExcl.map(fmtNum).join(', ')
+                        : 'x ∈ ℝ';
+
+                    analysisList.innerHTML =
+                        '<div class="analysis-item"><span class="lbl">Vertical Asymptote</span><strong class="va">' + vaText + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">' + m.endType + '</span><strong class="ha">' + endText + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Hole (Removable)</span><strong class="hole">' + holeText + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">x-Intercept(s)</span><strong class="int">' + xIntText + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">y-Intercept</span><strong class="int">' + yIntText + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Domain</span><strong>' + domText + '</strong></div>';
+
+                    if (m.divHTML) {
+                        divisionNote.innerHTML = m.divHTML;
+                        divisionNote.style.display = 'block';
+                    } else {
+                        divisionNote.style.display = 'none';
+                    }
+                }
+
+                function getSize() {
+                    var rect = container.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 640,
+                        h: rect.height > 50 ? rect.height : 550
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    if (!state.initializedView) {
+                        state.offsetX = sz.w / 2;
+                        state.offsetY = sz.h / 2;
+                        state.initializedView = true;
+                    }
+                    draw();
+                }
+
+                function resetView() {
+                    var sz = getSize();
+                    state.offsetX = sz.w / 2;
+                    state.offsetY = sz.h / 2;
+                    state.scale = 42;
+                    draw();
+                }
+
+                function zoomBy(factor) {
+                    var sz = getSize();
+                    var cx = sz.w / 2;
+                    var cy = sz.h / 2;
+                    var newScale = Math.max(10, Math.min(220, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = cx - (cx - state.offsetX) * actual;
+                    state.offsetY = cy - (cy - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }
+
+                function toCX(x) { return state.offsetX + x * state.scale; }
+                function toCY(y) { return state.offsetY - y * state.scale; }
+
+                function drawBadgeLabel(text, x, y, color) {
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    var w = ctx.measureText(text).width + 10;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+                    ctx.fillRect(x - w / 2, y - 9, w, 18);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x - w / 2, y - 9, w, 18);
+                    ctx.fillStyle = color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(text, x, y);
+                }
+
+                function draw() {
+                    var sz = getSize();
+                    var W = sz.w;
+                    var H = sz.h;
+
+                    ctx.clearRect(0, 0, W, H);
+
+                    // Adaptive Grid
+                    var step = 1;
+                    if (state.scale < 26) step = 2;
+                    if (state.scale < 15) step = 5;
+                    if (state.scale > 110) step = 0.5;
+
+                    var minX = Math.floor(-state.offsetX / state.scale / step) * step;
+                    var maxX = Math.ceil((W - state.offsetX) / state.scale / step) * step;
+                    var minY = Math.floor(-(H - state.offsetY) / state.scale / step) * step;
+                    var maxY = Math.ceil(state.offsetY / state.scale / step) * step;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#dce3e8';
+                    ctx.lineWidth = 1;
+                    ctx.fillStyle = '#718096';
+                    ctx.font = "11px 'Segoe UI'";
+
+                    for (var gx = minX; gx <= maxX; gx += step) {
+                        var cx = toCX(gx);
+                        ctx.moveTo(cx, 0);
+                        ctx.lineTo(cx, H);
+                        if (Math.abs(gx) > 0.001) {
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'top';
+                            var yClamp = Math.max(8, Math.min(H - 20, state.offsetY + 6));
+                            ctx.fillText(fmtNum(gx), cx, yClamp);
+                        }
+                    }
+
+                    for (var gy = minY; gy <= maxY; gy += step) {
+                        var cy = toCY(gy);
+                        ctx.moveTo(0, cy);
+                        ctx.lineTo(W, cy);
+                        if (Math.abs(gy) > 0.001) {
+                            ctx.textAlign = 'right';
+                            ctx.textBaseline = 'middle';
+                            var xClamp = Math.max(26, Math.min(W - 8, state.offsetX - 8));
+                            ctx.fillText(fmtNum(gy), xClamp, cy);
+                        }
+                    }
+                    ctx.stroke();
+
+                    // Main Axes
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#8da2b0';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(state.offsetX, 0);
+                    ctx.lineTo(state.offsetX, H);
+                    ctx.moveTo(0, state.offsetY);
+                    ctx.lineTo(W, state.offsetY);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('0', state.offsetX - 6, state.offsetY + 6);
+
+                    if (!currentModel) return;
+                    var m = currentModel;
+
+                    // Asymptotes
+                    if (chkAsymptotes.checked) {
+                        // Vertical Asymptotes
+                        m.vas.forEach(function (vx, idx) {
+                            var px = toCX(vx);
+                            if (px >= -20 && px <= W + 20) {
+                                ctx.beginPath();
+                                ctx.strokeStyle = '#d96459';
+                                ctx.setLineDash([7, 5]);
+                                ctx.lineWidth = 2;
+                                ctx.moveTo(px, 0);
+                                ctx.lineTo(px, H);
+                                ctx.stroke();
+                                ctx.setLineDash([]);
+                                drawBadgeLabel('x = ' + fmtNum(vx), px, 56 + (idx % 2) * 22, '#d96459');
+                            }
+                        });
+
+                        // Horizontal / Oblique / Curvilinear Asymptote
+                        if (m.asymPoly) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = '#e69a53';
+                            ctx.setLineDash([7, 5]);
+                            ctx.lineWidth = 2;
+                            var firstA = true;
+                            for (var ax = 0; ax <= W; ax += 2) {
+                                var xA = (ax - state.offsetX) / state.scale;
+                                var yA = polyEval(m.asymPoly, xA);
+                                var pyA = toCY(yA);
+                                if (pyA < -H * 2 || pyA > H * 3 || !isFinite(pyA)) {
+                                    firstA = true;
+                                    continue;
+                                }
+                                if (firstA) {
+                                    ctx.moveTo(ax, pyA);
+                                    firstA = false;
+                                } else {
+                                    ctx.lineTo(ax, pyA);
+                                }
+                            }
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+
+                            var labelX = (W * 0.78 - state.offsetX) / state.scale;
+                            var labelY = toCY(polyEval(m.asymPoly, labelX));
+                            if (isFinite(labelY)) {
+                                var clampedY = Math.max(46, Math.min(H - 36, labelY - 16));
+                                drawBadgeLabel('y = ' + polyToString(m.asymPoly), W * 0.78, clampedY, '#c07024');
+                            }
+                        }
+                    }
+
+                    // Plot Rational Curve f(x)
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#2b6cb0';
+                    ctx.lineWidth = 2.8;
+                    var firstPt = true;
+                    var prevPy = null;
+                    var prevX = null;
+
+                    for (var px = 0; px <= W; px += 1) {
+                        var xVal = (px - state.offsetX) / state.scale;
+                        var yVal = m.evalFn(xVal);
+
+                        if (!isFinite(yVal) || isNaN(yVal)) {
+                            firstPt = true;
+                            prevPy = null;
+                            prevX = xVal;
+                            continue;
+                        }
+
+                        var crossedVA = false;
+                        if (prevX !== null) {
+                            for (var vi = 0; vi < m.vas.length; vi++) {
+                                if ((prevX < m.vas[vi] && xVal >= m.vas[vi]) || (prevX <= m.vas[vi] && xVal > m.vas[vi])) {
+                                    crossedVA = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        var py = toCY(yVal);
+                        if (crossedVA || py < -H * 2 || py > H * 3 || (prevPy !== null && Math.abs(py - prevPy) > H * 0.85)) {
+                            firstPt = true;
+                        }
+
+                        if (py >= -H * 2 && py <= H * 3) {
+                            if (firstPt) {
+                                ctx.moveTo(px, py);
+                                firstPt = false;
+                            } else {
+                                ctx.lineTo(px, py);
+                            }
+                            prevPy = py;
+                        } else {
+                            firstPt = true;
+                            prevPy = null;
+                        }
+                        prevX = xVal;
+                    }
+                    ctx.stroke();
+
+                    // Intercepts & Holes
+                    if (chkIntercepts.checked) {
+                        m.xInts.forEach(function (xi) {
+                            var ix = toCX(xi);
+                            var iy = toCY(0);
+                            if (ix >= -20 && ix <= W + 20) {
+                                ctx.beginPath();
+                                ctx.arc(ix, iy, 5, 0, Math.PI * 2);
+                                ctx.fillStyle = '#38a169';
+                                ctx.fill();
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            }
+                        });
+
+                        if (m.yInt !== null && isFinite(m.yInt)) {
+                            var yx = toCX(0);
+                            var yy = toCY(m.yInt);
+                            if (yy >= -20 && yy <= H + 20) {
+                                ctx.beginPath();
+                                ctx.arc(yx, yy, 5, 0, Math.PI * 2);
+                                ctx.fillStyle = '#38a169';
+                                ctx.fill();
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            }
+                        }
+
+                        m.holes.forEach(function (h) {
+                            var hx = toCX(h.x);
+                            var hy = toCY(h.y);
+                            if (hx >= -20 && hx <= W + 20 && hy >= -20 && hy <= H + 20) {
+                                ctx.beginPath();
+                                ctx.arc(hx, hy, 6.5, 0, Math.PI * 2);
+                                ctx.fillStyle = '#ffffff';
+                                ctx.fill();
+                                ctx.strokeStyle = '#7c6992';
+                                ctx.lineWidth = 2.8;
+                                ctx.stroke();
+                                drawBadgeLabel('Hole (' + fmtNum(h.x) + ', ' + fmtNum(h.y) + ')', hx, hy - 18, '#7c6992');
+                            }
+                        });
+                    }
+
+                    // Hover Probe
+                    if (chkProbe.checked && state.hoverX !== null) {
+                        var hxVal = state.hoverX;
+                        var hyVal = m.evalFn(hxVal);
+                        if (isFinite(hyVal) && !isNaN(hyVal)) {
+                            var pcx = toCX(hxVal);
+                            var pcy = toCY(hyVal);
+                            if (pcy >= -10 && pcy <= H + 10) {
+                                ctx.beginPath();
+                                ctx.strokeStyle = 'rgba(74, 101, 114, 0.35)';
+                                ctx.setLineDash([3, 3]);
+                                ctx.lineWidth = 1.5;
+                                ctx.moveTo(pcx, toCY(0));
+                                ctx.lineTo(pcx, pcy);
+                                ctx.lineTo(toCX(0), pcy);
+                                ctx.stroke();
+                                ctx.setLineDash([]);
+
+                                ctx.beginPath();
+                                ctx.arc(pcx, pcy, 5, 0, Math.PI * 2);
+                                ctx.fillStyle = '#4a6572';
+                                ctx.fill();
+                                ctx.strokeStyle = '#ffffff';
+                                ctx.lineWidth = 2;
+                                ctx.stroke();
+                            }
+                            probeReadout.textContent = 'x = ' + hxVal.toFixed(2) + '  |  f(x) = ' + hyVal.toFixed(2);
+                        } else {
+                            probeReadout.textContent = 'x = ' + hxVal.toFixed(2) + '  |  f(x) = Undefined';
+                        }
+                    } else if (!chkProbe.checked) {
+                        probeReadout.textContent = 'Probe disabled';
+                    } else {
+                        probeReadout.textContent = 'Hover over graph to inspect (x, f(x))';
+                    }
+                }
+
+                function plotCurrentInputs() {
+                    try {
+                        var model = analyzeRational(numInput.value, denInput.value);
+                        currentModel = model;
+                        errorBanner.style.display = 'none';
+                        updateAnalysisUI(model);
+                        draw();
+                    } catch (err) {
+                        errorBanner.textContent = err.message || 'Invalid polynomial expression.';
+                        errorBanner.style.display = 'block';
+                    }
+                }
+
+                btnPlot.addEventListener('click', plotCurrentInputs);
+
+                [numInput, denInput].forEach(function (inp) {
+                    inp.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            plotCurrentInputs();
+                        }
+                    });
+                    inp.addEventListener('input', clearPresetHighlight);
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        clearPresetHighlight();
+                        btn.classList.add('active');
+                        numInput.value = btn.getAttribute('data-num');
+                        denInput.value = btn.getAttribute('data-den');
+                        resetView();
+                        plotCurrentInputs();
+                    });
+                });
+
+                [chkAsymptotes, chkIntercepts, chkProbe].forEach(function (el) {
+                    el.addEventListener('change', draw);
+                });
+
+                btnZoomIn.addEventListener('click', function () { zoomBy(1.25); });
+                btnZoomOut.addEventListener('click', function () { zoomBy(0.8); });
+                btnReset.addEventListener('click', resetView);
+
+                canvas.addEventListener('mousedown', function (e) {
+                    state.isDragging = true;
+                    state.dragStartX = e.clientX - state.offsetX;
+                    state.dragStartY = e.clientY - state.offsetY;
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (state.isDragging) {
+                        state.offsetX = e.clientX - state.dragStartX;
+                        state.offsetY = e.clientY - state.dragStartY;
+                        draw();
+                    }
+                });
+
+                window.addEventListener('mouseup', function () {
+                    state.isDragging = false;
+                });
+
+                canvas.addEventListener('mousemove', function (e) {
+                    if (state.isDragging) return;
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    state.hoverX = (mx - state.offsetX) / state.scale;
+                    if (chkProbe.checked) draw();
+                });
+
+                canvas.addEventListener('mouseleave', function () {
+                    state.hoverX = null;
+                    draw();
+                });
+
+                canvas.addEventListener('wheel', function (e) {
+                    e.preventDefault();
+                    var factor = Math.exp(-e.deltaY * 0.0012);
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+                    var newScale = Math.max(10, Math.min(220, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = mx - (mx - state.offsetX) * actual;
+                    state.offsetY = my - (my - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }, { passive: false });
+
+                window.addEventListener('resize', resizeCanvas);
+
+                resizeCanvas();
+                plotCurrentInputs();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
