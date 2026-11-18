@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binomial Expansion &amp; Pascal's Triangle</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --green: #38a169;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1320px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 315px;
+            min-width: 280px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        .slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 8px;
+        }
+
+        .slider-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .val-badge {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            color: var(--coral);
+            background: #fff5f5;
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 0.84rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 2px 0;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .mode-btn, .action-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .action-btn.primary {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        .action-btn.primary:hover {
+            background: #488187;
+        }
+
+        .action-btn:hover:not(.primary) {
+            background: #dfe7ec;
+        }
+
+        .toggle-row {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.82rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .checkbox-label input {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        .term-inspector {
+            background: #f0f9fa;
+            border: 1px solid #cce7ea;
+            border-left: 4px solid var(--teal);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+
+        .term-formula {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .term-result {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            color: var(--coral);
+            font-size: 0.94rem;
+            background: #ffffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .stat-pill {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 6px 8px;
+        }
+
+        .stat-pill span {
+            display: block;
+            font-size: 0.66rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .stat-pill strong {
+            color: var(--primary);
+            font-size: 0.86rem;
+        }
+
+        /* Right Stage */
+        .stage {
+            flex: 1;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .triangle-card {
+            flex: 1;
+            background: #eef2f5;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 360px;
+            overflow-x: auto;
+        }
+
+        .pascal-grid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pascal-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .pascal-row.hidden-row {
+            opacity: 0;
+            transform: translateY(-6px);
+            pointer-events: none;
+        }
+
+        .row-index {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            width: 34px;
+            text-align: right;
+            margin-right: 4px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .pascal-row.active-row .row-index {
+            color: var(--coral);
+        }
+
+        .p-cell {
+            min-width: 46px;
+            height: 36px;
+            padding: 0 8px;
+            border-radius: 8px;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e0;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            user-select: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .p-cell:hover {
+            transform: translateY(-2px);
+            border-color: var(--teal);
+        }
+
+        .pascal-row.active-row .p-cell {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .p-cell.odd-highlight {
+            background: #e6fffa !important;
+            border-color: #38b2ac !important;
+            color: #234e52 !important;
+        }
+
+        .p-cell.parent-cell {
+            background: #fef3c7 !important;
+            border-color: var(--amber) !important;
+            color: #9c4221 !important;
+            transform: scale(1.07);
+            box-shadow: 0 0 0 3px rgba(230, 154, 83, 0.28);
+        }
+
+        .p-cell.selected-cell {
+            background: var(--coral) !important;
+            border-color: #b84b40 !important;
+            color: #ffffff !important;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(217, 100, 89, 0.35);
+        }
+
+        .identity-banner {
+            margin-top: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .identity-banner strong.parent-txt { color: #b7651c; }
+        .identity-banner strong.child-txt { color: var(--coral); }
+
+        .expansion-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .expansion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 6px;
+        }
+
+        .expansion-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        .expression-badge {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--teal);
+        }
+
+        .terms-container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.12rem;
+            line-height: 1.6;
+        }
+
+        .term-chip {
+            padding: 4px 9px;
+            border-radius: 6px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .term-chip:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .term-chip.active-term {
+            background: #fff5f5;
+            border-color: var(--coral);
+            color: #9b2c2c;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(217, 100, 89, 0.2);
+        }
+
+        .term-op {
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 0 2px;
+        }
+
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            background: var(--panel-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.79rem;
+            color: var(--primary);
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .swatch-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 620px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Binomial Expansion &amp; Pascal's Triangle</h1>
+        <p class="subtitle">Interactive Pascal's Identity, Combinatorial Coefficients &amp; General Term Explorer</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Expression Parameters -->
+            <div class="section-card">
+                <div class="section-title">1. Binomial Parameters</div>
+                <div class="btn-row" style="margin-bottom: 10px;">
+                    <button type="button" class="mode-btn active" data-form="axb">(ax + b)<sup>n</sup></button>
+                    <button type="button" class="mode-btn" data-form="axby">(ax + by)<sup>n</sup></button>
+                </div>
+
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Power (n)</span>
+                        <span class="val-badge" id="nVal">4</span>
+                    </div>
+                    <input type="range" id="nSlider" min="0" max="8" step="1" value="4">
+                </div>
+
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Coefficient a</span>
+                        <span class="val-badge" id="aVal">1</span>
+                    </div>
+                    <input type="range" id="aSlider" min="-3" max="3" step="1" value="1">
+                </div>
+
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Coefficient b</span>
+                        <span class="val-badge" id="bVal">1</span>
+                    </div>
+                    <input type="range" id="bSlider" min="-3" max="3" step="1" value="1">
+                </div>
+            </div>
+
+            <!-- 2. Animation & Display -->
+            <div class="section-card">
+                <div class="section-title">2. Triangle Controls</div>
+                <div class="btn-row" style="margin-bottom: 10px;">
+                    <button type="button" class="action-btn primary" id="btnAnimate">&#9654; Animate Rows</button>
+                    <button type="button" class="action-btn" id="btnReset">Show All</button>
+                </div>
+                <div class="toggle-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkCombMode">
+                        Show as Combinations C(n, r)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkParity">
+                        Highlight Odd Numbers (Sierpiński)
+                    </label>
+                </div>
+            </div>
+
+            <!-- 3. General Term Inspector -->
+            <div class="section-card">
+                <div class="section-title">3. General Term Inspector (T<sub>r+1</sub>)</div>
+                <div class="term-inspector" id="termInspector">
+                    Click any cell in the active row or any term below to inspect its derivation.
+                </div>
+            </div>
+
+            <!-- 4. Row Properties -->
+            <div class="section-card">
+                <div class="section-title">4. Active Row Properties</div>
+                <div class="stats-grid">
+                    <div class="stat-pill">
+                        <span>Number of Terms</span>
+                        <strong id="statTerms">5</strong>
+                    </div>
+                    <div class="stat-pill">
+                        <span>Row Sum (2<sup>n</sup>)</span>
+                        <strong id="statSum">16</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Interactive Stage -->
+        <div class="stage">
+            <div class="triangle-card">
+                <div class="pascal-grid" id="pascalGrid"></div>
+                <div class="identity-banner" id="identityBanner">
+                    Click any cell in Pascal's Triangle to verify Pascal's Identity: C(n&minus;1, r&minus;1) + C(n&minus;1, r) = C(n, r)
+                </div>
+            </div>
+
+            <div class="expansion-card">
+                <div class="expansion-header">
+                    <span class="expansion-title">Expanded Polynomial (Click a term to inspect)</span>
+                    <span class="expression-badge" id="exprBadge">(x + 1)<sup>4</sup></span>
+                </div>
+                <div class="terms-container" id="termsContainer"></div>
+            </div>
+
+            <div class="legend-bar">
+                <div class="legend-item">
+                    <div class="swatch-box" style="background: #d96459;"></div>
+                    <span>Selected Cell / Term</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-box" style="background: #fef3c7; border: 1.5px solid #e69a53;"></div>
+                    <span>Parent Cells (Sum)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-box" style="background: #f0f9fa; border: 1.5px solid #5b9aa0;"></div>
+                    <span>Active Row (n)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            function init() {
+                var nSlider = document.getElementById('nSlider');
+                var aSlider = document.getElementById('aSlider');
+                var bSlider = document.getElementById('bSlider');
+                var nVal = document.getElementById('nVal');
+                var aVal = document.getElementById('aVal');
+                var bVal = document.getElementById('bVal');
+                var chkCombMode = document.getElementById('chkCombMode');
+                var chkParity = document.getElementById('chkParity');
+                var btnAnimate = document.getElementById('btnAnimate');
+                var btnReset = document.getElementById('btnReset');
+                var modeBtns = document.querySelectorAll('.mode-btn');
+
+                var pascalGrid = document.getElementById('pascalGrid');
+                var identityBanner = document.getElementById('identityBanner');
+                var exprBadge = document.getElementById('exprBadge');
+                var termsContainer = document.getElementById('termsContainer');
+                var termInspector = document.getElementById('termInspector');
+                var statTerms = document.getElementById('statTerms');
+                var statSum = document.getElementById('statSum');
+
+                var state = {
+                    n: 4,
+                    a: 1,
+                    b: 1,
+                    form: 'axb', // 'axb' or 'axby'
+                    selectedRow: 4,
+                    selectedCol: 2,
+                    visibleRows: 4,
+                    animTimer: null
+                };
+
+                function comb(n, r) {
+                    if (r < 0 || r > n) return 0;
+                    if (r === 0 || r === n) return 1;
+                    var res = 1;
+                    for (var i = 1; i <= r; i++) {
+                        res = (res * (n - i + 1)) / i;
+                    }
+                    return Math.round(res);
+                }
+
+                function formatExprHeader() {
+                    var aPart = state.a === 1 ? 'x' : (state.a === -1 ? '&minus;x' : state.a + 'x');
+                    var bAbs = Math.abs(state.b);
+                    var bSign = state.b >= 0 ? ' + ' : ' &minus; ';
+                    var bPart;
+                    if (state.form === 'axby') {
+                        bPart = bAbs === 1 ? 'y' : bAbs + 'y';
+                    } else {
+                        bPart = String(bAbs);
+                    }
+                    if (state.a === 0 && state.b === 0) return '(0)<sup>' + state.n + '</sup>';
+                    if (state.a === 0) {
+                        var onlyB = state.form === 'axby'
+                            ? (state.b === 1 ? 'y' : (state.b === -1 ? '&minus;y' : state.b + 'y'))
+                            : String(state.b);
+                        return '(' + onlyB + ')<sup>' + state.n + '</sup>';
+                    }
+                    if (state.b === 0) return '(' + aPart + ')<sup>' + state.n + '</sup>';
+                    return '(' + aPart + bSign + bPart + ')<sup>' + state.n + '</sup>';
+                }
+
+                function buildTermHTML(n, r, includeSign) {
+                    var c = comb(n, r);
+                    var powA = n - r;
+                    var powB = r;
+                    var coeff = c * Math.pow(state.a, powA) * Math.pow(state.b, powB);
+
+                    if (coeff === 0) {
+                        return { coeff: 0, html: '0' };
+                    }
+
+                    var absCoeff = Math.abs(coeff);
+                    var varPart = '';
+                    if (powA > 0) {
+                        varPart += powA === 1 ? 'x' : 'x<sup>' + powA + '</sup>';
+                    }
+                    if (state.form === 'axby' && powB > 0) {
+                        varPart += powB === 1 ? 'y' : 'y<sup>' + powB + '</sup>';
+                    }
+
+                    var coeffStr = (absCoeff === 1 && varPart !== '') ? '' : absCoeff.toLocaleString('en-US');
+                    var signStr = '';
+                    if (includeSign) {
+                        signStr = coeff < 0 ? '&minus;' : '';
+                    }
+                    return { coeff: coeff, html: signStr + coeffStr + varPart };
+                }
+
+                function renderTriangle() {
+                    pascalGrid.innerHTML = '';
+
+                    for (var row = 0; row <= state.n; row++) {
+                        var rowDiv = document.createElement('div');
+                        rowDiv.className = 'pascal-row';
+                        if (row === state.n) rowDiv.classList.add('active-row');
+                        if (row > state.visibleRows) rowDiv.classList.add('hidden-row');
+
+                        var idxSpan = document.createElement('span');
+                        idxSpan.className = 'row-index';
+                        idxSpan.textContent = 'n=' + row;
+                        rowDiv.appendChild(idxSpan);
+
+                        for (var col = 0; col <= row; col++) {
+                            var val = comb(row, col);
+                            var cell = document.createElement('div');
+                            cell.className = 'p-cell';
+                            cell.setAttribute('data-row', String(row));
+                            cell.setAttribute('data-col', String(col));
+
+                            if (chkCombMode.checked) {
+                                cell.innerHTML = '<sup>' + row + '</sup>C<sub>' + col + '</sub>';
+                            } else {
+                                cell.textContent = String(val);
+                            }
+
+                            if (chkParity.checked && val % 2 === 1) {
+                                cell.classList.add('odd-highlight');
+                            }
+
+                            if (row === state.selectedRow && col === state.selectedCol) {
+                                cell.classList.add('selected-cell');
+                            } else if (
+                                state.selectedRow > 0 &&
+                                row === state.selectedRow - 1 &&
+                                (col === state.selectedCol - 1 || col === state.selectedCol)
+                            ) {
+                                cell.classList.add('parent-cell');
+                            }
+
+                            (function (rIdx, cIdx) {
+                                cell.addEventListener('click', function () {
+                                    state.selectedRow = rIdx;
+                                    state.selectedCol = cIdx;
+                                    renderAll();
+                                });
+                            })(row, col);
+
+                            rowDiv.appendChild(cell);
+                        }
+                        pascalGrid.appendChild(rowDiv);
+                    }
+                }
+
+                function renderIdentityBanner() {
+                    var r = state.selectedRow;
+                    var c = state.selectedCol;
+                    var val = comb(r, c);
+
+                    if (r === 0) {
+                        identityBanner.innerHTML = 'Apex of Pascal\'s Triangle: <strong class="child-txt">C(0, 0) = 1</strong>';
+                    } else if (c === 0 || c === r) {
+                        identityBanner.innerHTML = 'Edge cell: <strong class="child-txt">C(' + r + ', ' + c + ') = 1</strong> (always 1 along the outer edges)';
+                    } else {
+                        var leftP = comb(r - 1, c - 1);
+                        var rightP = comb(r - 1, c);
+                        identityBanner.innerHTML =
+                            'Pascal\'s Identity: <strong class="parent-txt">C(' + (r - 1) + ', ' + (c - 1) + ')</strong> + ' +
+                            '<strong class="parent-txt">C(' + (r - 1) + ', ' + c + ')</strong> = ' +
+                            '<strong class="child-txt">C(' + r + ', ' + c + ')</strong> &nbsp;&rArr;&nbsp; ' +
+                            '<strong class="parent-txt">' + leftP + '</strong> + <strong class="parent-txt">' + rightP + '</strong> = ' +
+                            '<strong class="child-txt">' + val + '</strong>';
+                    }
+                }
+
+                function renderExpansion() {
+                    exprBadge.innerHTML = formatExprHeader();
+                    termsContainer.innerHTML = '';
+
+                    var hasAnyNonZero = false;
+                    var displayedCount = 0;
+
+                    for (var r = 0; r <= state.n; r++) {
+                        var t = buildTermHTML(state.n, r, false);
+                        if (t.coeff === 0) continue;
+                        hasAnyNonZero = true;
+
+                        if (displayedCount > 0) {
+                            var op = document.createElement('span');
+                            op.className = 'term-op';
+                            op.innerHTML = t.coeff < 0 ? '&minus;' : '+';
+                            termsContainer.appendChild(op);
+                        } else if (t.coeff < 0) {
+                            var leadNeg = document.createElement('span');
+                            leadNeg.className = 'term-op';
+                            leadNeg.innerHTML = '&minus;';
+                            termsContainer.appendChild(leadNeg);
+                        }
+
+                        var chip = document.createElement('span');
+                        chip.className = 'term-chip';
+                        if (state.selectedRow === state.n && state.selectedCol === r) {
+                            chip.classList.add('active-term');
+                        }
+                        chip.innerHTML = t.html;
+
+                        (function (colIdx) {
+                            chip.addEventListener('click', function () {
+                                state.selectedRow = state.n;
+                                state.selectedCol = colIdx;
+                                renderAll();
+                            });
+                        })(r);
+
+                        termsContainer.appendChild(chip);
+                        displayedCount++;
+                    }
+
+                    if (!hasAnyNonZero) {
+                        var zeroChip = document.createElement('span');
+                        zeroChip.className = 'term-chip active-term';
+                        zeroChip.textContent = state.n === 0 ? '1' : '0';
+                        termsContainer.appendChild(zeroChip);
+                    }
+                }
+
+                function renderInspector() {
+                    var r = (state.selectedRow === state.n) ? state.selectedCol : Math.min(state.selectedCol, state.n);
+                    var n = state.n;
+                    var cVal = comb(n, r);
+                    var powA = n - r;
+                    var powB = r;
+                    var aTerm = state.a === 1 ? 'x' : (state.a === -1 ? '-x' : state.a + 'x');
+                    var bTerm = state.form === 'axby'
+                        ? (state.b === 1 ? 'y' : (state.b === -1 ? '-y' : state.b + 'y'))
+                        : String(state.b);
+
+                    var fullTerm = buildTermHTML(n, r, true);
+                    var note = (state.selectedRow !== state.n)
+                        ? '<div style="font-size:0.74rem; color:#718096; margin-bottom:4px;">Showing r = ' + r + ' for active row n = ' + n + '</div>'
+                        : '';
+
+                    termInspector.innerHTML =
+                        note +
+                        '<div class="term-formula">T<sub>' + (r + 1) + '</sub> = <sup>' + n + '</sup>C<sub>' + r + '</sub> &middot; (' + aTerm + ')<sup>' + powA + '</sup> &middot; (' + bTerm + ')<sup>' + powB + '</sup></div>' +
+                        '<div>= ' + cVal + ' &middot; (' + Math.pow(state.a, powA) + (powA > 0 ? 'x<sup>' + powA + '</sup>' : '') + ') &middot; (' + Math.pow(state.b, powB) + (state.form === 'axby' && powB > 0 ? 'y<sup>' + powB + '</sup>' : '') + ')</div>' +
+                        '<div class="term-result">Result: ' + fullTerm.html + '</div>';
+                }
+
+                function renderStats() {
+                    nVal.textContent = String(state.n);
+                    aVal.textContent = String(state.a);
+                    bVal.textContent = String(state.b);
+                    statTerms.textContent = String(state.n + 1);
+                    statSum.textContent = Math.pow(2, state.n).toLocaleString('en-US');
+                }
+
+                function stopAnimation() {
+                    if (state.animTimer) {
+                        clearInterval(state.animTimer);
+                        state.animTimer = null;
+                        btnAnimate.innerHTML = '&#9654; Animate Rows';
+                    }
+                }
+
+                function renderAll() {
+                    if (state.selectedRow > state.n) state.selectedRow = state.n;
+                    if (state.selectedCol > state.selectedRow) state.selectedCol = state.selectedRow;
+                    renderStats();
+                    renderTriangle();
+                    renderIdentityBanner();
+                    renderExpansion();
+                    renderInspector();
+                }
+
+                // Event Listeners
+                nSlider.addEventListener('input', function () {
+                    stopAnimation();
+                    state.n = parseInt(nSlider.value, 10);
+                    state.visibleRows = state.n;
+                    state.selectedRow = state.n;
+                    state.selectedCol = Math.floor(state.n / 2);
+                    renderAll();
+                });
+
+                aSlider.addEventListener('input', function () {
+                    state.a = parseInt(aSlider.value, 10);
+                    renderAll();
+                });
+
+                bSlider.addEventListener('input', function () {
+                    state.b = parseInt(bSlider.value, 10);
+                    renderAll();
+                });
+
+                modeBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        modeBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.form = btn.getAttribute('data-form');
+                        renderAll();
+                    });
+                });
+
+                chkCombMode.addEventListener('change', renderAll);
+                chkParity.addEventListener('change', renderAll);
+
+                btnAnimate.addEventListener('click', function () {
+                    if (state.animTimer) {
+                        stopAnimation();
+                        return;
+                    }
+                    state.visibleRows = 0;
+                    state.selectedRow = 0;
+                    state.selectedCol = 0;
+                    btnAnimate.innerHTML = '&#9632; Stop';
+                    renderAll();
+
+                    state.animTimer = setInterval(function () {
+                        if (state.visibleRows < state.n) {
+                            state.visibleRows++;
+                            state.selectedRow = state.visibleRows;
+                            state.selectedCol = Math.floor(state.visibleRows / 2);
+                            renderAll();
+                        } else {
+                            stopAnimation();
+                        }
+                    }, 550);
+                });
+
+                btnReset.addEventListener('click', function () {
+                    stopAnimation();
+                    state.visibleRows = state.n;
+                    state.selectedRow = state.n;
+                    state.selectedCol = Math.floor(state.n / 2);
+                    renderAll();
+                });
+
+                renderAll();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
