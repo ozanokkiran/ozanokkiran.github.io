@@ -14,42 +14,78 @@
             align-items: center;
             padding: 20px;
             margin: 0;
+            overflow-x: hidden;
         }
         h1 {
             color: #4a6572;
             margin-bottom: 5px;
+            font-size: 2.2em;
         }
         p.subtitle {
             color: #7a8b94;
             margin-top: 0;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            font-size: 1.2em;
         }
         .container {
             display: flex;
-            gap: 20px;
+            gap: 25px;
             background: #ffffff;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            max-width: 1200px;
+            width: 95%;
         }
         .panel {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            width: 280px;
+            gap: 20px;
+            width: 320px;
             background-color: #f4f6f8;
             padding: 20px;
             border-radius: 8px;
+            flex-shrink: 0;
         }
-        select {
-            padding: 10px;
-            font-size: 16px;
+        
+        /* Checkbox Grid Tasarımı */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            background: #fff;
+            padding: 15px;
             border-radius: 6px;
             border: 1px solid #dce3e8;
-            background-color: #fff;
+        }
+        .controls-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .col-title {
+            font-weight: bold;
             color: #4a6572;
+            font-size: 14px;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #eef2f5;
+            padding-bottom: 5px;
+        }
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
             cursor: pointer;
         }
+        .checkbox-wrapper input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+        .checkbox-wrapper.main-func { color: #4a6572; font-weight: 600; }
+        .checkbox-wrapper.inv-func { color: #d96459; font-weight: 600; }
+
         .info-box {
             background: #fff;
             border-left: 4px solid #5b9aa0;
@@ -57,56 +93,100 @@
             border-radius: 4px;
             font-size: 14px;
             line-height: 1.6;
+            min-height: 100px;
         }
-        .info-box span {
-            font-weight: bold;
-            color: #d96459;
-        }
+        .info-box span.main-val { font-weight: bold; color: #4a6572; }
+        .info-box span.inv-val { font-weight: bold; color: #d96459; }
+        
         .legend {
             font-size: 13px;
             display: flex;
             flex-direction: column;
             gap: 8px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dce3e8;
         }
-        .legend-item {
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .color-box { width: 16px; height: 16px; border-radius: 3px; }
+        
+        .canvas-container {
+            position: relative;
+            flex-grow: 1;
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 8px;
-        }
-        .color-box {
-            width: 16px;
-            height: 16px;
-            border-radius: 3px;
-        }
-        canvas {
             background-color: #eef2f5;
             border-radius: 8px;
             border: 1px solid #dce3e8;
+            overflow: hidden;
+            cursor: grab;
         }
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+        canvas {
+            display: block;
+        }
+        .controls-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #7a8b94;
+            pointer-events: none;
+        }
+        .reset-btn {
+            background-color: #5b9aa0;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .reset-btn:hover { background-color: #4a8288; }
     </style>
 </head>
 <body>
 
     <h1>Ters Trigonometrik Fonksiyonlar</h1>
-    <p class="subtitle">Tanım Kümelerinin Daraltılması ve y=x Simetrisi</p>
+    <p class="subtitle">Etkileşimli Grafikler: Yakınlaştır (Scroll) ve Kaydır (Sürükle)</p>
 
     <div class="container">
+        <!-- Sol Kontrol Paneli -->
         <div class="panel">
-            <label for="funcSelect" style="font-weight: bold; color: #4a6572;">Fonksiyon Seçin:</label>
-            <select id="funcSelect">
-                <option value="sin">Sinüs / Arcsinüs</option>
-                <option value="cos">Kosinüs / Arccosinüs</option>
-                <option value="tan">Tanjant / Arctanjant</option>
-            </select>
+            
+            <div class="controls-grid">
+                <div class="controls-column">
+                    <div class="col-title">Ana Fonksiyon</div>
+                    <label class="checkbox-wrapper main-func"><input type="checkbox" id="chk-sin" checked> sin(x)</label>
+                    <label class="checkbox-wrapper main-func"><input type="checkbox" id="chk-cos"> cos(x)</label>
+                    <label class="checkbox-wrapper main-func"><input type="checkbox" id="chk-tan"> tan(x)</label>
+                    <label class="checkbox-wrapper main-func"><input type="checkbox" id="chk-cot"> cot(x)</label>
+                </div>
+                <div class="controls-column">
+                    <div class="col-title">Arc Fonksiyon</div>
+                    <label class="checkbox-wrapper inv-func"><input type="checkbox" id="chk-asin" checked> arcsin(x)</label>
+                    <label class="checkbox-wrapper inv-func"><input type="checkbox" id="chk-acos"> arccos(x)</label>
+                    <label class="checkbox-wrapper inv-func"><input type="checkbox" id="chk-atan"> arctan(x)</label>
+                    <label class="checkbox-wrapper inv-func"><input type="checkbox" id="chk-acot"> arccot(x)</label>
+                </div>
+            </div>
 
             <div class="info-box" id="infoBox">
-                <!-- İçerik JS ile doldurulacak -->
+                Seçilen fonksiyonların tanım ve değer kümeleri burada görünecektir.
             </div>
 
             <div class="legend">
                 <div class="legend-item">
-                    <div class="color-box" style="background-color: rgba(166, 184, 199, 0.4);"></div>
-                    <span>Tüm Fonksiyon (Birebir Değil)</span>
+                    <div class="color-box" style="background-color: rgba(166, 184, 199, 0.3);"></div>
+                    <span>Tüm Fonksiyon (Silik)</span>
                 </div>
                 <div class="legend-item">
                     <div class="color-box" style="background-color: #4a6572;"></div>
@@ -117,150 +197,316 @@
                     <span>Ters Fonksiyon (Arc)</span>
                 </div>
                 <div class="legend-item">
-                    <div class="color-box" style="background-color: #f2ae72; height: 4px;"></div>
-                    <span>y = x Doğrusu (Simetri Ekseni)</span>
+                    <div class="color-box" style="background-color: #f2ae72; height: 3px; border-radius: 0;"></div>
+                    <span>y = x Doğrusu (Simetri)</span>
                 </div>
+                <button class="reset-btn" onclick="resetView()">Görünümü Sıfırla</button>
             </div>
         </div>
 
-        <canvas id="mathCanvas" width="500" height="500"></canvas>
+        <!-- Canvas Alanı -->
+        <div class="canvas-container" id="canvasContainer">
+            <canvas id="mathCanvas" width="800" height="600"></canvas>
+            <div class="controls-hint">Scroll: Zoom | Sürükle: Pan</div>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('mathCanvas');
         const ctx = canvas.getContext('2d');
-        const funcSelect = document.getElementById('funcSelect');
+        const container = document.getElementById('canvasContainer');
         const infoBox = document.getElementById('infoBox');
 
-        // Koordinat sistemi ayarları
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const scale = 50; // 1 birim = 50 piksel
-
-        const funcData = {
-            sin: {
-                domainBase: "[-π/2, π/2]",
-                rangeBase: "[-1, 1]",
-                domainInv: "[-1, 1]",
-                rangeInv: "[-π/2, π/2]",
-                restrictMin: -Math.PI / 2,
-                restrictMax: Math.PI / 2
-            },
-            cos: {
-                domainBase: "[0, π]",
-                rangeBase: "[-1, 1]",
-                domainInv: "[-1, 1]",
-                rangeInv: "[0, π]",
-                restrictMin: 0,
-                restrictMax: Math.PI
-            },
-            tan: {
-                domainBase: "(-π/2, π/2)",
-                rangeBase: "(-∞, ∞)",
-                domainInv: "(-∞, ∞)",
-                rangeInv: "(-π/2, π/2)",
-                restrictMin: -Math.PI / 2 + 0.01,
-                restrictMax: Math.PI / 2 - 0.01
-            }
+        // Checkbox Elementleri
+        const checks = {
+            sin: document.getElementById('chk-sin'),
+            cos: document.getElementById('chk-cos'),
+            tan: document.getElementById('chk-tan'),
+            cot: document.getElementById('chk-cot'),
+            asin: document.getElementById('chk-asin'),
+            acos: document.getElementById('chk-acos'),
+            atan: document.getElementById('chk-atan'),
+            acot: document.getElementById('chk-acot')
         };
 
+        // Görünüm Değişkenleri (Pan & Zoom)
+        let offsetX = canvas.width / 2;
+        let offsetY = canvas.height / 2;
+        let scale = 60; // 1 birim = 60 piksel
+        
+        let isDragging = false;
+        let dragStartX, dragStartY;
+
+        // Matematiksel Veriler
+        const funcData = {
+            sin: { name: "sin(x)", dom: "[-π/2, π/2]", rng: "[-1, 1]", rMin: -Math.PI/2, rMax: Math.PI/2, func: Math.sin },
+            cos: { name: "cos(x)", dom: "[0, π]", rng: "[-1, 1]", rMin: 0, rMax: Math.PI, func: Math.cos },
+            tan: { name: "tan(x)", dom: "(-π/2, π/2)", rng: "(-∞, ∞)", rMin: -Math.PI/2 + 0.01, rMax: Math.PI/2 - 0.01, func: Math.tan },
+            cot: { name: "cot(x)", dom: "(0, π)", rng: "(-∞, ∞)", rMin: 0.01, rMax: Math.PI - 0.01, func: (x) => 1/Math.tan(x) },
+            asin: { name: "arcsin(x)", dom: "[-1, 1]", rng: "[-π/2, π/2]", rMin: -1, rMax: 1, func: Math.asin },
+            acos: { name: "arccos(x)", dom: "[-1, 1]", rng: "[0, π]", rMin: -1, rMax: 1, func: Math.acos },
+            atan: { name: "arctan(x)", dom: "(-∞, ∞)", rng: "(-π/2, π/2)", rMin: -20, rMax: 20, func: Math.atan },
+            acot: { name: "arccot(x)", dom: "(-∞, ∞)", rng: "(0, π)", rMin: -20, rMax: 20, func: (x) => Math.PI/2 - Math.atan(x) }
+        };
+
+        // Canvas Boyutlandırma (Responsive)
+        function resizeCanvas() {
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            if(!isDragging) {
+                offsetX = canvas.width / 2;
+                offsetY = canvas.height / 2;
+            }
+            draw();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // Görünümü Sıfırla
+        function resetView() {
+            offsetX = canvas.width / 2;
+            offsetY = canvas.height / 2;
+            scale = 60;
+            draw();
+        }
+
+        // --- Mouse Eventleri (Pan & Zoom) ---
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragStartX = e.clientX - offsetX;
+            dragStartY = e.clientY - offsetY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                offsetX = e.clientX - dragStartX;
+                offsetY = e.clientY - dragStartY;
+                draw();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => isDragging = false);
+        canvas.addEventListener('mouseleave', () => isDragging = false);
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomSensitivity = 0.001;
+            const delta = Math.exp(-e.deltaY * zoomSensitivity);
+            
+            // Fare imlecinin olduğu noktaya doğru zoom yap
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            offsetX = mouseX - (mouseX - offsetX) * delta;
+            offsetY = mouseY - (mouseY - offsetY) * delta;
+            scale *= delta;
+            
+            draw();
+        });
+
+        // Koordinatları ve sayıları çiz
         function drawAxes() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.beginPath();
-            ctx.strokeStyle = '#c4d1d9';
-            ctx.lineWidth = 1;
             
-            // Izgara (Grid)
-            for(let i = 0; i <= canvas.width; i += scale) {
-                ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height);
-                ctx.moveTo(0, i); ctx.lineTo(canvas.width, i);
+            // Grid ve Sayılar
+            ctx.beginPath();
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#7a8b94';
+            ctx.font = "12px 'Segoe UI'";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            const startX = Math.floor(-offsetX / scale);
+            const endX = Math.ceil((canvas.width - offsetX) / scale);
+            const startY = Math.floor(-(canvas.height - offsetY) / scale);
+            const endY = Math.ceil(offsetY / scale);
+            
+            // Pi cinsinden etiketleme için yardımcı fonksiyon
+            function formatLabel(val) {
+                if(val === 0) return "0";
+                // Eğer Pi katlarına çok yakınsa Pi cinsinden yaz
+                const piMult = val / Math.PI;
+                const roundPi = Math.round(piMult * 2) / 2; // 0.5, 1, 1.5 gibi
+                if (Math.abs(piMult - roundPi) < 0.05) {
+                    if (roundPi === 1) return "π";
+                    if (roundPi === -1) return "-π";
+                    if (roundPi === 0.5) return "π/2";
+                    if (roundPi === -0.5) return "-π/2";
+                    if (roundPi === 1.5) return "3π/2";
+                    if (roundPi === -1.5) return "-3π/2";
+                    if (roundPi % 1 !== 0) return (roundPi * 2) + "π/2";
+                    return roundPi + "π";
+                }
+                // Değilse normal tam sayı
+                if (Math.abs(Math.round(val) - val) < 0.05) return Math.round(val).toString();
+                return "";
+            }
+
+            // Dikey Çizgiler (X Ekseninde)
+            for (let i = startX; i <= endX; i += 0.5) { // Her 0.5 birimde bir kontrol et
+                const x = offsetX + (i * scale);
+                ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
+                
+                // Sadece tam sayılarda ve Pi/2 katlarında yazı yaz
+                let label = formatLabel(i);
+                if(label !== "" && label !== "0") {
+                    ctx.fillText(label, x, offsetY + 15);
+                }
+            }
+
+            // Yatay Çizgiler (Y Ekseninde)
+            for (let i = startY; i <= endY; i += 0.5) {
+                const y = offsetY - (i * scale);
+                ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
+                
+                let label = formatLabel(i);
+                if(label !== "" && label !== "0") {
+                    ctx.fillText(label, offsetX - 15, y);
+                }
             }
             ctx.stroke();
 
-            // Ana Eksenler
+            // Ana Eksenler (X ve Y)
             ctx.beginPath();
             ctx.strokeStyle = '#8da2b0';
             ctx.lineWidth = 2;
-            ctx.moveTo(centerX, 0); ctx.lineTo(centerX, canvas.height);
-            ctx.moveTo(0, centerY); ctx.lineTo(canvas.width, centerY);
+            ctx.moveTo(offsetX, 0); ctx.lineTo(offsetX, canvas.height);
+            ctx.moveTo(0, offsetY); ctx.lineTo(canvas.width, offsetY);
             ctx.stroke();
 
-            // y = x doğrusu
-            ctx.beginPath();
-            ctx.strokeStyle = '#f2ae72';
-            ctx.setLineDash([5, 5]);
-            ctx.moveTo(0, canvas.height);
-            ctx.lineTo(canvas.width, 0);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            // Orijin 0
+            ctx.fillText("0", offsetX - 10, offsetY + 12);
+
+            // y = x Doğrusu (Eğer herhangi bir kutu seçiliyse)
+            let anyChecked = Object.values(checks).some(chk => chk.checked);
+            if (anyChecked) {
+                ctx.beginPath();
+                ctx.strokeStyle = '#f2ae72';
+                ctx.setLineDash([5, 5]);
+                ctx.lineWidth = 2;
+                
+                // y = x için başlangıç ve bitiş hesapla
+                let x1 = -offsetX / scale;
+                let y1 = -x1; // y = x
+                let x2 = (canvas.width - offsetX) / scale;
+                let y2 = -x2;
+                
+                ctx.moveTo(offsetX + (x1 * scale), offsetY + (y1 * scale));
+                ctx.lineTo(offsetX + (x2 * scale), offsetY + (y2 * scale));
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
         }
 
-        function drawCurve(func, color, width, minT, maxT, isInverse = false) {
+        // Eğri Çizici
+        function drawCurve(func, color, width, minT, maxT, isInverse = false, isGhost = false) {
             ctx.beginPath();
             ctx.strokeStyle = color;
             ctx.lineWidth = width;
 
             let firstPoint = true;
-            for (let i = -10; i <= 10; i += 0.05) {
-                if (i >= minT && i <= maxT) {
-                    let val = func(i);
-                    // Asimptot atlamaları için (Tanjant)
-                    if (Math.abs(val) > 10) continue;
+            
+            // Ekranın göründüğü aralığı hesapla
+            const screenMinX = -offsetX / scale;
+            const screenMaxX = (canvas.width - offsetX) / scale;
+            
+            // Ghost (silik) eğriler için tüm ekranı tara
+            let start = isGhost ? screenMinX - 1 : minT;
+            let end = isGhost ? screenMaxX + 1 : maxT;
+            
+            // Arc fonksiyonları için x ekseni kısıtlaması (örn: arcsin için -1 ile 1 arası)
+            if(isInverse && !isGhost) {
+                start = Math.max(start, minT);
+                end = Math.min(end, maxT);
+            }
 
-                    let x = isInverse ? val : i;
-                    let y = isInverse ? i : val;
-                    
-                    let canvasX = centerX + (x * scale);
-                    let canvasY = centerY - (y * scale);
+            const step = (end - start) / 500; // Hassasiyet
 
-                    if (firstPoint) {
-                        ctx.moveTo(canvasX, canvasY);
-                        firstPoint = false;
-                    } else {
-                        ctx.lineTo(canvasX, canvasY);
-                    }
-                } else {
+            for (let i = start; i <= end; i += step) {
+                let val = func(i);
+                
+                // Asimptot atlamaları (Tanjant/Cotanjant için dikey sıçramalar)
+                if (Math.abs(val) > 50) {
                     firstPoint = true;
+                    continue;
+                }
+
+                let x = isInverse ? val : i;
+                let y = isInverse ? i : val;
+                
+                let canvasX = offsetX + (x * scale);
+                let canvasY = offsetY - (y * scale);
+
+                // Silik çizimde kısıtlı bölgenin üzerine çizmemek için atla
+                if (isGhost && !isInverse && i >= minT && i <= maxT) {
+                    firstPoint = true;
+                    continue;
+                }
+
+                if (firstPoint) {
+                    ctx.moveTo(canvasX, canvasY);
+                    firstPoint = false;
+                } else {
+                    ctx.lineTo(canvasX, canvasY);
                 }
             }
             ctx.stroke();
         }
 
-        function updateSimulation() {
+        // Ana Çizim Fonksiyonu
+        function draw() {
             drawAxes();
-            const choice = funcSelect.value;
-            const data = funcData[choice];
+            
+            let infoHTML = "";
 
-            // Bilgi kutusunu güncelle
-            infoBox.innerHTML = `
-                Ana Fonksiyon Kısıtlaması:<br>
-                Tanım: <span>${data.domainBase}</span><br>
-                Değer: <span>${data.rangeBase}</span><hr style="border:0; border-top:1px solid #dce3e8; margin: 10px 0;">
-                Ters Fonksiyon (Arc):<br>
-                Tanım: <span>${data.domainInv}</span><br>
-                Değer: <span>${data.rangeInv}</span>
-            `;
-
-            if (choice === 'sin') {
-                drawCurve(Math.sin, 'rgba(166, 184, 199, 0.4)', 2, -10, 10); // Tüm Sinüs
-                drawCurve(Math.sin, '#4a6572', 3, data.restrictMin, data.restrictMax); // Kısıtlı Sinüs
-                drawCurve(Math.asin, '#d96459', 3, -1, 1, true); // Arcsin (x ve y yer değiştirilerek çizilir)
-            } else if (choice === 'cos') {
-                drawCurve(Math.cos, 'rgba(166, 184, 199, 0.4)', 2, -10, 10);
-                drawCurve(Math.cos, '#4a6572', 3, data.restrictMin, data.restrictMax);
-                drawCurve(Math.acos, '#d96459', 3, -1, 1, true);
-            } else if (choice === 'tan') {
-                // Tanjant periyotlarını çiz
-                for(let k = -3; k <= 3; k++) {
-                    drawCurve(Math.tan, 'rgba(166, 184, 199, 0.4)', 2, -Math.PI/2 + k*Math.PI + 0.05, Math.PI/2 + k*Math.PI - 0.05);
+            // Ana Fonksiyonları Çiz (Seçiliyse)
+            ['sin', 'cos', 'tan', 'cot'].forEach(f => {
+                if (checks[f].checked) {
+                    const data = funcData[f];
+                    // 1. Silik tüm dalga
+                    drawCurve(data.func, 'rgba(166, 184, 199, 0.3)', 2, data.rMin, data.rMax, false, true);
+                    // 2. Kısıtlı bölge
+                    drawCurve(data.func, '#4a6572', 3, data.rMin, data.rMax, false, false);
+                    
+                    infoHTML += `<div style="margin-bottom:10px;">
+                        <span class="main-val">${data.name} Kısıtlaması:</span><br>
+                        Tanım: ${data.dom} | Değer: ${data.rng}
+                    </div>`;
                 }
-                drawCurve(Math.tan, '#4a6572', 3, data.restrictMin, data.restrictMax);
-                drawCurve(Math.atan, '#d96459', 3, -10, 10, true);
+            });
+
+            // Ters (Arc) Fonksiyonları Çiz (Seçiliyse)
+            ['asin', 'acos', 'atan', 'acot'].forEach(f => {
+                if (checks[f].checked) {
+                    const data = funcData[f];
+                    // Arc fonksiyonu (X ve Y yer değiştirerek çizilir)
+                    drawCurve(data.func, '#d96459', 3, data.rMin, data.rMax, true, false);
+                    
+                    infoHTML += `<div style="margin-bottom:10px;">
+                        <span class="inv-val">${data.name}:</span><br>
+                        Tanım: ${data.dom} | Değer: ${data.rng}
+                    </div>`;
+                }
+            });
+
+            if (infoHTML === "") {
+                infoBox.innerHTML = "<span style='color:#7a8b94; font-style:italic;'>Lütfen yukarıdan en az bir fonksiyon seçin.</span>";
+            } else {
+                infoBox.innerHTML = infoHTML;
             }
         }
 
-        funcSelect.addEventListener('change', updateSimulation);
-        updateSimulation(); // İlk yükleme
+        // Event Listener'lar
+        Object.values(checks).forEach(chk => {
+            chk.addEventListener('change', draw);
+        });
+
+        // Başlat
+        setTimeout(() => {
+            resizeCanvas();
+        }, 100);
+
     </script>
 </body>
 </html>
