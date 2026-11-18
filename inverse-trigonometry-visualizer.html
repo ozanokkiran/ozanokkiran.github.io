@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inverse Trigonometry Visualizer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fdfbf7;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #4a6572;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            color: #7a8b94;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 280px;
+            background-color: #f4f6f8;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #dce3e8;
+            background-color: #fff;
+            color: #4a6572;
+            cursor: pointer;
+        }
+        .info-box {
+            background: #fff;
+            border-left: 4px solid #5b9aa0;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .info-box span {
+            font-weight: bold;
+            color: #d96459;
+        }
+        .legend {
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        canvas {
+            background-color: #eef2f5;
+            border-radius: 8px;
+            border: 1px solid #dce3e8;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Ters Trigonometrik Fonksiyonlar</h1>
+    <p class="subtitle">Tanım Kümelerinin Daraltılması ve y=x Simetrisi</p>
+
+    <div class="container">
+        <div class="panel">
+            <label for="funcSelect" style="font-weight: bold; color: #4a6572;">Fonksiyon Seçin:</label>
+            <select id="funcSelect">
+                <option value="sin">Sinüs / Arcsinüs</option>
+                <option value="cos">Kosinüs / Arccosinüs</option>
+                <option value="tan">Tanjant / Arctanjant</option>
+            </select>
+
+            <div class="info-box" id="infoBox">
+                <!-- İçerik JS ile doldurulacak -->
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: rgba(166, 184, 199, 0.4);"></div>
+                    <span>Tüm Fonksiyon (Birebir Değil)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: #4a6572;"></div>
+                    <span>Kısıtlanmış Ana Fonksiyon</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: #d96459;"></div>
+                    <span>Ters Fonksiyon (Arc)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box" style="background-color: #f2ae72; height: 4px;"></div>
+                    <span>y = x Doğrusu (Simetri Ekseni)</span>
+                </div>
+            </div>
+        </div>
+
+        <canvas id="mathCanvas" width="500" height="500"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mathCanvas');
+        const ctx = canvas.getContext('2d');
+        const funcSelect = document.getElementById('funcSelect');
+        const infoBox = document.getElementById('infoBox');
+
+        // Koordinat sistemi ayarları
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const scale = 50; // 1 birim = 50 piksel
+
+        const funcData = {
+            sin: {
+                domainBase: "[-π/2, π/2]",
+                rangeBase: "[-1, 1]",
+                domainInv: "[-1, 1]",
+                rangeInv: "[-π/2, π/2]",
+                restrictMin: -Math.PI / 2,
+                restrictMax: Math.PI / 2
+            },
+            cos: {
+                domainBase: "[0, π]",
+                rangeBase: "[-1, 1]",
+                domainInv: "[-1, 1]",
+                rangeInv: "[0, π]",
+                restrictMin: 0,
+                restrictMax: Math.PI
+            },
+            tan: {
+                domainBase: "(-π/2, π/2)",
+                rangeBase: "(-∞, ∞)",
+                domainInv: "(-∞, ∞)",
+                rangeInv: "(-π/2, π/2)",
+                restrictMin: -Math.PI / 2 + 0.01,
+                restrictMax: Math.PI / 2 - 0.01
+            }
+        };
+
+        function drawAxes() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = '#c4d1d9';
+            ctx.lineWidth = 1;
+            
+            // Izgara (Grid)
+            for(let i = 0; i <= canvas.width; i += scale) {
+                ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height);
+                ctx.moveTo(0, i); ctx.lineTo(canvas.width, i);
+            }
+            ctx.stroke();
+
+            // Ana Eksenler
+            ctx.beginPath();
+            ctx.strokeStyle = '#8da2b0';
+            ctx.lineWidth = 2;
+            ctx.moveTo(centerX, 0); ctx.lineTo(centerX, canvas.height);
+            ctx.moveTo(0, centerY); ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+
+            // y = x doğrusu
+            ctx.beginPath();
+            ctx.strokeStyle = '#f2ae72';
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(0, canvas.height);
+            ctx.lineTo(canvas.width, 0);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawCurve(func, color, width, minT, maxT, isInverse = false) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+
+            let firstPoint = true;
+            for (let i = -10; i <= 10; i += 0.05) {
+                if (i >= minT && i <= maxT) {
+                    let val = func(i);
+                    // Asimptot atlamaları için (Tanjant)
+                    if (Math.abs(val) > 10) continue;
+
+                    let x = isInverse ? val : i;
+                    let y = isInverse ? i : val;
+                    
+                    let canvasX = centerX + (x * scale);
+                    let canvasY = centerY - (y * scale);
+
+                    if (firstPoint) {
+                        ctx.moveTo(canvasX, canvasY);
+                        firstPoint = false;
+                    } else {
+                        ctx.lineTo(canvasX, canvasY);
+                    }
+                } else {
+                    firstPoint = true;
+                }
+            }
+            ctx.stroke();
+        }
+
+        function updateSimulation() {
+            drawAxes();
+            const choice = funcSelect.value;
+            const data = funcData[choice];
+
+            // Bilgi kutusunu güncelle
+            infoBox.innerHTML = `
+                Ana Fonksiyon Kısıtlaması:<br>
+                Tanım: <span>${data.domainBase}</span><br>
+                Değer: <span>${data.rangeBase}</span><hr style="border:0; border-top:1px solid #dce3e8; margin: 10px 0;">
+                Ters Fonksiyon (Arc):<br>
+                Tanım: <span>${data.domainInv}</span><br>
+                Değer: <span>${data.rangeInv}</span>
+            `;
+
+            if (choice === 'sin') {
+                drawCurve(Math.sin, 'rgba(166, 184, 199, 0.4)', 2, -10, 10); // Tüm Sinüs
+                drawCurve(Math.sin, '#4a6572', 3, data.restrictMin, data.restrictMax); // Kısıtlı Sinüs
+                drawCurve(Math.asin, '#d96459', 3, -1, 1, true); // Arcsin (x ve y yer değiştirilerek çizilir)
+            } else if (choice === 'cos') {
+                drawCurve(Math.cos, 'rgba(166, 184, 199, 0.4)', 2, -10, 10);
+                drawCurve(Math.cos, '#4a6572', 3, data.restrictMin, data.restrictMax);
+                drawCurve(Math.acos, '#d96459', 3, -1, 1, true);
+            } else if (choice === 'tan') {
+                // Tanjant periyotlarını çiz
+                for(let k = -3; k <= 3; k++) {
+                    drawCurve(Math.tan, 'rgba(166, 184, 199, 0.4)', 2, -Math.PI/2 + k*Math.PI + 0.05, Math.PI/2 + k*Math.PI - 0.05);
+                }
+                drawCurve(Math.tan, '#4a6572', 3, data.restrictMin, data.restrictMax);
+                drawCurve(Math.atan, '#d96459', 3, -10, 10, true);
+            }
+        }
+
+        funcSelect.addEventListener('change', updateSimulation);
+        updateSimulation(); // İlk yükleme
+    </script>
+</body>
+</html>
