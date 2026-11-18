@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #fdfbf7; /* Soft pastel background */
+            background-color: #fdfbf7;
             color: #333;
             margin: 0;
             padding: 20px;
@@ -150,10 +150,10 @@
         let time = 0;
         let v0, theta, g;
         
-        // Origin point on canvas (bottom left corner with padding)
-        const originX = 30;
+        // Origin point on canvas (shifted slightly right to fit y-axis labels)
+        const originX = 40; 
         const originY = canvas.height - 30;
-        const scale = 4; // pixels per meter
+        const scale = 3; // pixels per meter (Ayarlanabilir, mesafeye göre küçültüldü)
 
         // Update displays on slider move
         velInput.addEventListener('input', () => velVal.textContent = `${velInput.value} m/s`);
@@ -162,7 +162,41 @@
 
         function drawBackground() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Draw Axes
+            
+            // Draw Grid and Axis Numbers
+            ctx.beginPath();
+            ctx.strokeStyle = '#dce3e8';
+            ctx.lineWidth = 1;
+            ctx.fillStyle = '#7a8b94';
+            ctx.font = "12px 'Segoe UI'";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top";
+
+            // X-Axis Scale (Every 50 meters)
+            for(let i = 0; i <= 300; i += 50) {
+                let xPos = originX + (i * scale);
+                // Grid line
+                ctx.moveTo(xPos, 0);
+                ctx.lineTo(xPos, canvas.height);
+                // Text label
+                if (i !== 0) ctx.fillText(i + "m", xPos, originY + 8);
+            }
+
+            ctx.textAlign = "right";
+            ctx.textBaseline = "middle";
+
+            // Y-Axis Scale (Every 25 meters)
+            for(let j = 0; j <= 150; j += 25) {
+                let yPos = originY - (j * scale);
+                // Grid line
+                ctx.moveTo(0, yPos);
+                ctx.lineTo(canvas.width, yPos);
+                // Text label
+                if (j !== 0) ctx.fillText(j + "m", originX - 8, yPos);
+            }
+            ctx.stroke();
+
+            // Draw Main Axes
             ctx.beginPath();
             ctx.strokeStyle = '#a6b8c7';
             ctx.lineWidth = 2;
@@ -173,12 +207,17 @@
             ctx.moveTo(0, originY);
             ctx.lineTo(canvas.width, originY);
             ctx.stroke();
+            
+            // Origin Zero
+            ctx.textAlign = "right";
+            ctx.textBaseline = "top";
+            ctx.fillText("0", originX - 8, originY + 8);
         }
 
         // Draw the full trajectory path (Parametric Curve)
         function drawTrajectory() {
             ctx.beginPath();
-            ctx.strokeStyle = 'rgba(217, 100, 89, 0.4)'; // Soft red dashed line
+            ctx.strokeStyle = 'rgba(217, 100, 89, 0.5)'; // Soft red dashed line
             ctx.setLineDash([5, 5]);
             ctx.lineWidth = 2;
 
@@ -194,7 +233,7 @@
                 let y = (v0 * Math.sin(theta) * t) - (0.5 * g * t * t);
                 
                 currentX = originX + (x * scale);
-                currentY = originY - (y * scale); // Minus because canvas Y goes down
+                currentY = originY - (y * scale);
 
                 if (currentY <= originY) {
                     ctx.lineTo(currentX, currentY);
