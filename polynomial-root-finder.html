@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynomial Root Finder: Bisection &amp; Newton-Raphson</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 340px;
+            min-width: 295px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        /* Function Input */
+        .fn-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fn-label {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .math-input {
+            flex: 1;
+            padding: 7px 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 6px;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .math-input:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(91, 154, 160, 0.18);
+        }
+
+        .deriv-readout {
+            margin-top: 6px;
+            background: #f8fafc;
+            border-left: 3px solid var(--teal);
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 0.86rem;
+            color: var(--primary);
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .key-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 5px 4px;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .key-btn:hover {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        .key-btn.clear-btn {
+            background: #fff5f5;
+            color: var(--coral);
+            border-color: #fed7d7;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.76rem;
+        }
+
+        .key-btn.clear-btn:hover {
+            background: var(--coral);
+            color: #ffffff;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 5px 7px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .preset-btn span {
+            display: block;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span {
+            color: #cbd5e0;
+        }
+
+        /* Method Tabs */
+        .method-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .method-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .method-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .formula-pill {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 6px 8px;
+            text-align: center;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.92rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .num-inputs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .num-field {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .num-field label {
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .num-field input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .num-field input:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+
+        .click-hint {
+            font-size: 0.72rem;
+            color: var(--teal);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        /* Action Buttons */
+        .btn-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+        }
+
+        .action-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 6px;
+            font-size: 0.79rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .action-btn.primary {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        .action-btn.primary:hover {
+            background: #488187;
+        }
+
+        .action-btn.coral {
+            background: var(--coral);
+            color: #ffffff;
+            border-color: var(--coral);
+        }
+
+        .action-btn.coral:hover {
+            background: #c15046;
+        }
+
+        .action-btn:hover:not(.primary):not(.coral) {
+            background: #dfe7ec;
+        }
+
+        .status-box {
+            margin-top: 8px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            line-height: 1.45;
+            background: #f0f9fa;
+            border: 1px solid #cce7ea;
+            color: #234e52;
+            font-weight: 600;
+        }
+
+        .status-box.warn {
+            background: #fff5f5;
+            border-color: #feb2b2;
+            color: #9b2c2c;
+        }
+
+        .status-box.done {
+            background: #f0fff4;
+            border-color: #9ae6b4;
+            color: #22543d;
+        }
+
+        /* Right Stage */
+        .stage {
+            flex: 1;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            min-height: 410px;
+            background-color: #eef2f5;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .canvas-container.dragging {
+            cursor: grabbing;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.77rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 0.73rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Iteration Table */
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+
+        .table-head-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .table-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        .root-badge {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--green);
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            padding: 2px 8px;
+            border-radius: 5px;
+        }
+
+        .table-scroll {
+            max-height: 165px;
+            overflow-y: auto;
+            border: 1px solid #edf2f7;
+            border-radius: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: #f4f6f8;
+            color: var(--primary);
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 6px 8px;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+        }
+
+        thead th:first-child {
+            text-align: center;
+        }
+
+        tbody td {
+            padding: 5px 8px;
+            text-align: right;
+            border-bottom: 1px solid #f0f4f8;
+        }
+
+        tbody td:first-child {
+            text-align: center;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        tbody tr.latest-row {
+            background: #fffaf0;
+            font-weight: 700;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-container {
+                min-height: 340px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Polynomial Root Finder Lab</h1>
+        <p class="subtitle">Numerical Root Approximation &mdash; Newton-Raphson &amp; Bisection Methods</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Polynomial Input -->
+            <div class="section-card">
+                <div class="section-title">1. Enter Polynomial f(x)</div>
+                <div class="fn-row">
+                    <span class="fn-label">f(x) =</span>
+                    <input type="text" id="polyInput" class="math-input" value="x^3 - x - 2" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="deriv-readout" id="derivReadout">f'(x) = 3x&sup2; &minus; 1</div>
+
+                <div class="keypad">
+                    <button type="button" class="key-btn" data-insert="x">x</button>
+                    <button type="button" class="key-btn" data-insert="x^2">x&sup2;</button>
+                    <button type="button" class="key-btn" data-insert="x^3">x&sup3;</button>
+                    <button type="button" class="key-btn" data-insert="^">^</button>
+                    <button type="button" class="key-btn" data-insert=" + ">+</button>
+                    <button type="button" class="key-btn" data-insert=" - ">&minus;</button>
+                    <button type="button" class="key-btn clear-btn" id="btnBack">&larr; Del</button>
+                    <button type="button" class="key-btn clear-btn" id="btnClear">Clear</button>
+                </div>
+
+                <div class="preset-grid" id="presetGrid">
+                    <button type="button" class="preset-btn active" data-poly="x^3 - x - 2" data-x0="2.5" data-a="1" data-b="2">
+                        Classic Cubic
+                        <span>x&sup3; - x - 2</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-poly="x^2 - 2" data-x0="2" data-a="1" data-b="2">
+                        Find &radic;2
+                        <span>x&sup2; - 2</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-poly="x^3 - 3x^2 + 2" data-x0="3.2" data-a="2" data-b="3">
+                        3 Real Roots
+                        <span>x&sup3; - 3x&sup2; + 2</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-poly="x^3 - 2x + 2" data-x0="0" data-a="-2" data-b="-1">
+                        Newton Cycle Trap
+                        <span>x&sup3; - 2x + 2</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Method & Starting Parameters -->
+            <div class="section-card">
+                <div class="section-title">2. Numerical Method</div>
+                <div class="method-tabs">
+                    <button type="button" class="method-btn active" data-method="newton">Newton-Raphson</button>
+                    <button type="button" class="method-btn" data-method="bisection">Bisection</button>
+                </div>
+
+                <div class="formula-pill" id="methodFormula">
+                    x<sub>n+1</sub> = x<sub>n</sub> &minus; f(x<sub>n</sub>) / f'(x<sub>n</sub>)
+                </div>
+
+                <div id="newtonInputs">
+                    <div class="num-inputs-grid" style="grid-template-columns: 1fr;">
+                        <div class="num-field">
+                            <label for="x0Input">Initial Guess (x<sub>0</sub>)</label>
+                            <input type="number" id="x0Input" step="0.1" value="2.5">
+                        </div>
+                    </div>
+                    <div class="click-hint">Tip: Click directly on the graph to pick x<sub>0</sub>!</div>
+                </div>
+
+                <div id="bisectionInputs" style="display: none;">
+                    <div class="num-inputs-grid">
+                        <div class="num-field">
+                            <label for="aInput">Left Bound (a)</label>
+                            <input type="number" id="aInput" step="0.1" value="1">
+                        </div>
+                        <div class="num-field">
+                            <label for="bInput">Right Bound (b)</label>
+                            <input type="number" id="bInput" step="0.1" value="2">
+                        </div>
+                    </div>
+                    <div class="click-hint">Requires sign change: f(a) &middot; f(b) &lt; 0 (IVT)</div>
+                </div>
+
+                <div class="btn-row-3">
+                    <button type="button" class="action-btn primary" id="btnStep">Step +1</button>
+                    <button type="button" class="action-btn coral" id="btnPlay">&#9654; Auto</button>
+                    <button type="button" class="action-btn" id="btnResetIter">Reset</button>
+                </div>
+
+                <div class="status-box" id="statusBox">Ready. Click "Step +1" to run the first iteration.</div>
+            </div>
+
+        </div>
+
+        <!-- Right Stage -->
+        <div class="stage">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="graphCanvas"></canvas>
+                <div class="canvas-toolbar">
+                    <button type="button" class="tool-btn" id="btnZoomIn">+ Zoom</button>
+                    <button type="button" class="tool-btn" id="btnZoomOut">&minus; Zoom</button>
+                    <button type="button" class="tool-btn" id="btnResetView">Reset View</button>
+                </div>
+                <div class="controls-hint">Scroll: Zoom | Drag: Pan | Click (Newton): Set x₀</div>
+            </div>
+
+            <div class="table-card">
+                <div class="table-head-row">
+                    <span class="table-title" id="tableTitle">Newton-Raphson Iteration Log</span>
+                    <span class="root-badge" id="rootBadge">Approx Root: —</span>
+                </div>
+                <div class="table-scroll">
+                    <table>
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            /* =========================================================
+               POLYNOMIAL PARSER & CALCULUS ENGINE
+            ========================================================= */
+            function polyTrim(p) {
+                var res = p.slice();
+                while (res.length > 1 && Math.abs(res[res.length - 1]) < 1e-10) res.pop();
+                return res;
+            }
+            function polyDeg(p) {
+                var t = polyTrim(p);
+                return (t.length === 1 && Math.abs(t[0]) < 1e-10) ? -1 : t.length - 1;
+            }
+            function polyAdd(a, b) {
+                var len = Math.max(a.length, b.length), out = [];
+                for (var i = 0; i < len; i++) out.push((a[i] || 0) + (b[i] || 0));
+                return polyTrim(out);
+            }
+            function polySub(a, b) {
+                var len = Math.max(a.length, b.length), out = [];
+                for (var i = 0; i < len; i++) out.push((a[i] || 0) - (b[i] || 0));
+                return polyTrim(out);
+            }
+            function polyMul(a, b) {
+                var out = new Array(a.length + b.length - 1).fill(0);
+                for (var i = 0; i < a.length; i++)
+                    for (var j = 0; j < b.length; j++) out[i + j] += a[i] * b[j];
+                return polyTrim(out);
+            }
+            function polyPow(base, exp) {
+                if (exp < 0 || exp > 8 || Math.abs(exp - Math.round(exp)) > 1e-9)
+                    throw new Error('Exponents must be integers (0–8).');
+                var res = [1];
+                for (var i = 0; i < Math.round(exp); i++) res = polyMul(res, base);
+                return res;
+            }
+            function polyDeriv(p) {
+                if (p.length <= 1) return [0];
+                var d = [];
+                for (var i = 1; i < p.length; i++) d.push(p[i] * i);
+                return polyTrim(d);
+            }
+            function polyEval(p, x) {
+                var s = 0;
+                for (var i = p.length - 1; i >= 0; i--) s = s * x + p[i];
+                return s;
+            }
+
+            function parsePolynomial(rawStr) {
+                var s = (rawStr || '').trim();
+                if (!s) throw new Error('Please enter a polynomial.');
+                s = s.replace(/−/g, '-').replace(/×/g, '*').replace(/·/g, '*')
+                     .replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4')
+                     .replace(/X/g, 'x').replace(/\s+/g, '');
+
+                var tokens = [], idx = 0;
+                while (idx < s.length) {
+                    var ch = s[idx];
+                    if (/[0-9.]/.test(ch)) {
+                        var ns = '';
+                        while (idx < s.length && /[0-9.]/.test(s[idx])) ns += s[idx++];
+                        var v = parseFloat(ns);
+                        if (isNaN(v)) throw new Error('Invalid number: ' + ns);
+                        tokens.push({ type: 'NUM', val: v });
+                    } else if (ch === 'x') {
+                        tokens.push({ type: 'VAR' }); idx++;
+                    } else if ('+-*^()'.indexOf(ch) !== -1) {
+                        tokens.push({ type: ch }); idx++;
+                    } else {
+                        throw new Error('Unsupported symbol: "' + ch + '"');
+                    }
+                }
+
+                var full = [];
+                for (var i = 0; i < tokens.length; i++) {
+                    full.push(tokens[i]);
+                    if (i < tokens.length - 1) {
+                        var c = tokens[i].type, n = tokens[i + 1].type;
+                        if ((c === 'NUM' || c === 'VAR' || c === ')') &&
+                            (n === 'VAR' || n === '(' || (c === ')' && n === 'NUM'))) {
+                            full.push({ type: '*' });
+                        }
+                    }
+                }
+
+                var pos = 0;
+                function peek() { return full[pos] || null; }
+                function consume() { return full[pos++]; }
+                function parseExpr() {
+                    var l = parseTerm();
+                    while (peek() && (peek().type === '+' || peek().type === '-')) {
+                        var op = consume().type, r = parseTerm();
+                        l = op === '+' ? polyAdd(l, r) : polySub(l, r);
+                    }
+                    return l;
+                }
+                function parseTerm() {
+                    var l = parseUnary();
+                    while (peek() && peek().type === '*') {
+                        consume(); l = polyMul(l, parseUnary());
+                    }
+                    return l;
+                }
+                function parseUnary() {
+                    if (peek() && peek().type === '+') { consume(); return parseUnary(); }
+                    if (peek() && peek().type === '-') { consume(); return polyMul([-1], parseUnary()); }
+                    return parsePower();
+                }
+                function parsePower() {
+                    var b = parsePrimary();
+                    if (peek() && peek().type === '^') {
+                        consume();
+                        var e = parseUnary();
+                        if (polyDeg(e) > 0) throw new Error('Exponent cannot contain x.');
+                        return polyPow(b, e[0] || 0);
+                    }
+                    return b;
+                }
+                function parsePrimary() {
+                    var t = peek();
+                    if (!t) throw new Error('Unexpected end of expression.');
+                    if (t.type === 'NUM') { consume(); return [t.val]; }
+                    if (t.type === 'VAR') { consume(); return [0, 1]; }
+                    if (t.type === '(') {
+                        consume();
+                        var inner = parseExpr();
+                        if (!peek() || peek().type !== ')') throw new Error('Missing ")".');
+                        consume();
+                        return inner;
+                    }
+                    throw new Error('Unexpected token: ' + t.type);
+                }
+
+                var poly = parseExpr();
+                if (pos < full.length) throw new Error('Syntax error near "' + full[pos].type + '"');
+                if (polyDeg(poly) < 1) throw new Error('Enter a polynomial of degree ≥ 1.');
+                return polyTrim(poly);
+            }
+
+            function fmtNum(v) {
+                if (Math.abs(v) < 1e-8) return '0';
+                if (Math.abs(v - Math.round(v)) < 1e-6) return String(Math.round(v));
+                return v.toFixed(2).replace(/\.?0+$/, '');
+            }
+
+            function polyToString(p) {
+                var t = polyTrim(p), deg = polyDeg(t);
+                if (deg < 0) return '0';
+                var out = '';
+                for (var i = deg; i >= 0; i--) {
+                    var c = t[i];
+                    if (Math.abs(c) < 1e-8) continue;
+                    var neg = c < 0, absC = Math.abs(c);
+                    var sign = out === '' ? (neg ? '-' : '') : (neg ? ' - ' : ' + ');
+                    var cs = (i > 0 && Math.abs(absC - 1) < 1e-6) ? '' : fmtNum(absC);
+                    var vs = i === 1 ? 'x' : (i === 2 ? 'x²' : (i === 3 ? 'x³' : (i > 3 ? 'x^' + i : '')));
+                    out += sign + cs + vs;
+                }
+                return out || '0';
+            }
+
+            /* =========================================================
+               APP INITIALIZATION
+            ========================================================= */
+            function init() {
+                var canvas = document.getElementById('graphCanvas');
+                var ctx = canvas.getContext('2d');
+                var container = document.getElementById('canvasContainer');
+
+                var polyInput = document.getElementById('polyInput');
+                var derivReadout = document.getElementById('derivReadout');
+                var keyBtns = document.querySelectorAll('.key-btn[data-insert]');
+                var btnBack = document.getElementById('btnBack');
+                var btnClear = document.getElementById('btnClear');
+                var presetBtns = document.querySelectorAll('.preset-btn');
+                var methodBtns = document.querySelectorAll('.method-btn');
+                var methodFormula = document.getElementById('methodFormula');
+                var newtonInputs = document.getElementById('newtonInputs');
+                var bisectionInputs = document.getElementById('bisectionInputs');
+                var x0Input = document.getElementById('x0Input');
+                var aInput = document.getElementById('aInput');
+                var bInput = document.getElementById('bInput');
+                var btnStep = document.getElementById('btnStep');
+                var btnPlay = document.getElementById('btnPlay');
+                var btnResetIter = document.getElementById('btnResetIter');
+                var statusBox = document.getElementById('statusBox');
+                var tableTitle = document.getElementById('tableTitle');
+                var rootBadge = document.getElementById('rootBadge');
+                var tableHead = document.getElementById('tableHead');
+                var tableBody = document.getElementById('tableBody');
+                var btnZoomIn = document.getElementById('btnZoomIn');
+                var btnZoomOut = document.getElementById('btnZoomOut');
+                var btnResetView = document.getElementById('btnResetView');
+
+                var state = {
+                    poly: [ -2, -1, 0, 1 ],
+                    deriv: [ -1, 0, 3 ],
+                    method: 'newton',
+                    steps: [],
+                    converged: false,
+                    failed: false,
+                    playTimer: null,
+                    offsetX: 0,
+                    offsetY: 0,
+                    scale: 55,
+                    initializedView: false,
+                    isDragging: false,
+                    dragMoved: false,
+                    dragStartX: 0,
+                    dragStartY: 0
+                };
+
+                function stopAuto() {
+                    if (state.playTimer) {
+                        clearInterval(state.playTimer);
+                        state.playTimer = null;
+                        btnPlay.innerHTML = '&#9654; Auto';
+                    }
+                }
+
+                function setStatus(msg, type) {
+                    statusBox.className = 'status-box' + (type ? ' ' + type : '');
+                    statusBox.textContent = msg;
+                }
+
+                function loadPolynomial() {
+                    stopAuto();
+                    try {
+                        state.poly = parsePolynomial(polyInput.value);
+                        state.deriv = polyDeriv(state.poly);
+                        derivReadout.textContent = "f'(x) = " + polyToString(state.deriv);
+                        resetIterations();
+                    } catch (err) {
+                        setStatus(err.message, 'warn');
+                    }
+                }
+
+                function resetIterations() {
+                    stopAuto();
+                    state.steps = [];
+                    state.converged = false;
+                    state.failed = false;
+
+                    if (state.method === 'newton') {
+                        var x0 = parseFloat(x0Input.value);
+                        if (isNaN(x0)) {
+                            setStatus('Enter a valid starting value x₀.', 'warn');
+                            return;
+                        }
+                        var fx0 = polyEval(state.poly, x0);
+                        var dfx0 = polyEval(state.deriv, x0);
+                        state.steps.push({ n: 0, x: x0, fx: fx0, dfx: dfx0, err: null });
+                        setStatus('Starting at x₀ = ' + x0.toFixed(4) + '. Click "Step +1" to draw the tangent line.', '');
+                        rootBadge.textContent = 'Approx Root: ' + x0.toFixed(6);
+                    } else {
+                        var a = parseFloat(aInput.value);
+                        var b = parseFloat(bInput.value);
+                        if (isNaN(a) || isNaN(b) || a >= b) {
+                            setStatus('Ensure left bound a < right bound b.', 'warn');
+                            state.failed = true;
+                            renderTable();
+                            draw();
+                            return;
+                        }
+                        var fa = polyEval(state.poly, a);
+                        var fb = polyEval(state.poly, b);
+                        if (fa * fb > 0) {
+                            setStatus('IVT failed: f(' + fmtNum(a) + ') = ' + fa.toFixed(2) + ' and f(' + fmtNum(b) + ') = ' + fb.toFixed(2) + ' have the same sign.', 'warn');
+                            state.failed = true;
+                            rootBadge.textContent = 'Approx Root: —';
+                        } else {
+                            var c = (a + b) / 2;
+                            var fc = polyEval(state.poly, c);
+                            state.steps.push({ n: 0, a: a, b: b, c: c, fc: fc, width: b - a });
+                            setStatus('Sign change verified! Midpoint c₀ = ' + c.toFixed(4) + '. Click "Step +1" to bisect.', '');
+                            rootBadge.textContent = 'Approx Root: ' + c.toFixed(6);
+                        }
+                    }
+
+                    renderTable();
+                    draw();
+                }
+
+                function doNextStep() {
+                    if (state.failed) {
+                        stopAuto();
+                        return;
+                    }
+                    if (state.converged || state.steps.length >= 25) {
+                        stopAuto();
+                        if (state.steps.length >= 25 && !state.converged) {
+                            setStatus('Stopped at 25 iterations (possible cycle or slow convergence).', 'warn');
+                        }
+                        return;
+                    }
+
+                    if (state.method === 'newton') {
+                        var last = state.steps[state.steps.length - 1];
+                        if (Math.abs(last.dfx) < 1e-9) {
+                            state.failed = true;
+                            stopAuto();
+                            setStatus("Horizontal tangent: f'(" + last.x.toFixed(4) + ") ≈ 0. Newton-Raphson cannot continue!", 'warn');
+                            return;
+                        }
+                        var nextX = last.x - last.fx / last.dfx;
+                        if (!isFinite(nextX) || Math.abs(nextX) > 1e6) {
+                            state.failed = true;
+                            stopAuto();
+                            setStatus('Diverged! Try a starting guess closer to the root.', 'warn');
+                            return;
+                        }
+                        var nextFx = polyEval(state.poly, nextX);
+                        var nextDfx = polyEval(state.deriv, nextX);
+                        var err = Math.abs(nextX - last.x);
+                        state.steps.push({
+                            n: last.n + 1,
+                            x: nextX,
+                            fx: nextFx,
+                            dfx: nextDfx,
+                            err: err
+                        });
+
+                        rootBadge.textContent = 'Approx Root: ' + nextX.toFixed(6);
+                        if (err < 1e-6 || Math.abs(nextFx) < 1e-8) {
+                            state.converged = true;
+                            stopAuto();
+                            setStatus('Converged in ' + (last.n + 1) + ' steps! Root ≈ ' + nextX.toFixed(6), 'done');
+                        } else {
+                            setStatus('Step ' + (last.n + 1) + ': x = ' + nextX.toFixed(6) + ', |Δx| = ' + err.toExponential(2), '');
+                        }
+                    } else {
+                        var prev = state.steps[state.steps.length - 1];
+                        if (!prev) return;
+                        var fa = polyEval(state.poly, prev.a);
+                        var newA = prev.a, newB = prev.b;
+                        if (Math.abs(prev.fc) < 1e-8) {
+                            state.converged = true;
+                            stopAuto();
+                            setStatus('Exact root found at c = ' + prev.c.toFixed(6), 'done');
+                            return;
+                        }
+                        if (fa * prev.fc < 0) {
+                            newB = prev.c;
+                        } else {
+                            newA = prev.c;
+                        }
+                        var newC = (newA + newB) / 2;
+                        var newFc = polyEval(state.poly, newC);
+                        var newW = newB - newA;
+                        state.steps.push({
+                            n: prev.n + 1,
+                            a: newA,
+                            b: newB,
+                            c: newC,
+                            fc: newFc,
+                            width: newW
+                        });
+                        rootBadge.textContent = 'Approx Root: ' + newC.toFixed(6);
+                        if (newW < 1e-5 || Math.abs(newFc) < 1e-7) {
+                            state.converged = true;
+                            stopAuto();
+                            setStatus('Converged in ' + (prev.n + 1) + ' steps! Root ≈ ' + newC.toFixed(6), 'done');
+                        } else {
+                            setStatus('Step ' + (prev.n + 1) + ': [' + newA.toFixed(4) + ', ' + newB.toFixed(4) + '], mid = ' + newC.toFixed(6), '');
+                        }
+                    }
+
+                    renderTable();
+                    draw();
+                }
+
+                function renderTable() {
+                    if (state.method === 'newton') {
+                        tableTitle.textContent = 'Newton-Raphson Iteration Log';
+                        tableHead.innerHTML = '<tr><th>n</th><th>x<sub>n</sub></th><th>f(x<sub>n</sub>)</th><th>f\'(x<sub>n</sub>)</th><th>|x<sub>n</sub> &minus; x<sub>n&minus;1</sub>|</th></tr>';
+                        tableBody.innerHTML = state.steps.map(function (st, i) {
+                            var cls = (i === state.steps.length - 1) ? ' class="latest-row"' : '';
+                            return '<tr' + cls + '><td>' + st.n + '</td><td>' + st.x.toFixed(6) + '</td><td>' + st.fx.toFixed(6) + '</td><td>' + st.dfx.toFixed(4) + '</td><td>' + (st.err !== null ? st.err.toExponential(2) : '—') + '</td></tr>';
+                        }).join('');
+                    } else {
+                        tableTitle.textContent = 'Bisection Iteration Log';
+                        tableHead.innerHTML = '<tr><th>n</th><th>a<sub>n</sub></th><th>b<sub>n</sub></th><th>Midpoint c<sub>n</sub></th><th>f(c<sub>n</sub>)</th><th>Width</th></tr>';
+                        tableBody.innerHTML = state.steps.map(function (st, i) {
+                            var cls = (i === state.steps.length - 1) ? ' class="latest-row"' : '';
+                            return '<tr' + cls + '><td>' + st.n + '</td><td>' + st.a.toFixed(5) + '</td><td>' + st.b.toFixed(5) + '</td><td>' + st.c.toFixed(6) + '</td><td>' + st.fc.toFixed(5) + '</td><td>' + st.width.toExponential(2) + '</td></tr>';
+                        }).join('');
+                    }
+                    var sc = tableBody.parentElement.parentElement;
+                    sc.scrollTop = sc.scrollHeight;
+                }
+
+                /* =========================================================
+                   CANVAS DRAWING
+                ========================================================= */
+                function getSize() {
+                    var rect = container.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 640,
+                        h: rect.height > 50 ? rect.height : 410
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    if (!state.initializedView) {
+                        state.offsetX = sz.w * 0.45;
+                        state.offsetY = sz.h * 0.55;
+                        state.initializedView = true;
+                    }
+                    draw();
+                }
+
+                function resetView() {
+                    var sz = getSize();
+                    state.offsetX = sz.w * 0.45;
+                    state.offsetY = sz.h * 0.55;
+                    state.scale = 55;
+                    draw();
+                }
+
+                function zoomBy(factor) {
+                    var sz = getSize();
+                    var cx = sz.w / 2, cy = sz.h / 2;
+                    var newScale = Math.max(12, Math.min(400, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = cx - (cx - state.offsetX) * actual;
+                    state.offsetY = cy - (cy - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }
+
+                function toCX(x) { return state.offsetX + x * state.scale; }
+                function toCY(y) { return state.offsetY - y * state.scale; }
+
+                function drawDot(x, y, color, radius, label) {
+                    var cx = toCX(x), cy = toCY(y);
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    if (label) {
+                        ctx.font = "bold 11px 'Segoe UI'";
+                        ctx.fillStyle = color;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(label, cx, cy - radius - 4);
+                    }
+                }
+
+                function draw() {
+                    var sz = getSize(), W = sz.w, H = sz.h;
+                    ctx.clearRect(0, 0, W, H);
+
+                    // Adaptive grid
+                    var step = 1;
+                    if (state.scale < 30) step = 2;
+                    if (state.scale < 16) step = 5;
+                    if (state.scale > 120) step = 0.5;
+                    if (state.scale > 240) step = 0.25;
+
+                    var minX = Math.floor(-state.offsetX / state.scale / step) * step;
+                    var maxX = Math.ceil((W - state.offsetX) / state.scale / step) * step;
+                    var minY = Math.floor(-(H - state.offsetY) / state.scale / step) * step;
+                    var maxY = Math.ceil(state.offsetY / state.scale / step) * step;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#dce3e8';
+                    ctx.lineWidth = 1;
+                    ctx.fillStyle = '#718096';
+                    ctx.font = "11px 'Segoe UI'";
+
+                    for (var gx = minX; gx <= maxX; gx += step) {
+                        var cx = toCX(gx);
+                        ctx.moveTo(cx, 0); ctx.lineTo(cx, H);
+                        if (Math.abs(gx) > 1e-6) {
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'top';
+                            ctx.fillText(fmtNum(gx), cx, Math.max(8, Math.min(H - 18, state.offsetY + 6)));
+                        }
+                    }
+                    for (var gy = minY; gy <= maxY; gy += step) {
+                        var cy = toCY(gy);
+                        ctx.moveTo(0, cy); ctx.lineTo(W, cy);
+                        if (Math.abs(gy) > 1e-6) {
+                            ctx.textAlign = 'right';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(fmtNum(gy), Math.max(28, Math.min(W - 8, state.offsetX - 8)), cy);
+                        }
+                    }
+                    ctx.stroke();
+
+                    // Main Axes
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#8da2b0';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(state.offsetX, 0); ctx.lineTo(state.offsetX, H);
+                    ctx.moveTo(0, state.offsetY); ctx.lineTo(W, state.offsetY);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('0', state.offsetX - 6, state.offsetY + 6);
+
+                    // Bisection shaded bracket (draw behind curve)
+                    if (state.method === 'bisection' && state.steps.length > 0) {
+                        var curB = state.steps[state.steps.length - 1];
+                        var ax = toCX(curB.a), bx = toCX(curB.b), cmx = toCX(curB.c);
+                        ctx.fillStyle = 'rgba(91, 154, 160, 0.14)';
+                        ctx.fillRect(ax, 0, bx - ax, H);
+
+                        // Vertical bounds a and b
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#5b9aa0';
+                        ctx.setLineDash([5, 4]);
+                        ctx.lineWidth = 1.8;
+                        ctx.moveTo(ax, 0); ctx.lineTo(ax, H);
+                        ctx.moveTo(bx, 0); ctx.lineTo(bx, H);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Midpoint vertical guide
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#d96459';
+                        ctx.setLineDash([4, 4]);
+                        ctx.lineWidth = 2;
+                        ctx.moveTo(cmx, toCY(0));
+                        ctx.lineTo(cmx, toCY(curB.fc));
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+
+                    // Plot polynomial f(x)
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#2b6cb0';
+                    ctx.lineWidth = 2.8;
+                    var first = true;
+                    for (var px = 0; px <= W; px += 1.5) {
+                        var xv = (px - state.offsetX) / state.scale;
+                        var yv = polyEval(state.poly, xv);
+                        var py = toCY(yv);
+                        if (py < -H * 2 || py > H * 3 || !isFinite(py)) {
+                            first = true;
+                            continue;
+                        }
+                        if (first) { ctx.moveTo(px, py); first = false; }
+                        else { ctx.lineTo(px, py); }
+                    }
+                    ctx.stroke();
+
+                    // Draw Method Visuals
+                    if (state.method === 'newton' && state.steps.length > 0) {
+                        for (var i = 0; i < state.steps.length; i++) {
+                            var st = state.steps[i];
+                            var isLatest = (i === state.steps.length - 1);
+                            var alpha = isLatest ? 1 : 0.35;
+
+                            // Vertical line from (x_i, 0) to (x_i, f(x_i))
+                            ctx.save();
+                            ctx.globalAlpha = alpha;
+                            ctx.beginPath();
+                            ctx.strokeStyle = '#7c6992';
+                            ctx.setLineDash([4, 3]);
+                            ctx.lineWidth = isLatest ? 2 : 1.4;
+                            ctx.moveTo(toCX(st.x), toCY(0));
+                            ctx.lineTo(toCX(st.x), toCY(st.fx));
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+
+                            // Tangent segment from (x_i, f(x_i)) to (x_{i+1}, 0)
+                            if (i < state.steps.length - 1) {
+                                var nxt = state.steps[i + 1];
+                                ctx.beginPath();
+                                ctx.strokeStyle = '#d96459';
+                                ctx.lineWidth = (i === state.steps.length - 2) ? 2.4 : 1.5;
+                                ctx.moveTo(toCX(st.x), toCY(st.fx));
+                                ctx.lineTo(toCX(nxt.x), toCY(0));
+                                ctx.stroke();
+                            }
+                            ctx.restore();
+
+                            drawDot(st.x, 0, isLatest ? '#38a169' : '#718096', isLatest ? 5.5 : 3.5, isLatest ? 'x' + st.n : '');
+                            if (isLatest) {
+                                drawDot(st.x, st.fx, '#d96459', 5.5, '');
+                            }
+                        }
+                    } else if (state.method === 'bisection' && state.steps.length > 0) {
+                        var cur = state.steps[state.steps.length - 1];
+                        drawDot(cur.a, 0, '#5b9aa0', 5, 'a');
+                        drawDot(cur.b, 0, '#5b9aa0', 5, 'b');
+                        drawDot(cur.c, 0, '#38a169', 5.5, 'c' + cur.n);
+                        drawDot(cur.c, cur.fc, '#d96459', 5, '');
+                    }
+                }
+
+                /* =========================================================
+                   EVENTS
+                ========================================================= */
+                keyBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var txt = btn.getAttribute('data-insert');
+                        var start = polyInput.selectionStart !== null ? polyInput.selectionStart : polyInput.value.length;
+                        var end = polyInput.selectionEnd !== null ? polyInput.selectionEnd : polyInput.value.length;
+                        polyInput.value = polyInput.value.slice(0, start) + txt + polyInput.value.slice(end);
+                        polyInput.focus();
+                        polyInput.setSelectionRange(start + txt.length, start + txt.length);
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        loadPolynomial();
+                    });
+                });
+
+                btnBack.addEventListener('click', function () {
+                    polyInput.value = polyInput.value.slice(0, -1);
+                    polyInput.focus();
+                    loadPolynomial();
+                });
+
+                btnClear.addEventListener('click', function () {
+                    polyInput.value = '';
+                    polyInput.focus();
+                });
+
+                polyInput.addEventListener('input', function () {
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                    loadPolynomial();
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        polyInput.value = btn.getAttribute('data-poly');
+                        x0Input.value = btn.getAttribute('data-x0');
+                        aInput.value = btn.getAttribute('data-a');
+                        bInput.value = btn.getAttribute('data-b');
+                        resetView();
+                        loadPolynomial();
+                    });
+                });
+
+                methodBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        methodBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.method = btn.getAttribute('data-method');
+                        if (state.method === 'newton') {
+                            newtonInputs.style.display = 'block';
+                            bisectionInputs.style.display = 'none';
+                            methodFormula.innerHTML = "x<sub>n+1</sub> = x<sub>n</sub> &minus; f(x<sub>n</sub>) / f'(x<sub>n</sub>)";
+                        } else {
+                            newtonInputs.style.display = 'none';
+                            bisectionInputs.style.display = 'block';
+                            methodFormula.innerHTML = 'c<sub>n</sub> = (a<sub>n</sub> + b<sub>n</sub>) / 2';
+                        }
+                        resetIterations();
+                    });
+                });
+
+                [x0Input, aInput, bInput].forEach(function (inp) {
+                    inp.addEventListener('change', resetIterations);
+                });
+
+                btnStep.addEventListener('click', doNextStep);
+
+                btnPlay.addEventListener('click', function () {
+                    if (state.playTimer) {
+                        stopAuto();
+                        return;
+                    }
+                    if (state.converged || state.failed) resetIterations();
+                    btnPlay.innerHTML = '&#9632; Stop';
+                    state.playTimer = setInterval(doNextStep, 650);
+                });
+
+                btnResetIter.addEventListener('click', resetIterations);
+                btnZoomIn.addEventListener('click', function () { zoomBy(1.3); });
+                btnZoomOut.addEventListener('click', function () { zoomBy(0.77); });
+                btnResetView.addEventListener('click', resetView);
+
+                // Pan & Click-to-pick x0
+                canvas.addEventListener('mousedown', function (e) {
+                    state.isDragging = true;
+                    state.dragMoved = false;
+                    state.dragStartX = e.clientX - state.offsetX;
+                    state.dragStartY = e.clientY - state.offsetY;
+                    container.classList.add('dragging');
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (!state.isDragging) return;
+                    var dx = Math.abs((e.clientX - state.dragStartX) - state.offsetX);
+                    var dy = Math.abs((e.clientY - state.dragStartY) - state.offsetY);
+                    if (dx > 3 || dy > 3) state.dragMoved = true;
+                    state.offsetX = e.clientX - state.dragStartX;
+                    state.offsetY = e.clientY - state.dragStartY;
+                    draw();
+                });
+
+                window.addEventListener('mouseup', function (e) {
+                    if (!state.isDragging) return;
+                    state.isDragging = false;
+                    container.classList.remove('dragging');
+                    if (!state.dragMoved && state.method === 'newton') {
+                        var rect = canvas.getBoundingClientRect();
+                        if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                            var clickedX = (e.clientX - rect.left - state.offsetX) / state.scale;
+                            x0Input.value = clickedX.toFixed(2);
+                            resetIterations();
+                        }
+                    }
+                });
+
+                canvas.addEventListener('wheel', function (e) {
+                    e.preventDefault();
+                    var factor = Math.exp(-e.deltaY * 0.0012);
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+                    var newScale = Math.max(12, Math.min(400, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = mx - (mx - state.offsetX) * actual;
+                    state.offsetY = my - (my - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }, { passive: false });
+
+                window.addEventListener('resize', resizeCanvas);
+                resizeCanvas();
+                loadPolynomial();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
