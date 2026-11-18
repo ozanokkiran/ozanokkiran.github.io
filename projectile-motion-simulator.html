@@ -36,7 +36,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            width: 250px;
+            width: 260px;
             background-color: #f4f6f8;
             padding: 20px;
             border-radius: 8px;
@@ -66,26 +66,55 @@
             border-radius: 8px;
             border: 1px solid #dce3e8;
         }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
         button {
+            flex: 1;
             background-color: #5b9aa0;
             color: white;
             border: none;
             padding: 10px;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
             transition: background 0.3s;
-            margin-top: 10px;
         }
-        button:hover {
+        button:hover:not(:disabled) {
             background-color: #4a8288;
         }
+        button:disabled {
+            background-color: #cbd5e0;
+            cursor: not-allowed;
+        }
+        #pauseBtn {
+            background-color: #e59866;
+        }
+        #pauseBtn:hover:not(:disabled) {
+            background-color: #d35400;
+        }
         .stats {
-            margin-top: 15px;
-            padding: 10px;
+            margin-top: 10px;
+            padding: 12px;
             background: #fff;
             border-left: 4px solid #f2ae72;
-            font-size: 14px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .stats-header {
+            color: #4a6572;
+            font-weight: bold;
+            margin-bottom: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        hr.divider {
+            border: 0;
+            border-top: 1px solid #edf2f7;
+            margin: 8px 0;
         }
     </style>
 </head>
@@ -115,12 +144,20 @@
                 <span class="value-display" id="grav-val">9.8 m/s²</span>
             </div>
 
-            <button id="fireBtn">Launch Particle</button>
+            <div class="btn-group">
+                <button id="fireBtn">Launch</button>
+                <button id="pauseBtn" disabled>Pause</button>
+            </div>
 
             <div class="stats" id="stats-box">
+                <div class="stats-header">Current State</div>
                 Time (t): 0.00 s<br>
+                Dist (x): 0.00 m<br>
+                Height (y): 0.00 m
+                <hr class="divider">
+                <div class="stats-header">Trajectory Info</div>
                 Max Height: 0.00 m<br>
-                Distance: 0.00 m
+                Total Range: 0.00 m
             </div>
         </div>
 
@@ -137,6 +174,7 @@
         const angInput = document.getElementById('angle');
         const gravInput = document.getElementById('gravity');
         const fireBtn = document.getElementById('fireBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
         
         // Displays
         const velVal = document.getElementById('vel-val');
@@ -147,13 +185,14 @@
         // Simulation Variables
         let animationId;
         let isAnimating = false;
+        let isPaused = false;
         let time = 0;
         let v0, theta, g;
         
-        // Origin point on canvas (shifted slightly right to fit y-axis labels)
+        // Origin point on canvas 
         const originX = 40; 
         const originY = canvas.height - 30;
-        const scale = 3; // pixels per meter (Ayarlanabilir, mesafeye göre küçültüldü)
+        const scale = 3; 
 
         // Update displays on slider move
         velInput.addEventListener('input', () => velVal.textContent = `${velInput.value} m/s`);
@@ -163,7 +202,6 @@
         function drawBackground() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw Grid and Axis Numbers
             ctx.beginPath();
             ctx.strokeStyle = '#dce3e8';
             ctx.lineWidth = 1;
@@ -172,52 +210,41 @@
             ctx.textAlign = "center";
             ctx.textBaseline = "top";
 
-            // X-Axis Scale (Every 50 meters)
             for(let i = 0; i <= 300; i += 50) {
                 let xPos = originX + (i * scale);
-                // Grid line
                 ctx.moveTo(xPos, 0);
                 ctx.lineTo(xPos, canvas.height);
-                // Text label
                 if (i !== 0) ctx.fillText(i + "m", xPos, originY + 8);
             }
 
             ctx.textAlign = "right";
             ctx.textBaseline = "middle";
 
-            // Y-Axis Scale (Every 25 meters)
             for(let j = 0; j <= 150; j += 25) {
                 let yPos = originY - (j * scale);
-                // Grid line
                 ctx.moveTo(0, yPos);
                 ctx.lineTo(canvas.width, yPos);
-                // Text label
                 if (j !== 0) ctx.fillText(j + "m", originX - 8, yPos);
             }
             ctx.stroke();
 
-            // Draw Main Axes
             ctx.beginPath();
             ctx.strokeStyle = '#a6b8c7';
             ctx.lineWidth = 2;
-            // Y-axis
             ctx.moveTo(originX, 0);
             ctx.lineTo(originX, canvas.height);
-            // X-axis
             ctx.moveTo(0, originY);
             ctx.lineTo(canvas.width, originY);
             ctx.stroke();
             
-            // Origin Zero
             ctx.textAlign = "right";
             ctx.textBaseline = "top";
             ctx.fillText("0", originX - 8, originY + 8);
         }
 
-        // Draw the full trajectory path (Parametric Curve)
         function drawTrajectory() {
             ctx.beginPath();
-            ctx.strokeStyle = 'rgba(217, 100, 89, 0.5)'; // Soft red dashed line
+            ctx.strokeStyle = 'rgba(217, 100, 89, 0.5)'; 
             ctx.setLineDash([5, 5]);
             ctx.lineWidth = 2;
 
@@ -228,7 +255,6 @@
             ctx.moveTo(originX, originY);
 
             while (currentY <= originY && currentX <= canvas.width) {
-                // Parametric Equations
                 let x = v0 * Math.cos(theta) * t;
                 let y = (v0 * Math.sin(theta) * t) - (0.5 * g * t * t);
                 
@@ -241,14 +267,33 @@
                 t += 0.05;
             }
             ctx.stroke();
-            ctx.setLineDash([]); // Reset
+            ctx.setLineDash([]); 
+        }
+
+        function updateStats(currentX, currentY) {
+            let maxHeight = Math.pow(v0 * Math.sin(theta), 2) / (2 * g);
+            let maxDistance = (Math.pow(v0, 2) * Math.sin(2 * theta)) / g;
+            
+            // Prevent negative height display when hitting the ground
+            if (currentY < 0) currentY = 0;
+
+            statsBox.innerHTML = `
+                <div class="stats-header">Current State</div>
+                Time (t): <b>${time.toFixed(2)} s</b><br>
+                Dist (x): <b>${currentX.toFixed(2)} m</b><br>
+                Height (y): <b>${currentY.toFixed(2)} m</b>
+                <hr class="divider">
+                <div class="stats-header">Trajectory Info</div>
+                Max Height: ${maxHeight.toFixed(2)} m<br>
+                Total Range: ${maxDistance.toFixed(2)} m
+            `;
         }
 
         function animate() {
             drawBackground();
             drawTrajectory();
 
-            // Calculate current position
+            // Calculate current exact position
             let x = v0 * Math.cos(theta) * time;
             let y = (v0 * Math.sin(theta) * time) - (0.5 * g * time * time);
             
@@ -258,27 +303,26 @@
             // Draw Particle
             ctx.beginPath();
             ctx.arc(canvasX, canvasY, 8, 0, Math.PI * 2);
-            ctx.fillStyle = '#f2ae72'; // Orange ball
+            ctx.fillStyle = '#f2ae72';
             ctx.fill();
             ctx.strokeStyle = '#d96459';
             ctx.stroke();
 
-            // Update Stats
-            let maxHeight = Math.pow(v0 * Math.sin(theta), 2) / (2 * g);
-            let maxDistance = (Math.pow(v0, 2) * Math.sin(2 * theta)) / g;
-            
-            statsBox.innerHTML = `
-                Time (t): ${time.toFixed(2)} s<br>
-                Max Height: ${maxHeight.toFixed(2)} m<br>
-                Total Distance: ${maxDistance.toFixed(2)} m
-            `;
+            updateStats(x, y);
 
-            time += 0.05; // Time step
+            time += 0.05; 
 
             // Stop if it hits the ground
             if (canvasY >= originY && time > 0.1) {
                 isAnimating = false;
+                pauseBtn.disabled = true;
+                pauseBtn.textContent = "Pause";
                 cancelAnimationFrame(animationId);
+                // Snap to final ground state for accuracy
+                let maxDist = (Math.pow(v0, 2) * Math.sin(2 * theta)) / g;
+                let totalTime = (2 * v0 * Math.sin(theta)) / g;
+                time = totalTime;
+                updateStats(maxDist, 0);
             } else {
                 animationId = requestAnimationFrame(animate);
             }
@@ -288,12 +332,34 @@
             if (isAnimating) cancelAnimationFrame(animationId);
             
             v0 = parseFloat(velInput.value);
-            theta = parseFloat(angInput.value) * (Math.PI / 180); // Convert to radians
+            theta = parseFloat(angInput.value) * (Math.PI / 180); 
             g = parseFloat(gravInput.value);
+            
             time = 0;
             isAnimating = true;
+            isPaused = false;
+            
+            pauseBtn.disabled = false;
+            pauseBtn.textContent = "Pause";
+            pauseBtn.style.backgroundColor = "#e59866";
             
             animate();
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            if (!isAnimating && !isPaused) return; // Ignore if haven't launched
+
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                cancelAnimationFrame(animationId);
+                pauseBtn.textContent = "Resume";
+                pauseBtn.style.backgroundColor = "#5b9aa0";
+            } else {
+                pauseBtn.textContent = "Pause";
+                pauseBtn.style.backgroundColor = "#e59866";
+                animate();
+            }
         });
 
         // Initial Draw
