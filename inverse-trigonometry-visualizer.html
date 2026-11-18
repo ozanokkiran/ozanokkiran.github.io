@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,7 +48,7 @@
             flex-shrink: 0;
         }
         
-        /* Checkbox Grid Tasarımı */
+        /* Checkbox Grid Design */
         .controls-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -155,23 +155,23 @@
 </head>
 <body>
 
-    <h1>Ters Trigonometrik Fonksiyonlar</h1>
-    <p class="subtitle">Etkileşimli Grafikler: Yakınlaştır (Scroll) ve Kaydır (Sürükle)</p>
+    <h1>Inverse Trigonometric Functions</h1>
+    <p class="subtitle">Interactive Graphs: Zoom (Scroll) and Pan (Drag)</p>
 
     <div class="container">
-        <!-- Sol Kontrol Paneli -->
+        <!-- Left Control Panel -->
         <div class="panel">
             
             <div class="controls-grid">
                 <div class="controls-column">
-                    <div class="col-title">Ana Fonksiyon</div>
+                    <div class="col-title">Main Function</div>
                     <label class="checkbox-wrapper main-func"><input type="checkbox" id="chk-sin" checked> sin(x)</label>
                     <label class="checkbox-wrapper main-func"><input type="checkbox" id="chk-cos"> cos(x)</label>
                     <label class="checkbox-wrapper main-func"><input type="checkbox" id="chk-tan"> tan(x)</label>
                     <label class="checkbox-wrapper main-func"><input type="checkbox" id="chk-cot"> cot(x)</label>
                 </div>
                 <div class="controls-column">
-                    <div class="col-title">Arc Fonksiyon</div>
+                    <div class="col-title">Arc Function</div>
                     <label class="checkbox-wrapper inv-func"><input type="checkbox" id="chk-asin" checked> arcsin(x)</label>
                     <label class="checkbox-wrapper inv-func"><input type="checkbox" id="chk-acos"> arccos(x)</label>
                     <label class="checkbox-wrapper inv-func"><input type="checkbox" id="chk-atan"> arctan(x)</label>
@@ -180,34 +180,34 @@
             </div>
 
             <div class="info-box" id="infoBox">
-                Seçilen fonksiyonların tanım ve değer kümeleri burada görünecektir.
+                Domain and range of selected functions will appear here.
             </div>
 
             <div class="legend">
                 <div class="legend-item">
                     <div class="color-box" style="background-color: rgba(166, 184, 199, 0.3);"></div>
-                    <span>Tüm Fonksiyon (Silik)</span>
+                    <span>Full Function (Faded)</span>
                 </div>
                 <div class="legend-item">
                     <div class="color-box" style="background-color: #4a6572;"></div>
-                    <span>Kısıtlanmış Ana Fonksiyon</span>
+                    <span>Restricted Main Function</span>
                 </div>
                 <div class="legend-item">
                     <div class="color-box" style="background-color: #d96459;"></div>
-                    <span>Ters Fonksiyon (Arc)</span>
+                    <span>Inverse Function (Arc)</span>
                 </div>
                 <div class="legend-item">
                     <div class="color-box" style="background-color: #f2ae72; height: 3px; border-radius: 0;"></div>
-                    <span>y = x Doğrusu (Simetri)</span>
+                    <span>Line of Symmetry (y = x)</span>
                 </div>
-                <button class="reset-btn" onclick="resetView()">Görünümü Sıfırla</button>
+                <button class="reset-btn" onclick="resetView()">Reset View</button>
             </div>
         </div>
 
-        <!-- Canvas Alanı -->
+        <!-- Canvas Area -->
         <div class="canvas-container" id="canvasContainer">
             <canvas id="mathCanvas" width="800" height="600"></canvas>
-            <div class="controls-hint">Scroll: Zoom | Sürükle: Pan</div>
+            <div class="controls-hint">Scroll: Zoom | Drag: Pan</div>
         </div>
     </div>
 
@@ -217,7 +217,7 @@
         const container = document.getElementById('canvasContainer');
         const infoBox = document.getElementById('infoBox');
 
-        // Checkbox Elementleri
+        // Checkbox Elements
         const checks = {
             sin: document.getElementById('chk-sin'),
             cos: document.getElementById('chk-cos'),
@@ -229,15 +229,15 @@
             acot: document.getElementById('chk-acot')
         };
 
-        // Görünüm Değişkenleri (Pan & Zoom)
+        // View Variables (Pan & Zoom)
         let offsetX = canvas.width / 2;
         let offsetY = canvas.height / 2;
-        let scale = 60; // 1 birim = 60 piksel
+        let scale = 120; // START MORE ZOOMED IN
         
         let isDragging = false;
         let dragStartX, dragStartY;
 
-        // Matematiksel Veriler
+        // Mathematical Data
         const funcData = {
             sin: { name: "sin(x)", dom: "[-π/2, π/2]", rng: "[-1, 1]", rMin: -Math.PI/2, rMax: Math.PI/2, func: Math.sin },
             cos: { name: "cos(x)", dom: "[0, π]", rng: "[-1, 1]", rMin: 0, rMax: Math.PI, func: Math.cos },
@@ -249,7 +249,7 @@
             acot: { name: "arccot(x)", dom: "(-∞, ∞)", rng: "(0, π)", rMin: -20, rMax: 20, func: (x) => Math.PI/2 - Math.atan(x) }
         };
 
-        // Canvas Boyutlandırma (Responsive)
+        // Responsive Canvas
         function resizeCanvas() {
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
@@ -261,15 +261,14 @@
         }
         window.addEventListener('resize', resizeCanvas);
 
-        // Görünümü Sıfırla
         function resetView() {
             offsetX = canvas.width / 2;
             offsetY = canvas.height / 2;
-            scale = 60;
+            scale = 120; // RESET TO ZOOMED IN
             draw();
         }
 
-        // --- Mouse Eventleri (Pan & Zoom) ---
+        // --- Mouse Events (Pan & Zoom) ---
         canvas.addEventListener('mousedown', (e) => {
             isDragging = true;
             dragStartX = e.clientX - offsetX;
@@ -292,7 +291,6 @@
             const zoomSensitivity = 0.001;
             const delta = Math.exp(-e.deltaY * zoomSensitivity);
             
-            // Fare imlecinin olduğu noktaya doğru zoom yap
             const rect = canvas.getBoundingClientRect();
             const mouseX = e.clientX - rect.left;
             const mouseY = e.clientY - rect.top;
@@ -304,11 +302,10 @@
             draw();
         });
 
-        // Koordinatları ve sayıları çiz
         function drawAxes() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Grid ve Sayılar
+            // Grid and Labels
             ctx.beginPath();
             ctx.strokeStyle = '#e2e8f0';
             ctx.lineWidth = 1;
@@ -322,12 +319,10 @@
             const startY = Math.floor(-(canvas.height - offsetY) / scale);
             const endY = Math.ceil(offsetY / scale);
             
-            // Pi cinsinden etiketleme için yardımcı fonksiyon
             function formatLabel(val) {
                 if(val === 0) return "0";
-                // Eğer Pi katlarına çok yakınsa Pi cinsinden yaz
                 const piMult = val / Math.PI;
-                const roundPi = Math.round(piMult * 2) / 2; // 0.5, 1, 1.5 gibi
+                const roundPi = Math.round(piMult * 2) / 2; 
                 if (Math.abs(piMult - roundPi) < 0.05) {
                     if (roundPi === 1) return "π";
                     if (roundPi === -1) return "-π";
@@ -338,24 +333,22 @@
                     if (roundPi % 1 !== 0) return (roundPi * 2) + "π/2";
                     return roundPi + "π";
                 }
-                // Değilse normal tam sayı
                 if (Math.abs(Math.round(val) - val) < 0.05) return Math.round(val).toString();
                 return "";
             }
 
-            // Dikey Çizgiler (X Ekseninde)
-            for (let i = startX; i <= endX; i += 0.5) { // Her 0.5 birimde bir kontrol et
+            // Vertical Lines (X-Axis)
+            for (let i = startX; i <= endX; i += 0.5) { 
                 const x = offsetX + (i * scale);
                 ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
                 
-                // Sadece tam sayılarda ve Pi/2 katlarında yazı yaz
                 let label = formatLabel(i);
                 if(label !== "" && label !== "0") {
                     ctx.fillText(label, x, offsetY + 15);
                 }
             }
 
-            // Yatay Çizgiler (Y Ekseninde)
+            // Horizontal Lines (Y-Axis)
             for (let i = startY; i <= endY; i += 0.5) {
                 const y = offsetY - (i * scale);
                 ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
@@ -367,7 +360,7 @@
             }
             ctx.stroke();
 
-            // Ana Eksenler (X ve Y)
+            // Main Axes
             ctx.beginPath();
             ctx.strokeStyle = '#8da2b0';
             ctx.lineWidth = 2;
@@ -375,10 +368,10 @@
             ctx.moveTo(0, offsetY); ctx.lineTo(canvas.width, offsetY);
             ctx.stroke();
 
-            // Orijin 0
+            // Origin
             ctx.fillText("0", offsetX - 10, offsetY + 12);
 
-            // y = x Doğrusu (Eğer herhangi bir kutu seçiliyse)
+            // y = x Line (if any box is checked)
             let anyChecked = Object.values(checks).some(chk => chk.checked);
             if (anyChecked) {
                 ctx.beginPath();
@@ -386,9 +379,8 @@
                 ctx.setLineDash([5, 5]);
                 ctx.lineWidth = 2;
                 
-                // y = x için başlangıç ve bitiş hesapla
                 let x1 = -offsetX / scale;
-                let y1 = -x1; // y = x
+                let y1 = -x1; 
                 let x2 = (canvas.width - offsetX) / scale;
                 let y2 = -x2;
                 
@@ -399,7 +391,7 @@
             }
         }
 
-        // Eğri Çizici
+        // Curve Drawer
         function drawCurve(func, color, width, minT, maxT, isInverse = false, isGhost = false) {
             ctx.beginPath();
             ctx.strokeStyle = color;
@@ -407,26 +399,23 @@
 
             let firstPoint = true;
             
-            // Ekranın göründüğü aralığı hesapla
             const screenMinX = -offsetX / scale;
             const screenMaxX = (canvas.width - offsetX) / scale;
             
-            // Ghost (silik) eğriler için tüm ekranı tara
             let start = isGhost ? screenMinX - 1 : minT;
             let end = isGhost ? screenMaxX + 1 : maxT;
             
-            // Arc fonksiyonları için x ekseni kısıtlaması (örn: arcsin için -1 ile 1 arası)
             if(isInverse && !isGhost) {
                 start = Math.max(start, minT);
                 end = Math.min(end, maxT);
             }
 
-            const step = (end - start) / 500; // Hassasiyet
+            const step = (end - start) / 500; 
 
             for (let i = start; i <= end; i += step) {
                 let val = func(i);
                 
-                // Asimptot atlamaları (Tanjant/Cotanjant için dikey sıçramalar)
+                // Asymptote jumps
                 if (Math.abs(val) > 50) {
                     firstPoint = true;
                     continue;
@@ -438,7 +427,6 @@
                 let canvasX = offsetX + (x * scale);
                 let canvasY = offsetY - (y * scale);
 
-                // Silik çizimde kısıtlı bölgenin üzerine çizmemek için atla
                 if (isGhost && !isInverse && i >= minT && i <= maxT) {
                     firstPoint = true;
                     continue;
@@ -454,55 +442,51 @@
             ctx.stroke();
         }
 
-        // Ana Çizim Fonksiyonu
         function draw() {
             drawAxes();
             
             let infoHTML = "";
 
-            // Ana Fonksiyonları Çiz (Seçiliyse)
+            // Draw Main Functions
             ['sin', 'cos', 'tan', 'cot'].forEach(f => {
                 if (checks[f].checked) {
                     const data = funcData[f];
-                    // 1. Silik tüm dalga
                     drawCurve(data.func, 'rgba(166, 184, 199, 0.3)', 2, data.rMin, data.rMax, false, true);
-                    // 2. Kısıtlı bölge
+                    // Use a distinct color for main functions (#4a6572 - Dark Blue/Grey)
                     drawCurve(data.func, '#4a6572', 3, data.rMin, data.rMax, false, false);
                     
                     infoHTML += `<div style="margin-bottom:10px;">
-                        <span class="main-val">${data.name} Kısıtlaması:</span><br>
-                        Tanım: ${data.dom} | Değer: ${data.rng}
+                        <span class="main-val">${data.name} Restriction:</span><br>
+                        Domain: ${data.dom} | Range: ${data.rng}
                     </div>`;
                 }
             });
 
-            // Ters (Arc) Fonksiyonları Çiz (Seçiliyse)
+            // Draw Inverse (Arc) Functions
             ['asin', 'acos', 'atan', 'acot'].forEach(f => {
                 if (checks[f].checked) {
                     const data = funcData[f];
-                    // Arc fonksiyonu (X ve Y yer değiştirerek çizilir)
+                    // Use a distinct color for arc functions (#d96459 - Red/Orange)
                     drawCurve(data.func, '#d96459', 3, data.rMin, data.rMax, true, false);
                     
                     infoHTML += `<div style="margin-bottom:10px;">
                         <span class="inv-val">${data.name}:</span><br>
-                        Tanım: ${data.dom} | Değer: ${data.rng}
+                        Domain: ${data.dom} | Range: ${data.rng}
                     </div>`;
                 }
             });
 
             if (infoHTML === "") {
-                infoBox.innerHTML = "<span style='color:#7a8b94; font-style:italic;'>Lütfen yukarıdan en az bir fonksiyon seçin.</span>";
+                infoBox.innerHTML = "<span style='color:#7a8b94; font-style:italic;'>Please select at least one function from above.</span>";
             } else {
                 infoBox.innerHTML = infoHTML;
             }
         }
 
-        // Event Listener'lar
         Object.values(checks).forEach(chk => {
             chk.addEventListener('change', draw);
         });
 
-        // Başlat
         setTimeout(() => {
             resizeCanvas();
         }, 100);
