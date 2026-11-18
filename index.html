@@ -329,7 +329,7 @@
         </a>
 
         <!-- 8. Roots of Unity -->
-        <a href="roots-of-unity.html" class="card">
+        <a href="roots_of_unity.html" class="card">
             <div class="card-graphic">
                 <div class="ill-roots">
                     <div class="root-circ"></div>
@@ -403,14 +403,40 @@
             <div class="card-action">Launch interactive laboratory &rarr;</div>
         </a>
 
+        <!-- 13. Projectile Motion Simulator -->
+        <a href="projectile-motion-simulator.html" class="card">
+            <div class="card-graphic">
+                <div style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px;">
+                    <div class="axis-h" style="top: 85%; width: 100%;"></div>
+                    <div class="axis-v" style="left: 10%;"></div>
+                    <div style="position: absolute; width: 80%; height: 60%; border-top: 2px dashed #e53e3e; border-left: 2px dashed transparent; border-right: 2px dashed transparent; border-radius: 50%; top: 15%; left: 10%;"></div>
+                    <div style="position: absolute; width: 8px; height: 8px; background: #ed8936; border-radius: 50%; top: 11%; left: 50%;"></div>
+                </div>
+            </div>
+            <div class="card-title">Projectile Motion</div>
+            <div class="card-action">Launch interactive laboratory &rarr;</div>
+        </a>
+
+        <!-- 14. Inverse Trigonometry Visualizer -->
+        <a href="inverse-trigonometry-visualizer.html" class="card">
+            <div class="card-graphic">
+                <div style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+                    <div class="axis-h"></div><div class="axis-v"></div>
+                    <div style="position: absolute; width: 100%; height: 1px; background: #f2ae72; transform: rotate(-45deg);"></div>
+                    <div style="position: absolute; width: 40px; height: 40px; border-bottom: 2px solid #4a6572; border-right: 2px solid transparent; border-radius: 50%; transform: translate(-20px, 10px) rotate(45deg);"></div>
+                    <div style="position: absolute; width: 40px; height: 40px; border-top: 2px solid #d96459; border-left: 2px solid transparent; border-radius: 50%; transform: translate(10px, -20px) rotate(45deg);"></div>
+                </div>
+            </div>
+            <div class="card-title">Inverse Trigonometry</div>
+            <div class="card-action">Launch interactive laboratory &rarr;</div>
+        </a>
+
     </div>
 
-    <!-- GITHUB API ÜZERİNDEN SON GÜNCELLEMEYİ ÇEKEN JAVASCRIPT EKLENTİSİ -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const updateDiv = document.getElementById('lastUpdated');
             
-            // Doğrudan 'main' dalındaki son commit'i çekiyoruz
             fetch('https://api.github.com/repos/ozanokkiran/ozanokkiran.github.io/commits/main')
                 .then(response => {
                     if (!response.ok) throw new Error('API Rate Limit veya bağlantı hatası');
