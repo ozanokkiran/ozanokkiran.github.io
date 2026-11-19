@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Volumes of Revolution: Disk &amp; Washer Method</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 345px;
+            min-width: 300px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fn-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 7px;
+        }
+
+        .fn-row.disabled {
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .fn-tag {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.98rem;
+            font-weight: 700;
+            width: 54px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .fn-tag.outer-col { color: var(--blue); }
+        .fn-tag.inner-col { color: var(--coral); }
+
+        .math-input {
+            flex: 1;
+            padding: 6px 9px;
+            font-family: 'Cambria Math', 'Segoe UI', sans-serif;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--text-main);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 6px;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .math-input:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(91, 154, 160, 0.18);
+        }
+
+        .math-input.active-target {
+            border-color: var(--teal);
+            background: #f7fcfc;
+        }
+
+        .washer-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--coral);
+            cursor: pointer;
+            margin: 4px 0 6px 0;
+        }
+
+        .washer-toggle input {
+            accent-color: var(--coral);
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .key-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 5px 3px;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .key-btn:hover {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        .key-btn.clear-btn {
+            background: #fff5f5;
+            color: var(--coral);
+            border-color: #fed7d7;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.74rem;
+        }
+
+        .key-btn.clear-btn:hover {
+            background: var(--coral);
+            color: #ffffff;
+        }
+
+        .error-banner {
+            display: none;
+            margin-top: 7px;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            border-radius: 5px;
+            padding: 6px 8px;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+
+        /* Bounds & Revolution Controls */
+        .bounds-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .num-field {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .num-field label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .num-field input {
+            width: 100%;
+            padding: 5px 7px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-main);
+        }
+
+        .num-field input:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 3px;
+        }
+
+        .val-badge {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            color: var(--teal);
+            background: #f0f9fa;
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin-bottom: 6px;
+        }
+
+        .mode-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .mode-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .sweep-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .sweep-btn {
+            background: var(--teal);
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .sweep-btn:hover {
+            background: #488389;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 6px 7px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .preset-btn span {
+            display: block;
+            font-family: 'Cambria Math', 'Segoe UI', sans-serif;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 1px;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span {
+            color: #cbd5e0;
+        }
+
+        /* Right 3D Stage */
+        .stage {
+            flex: 1;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            min-height: 430px;
+            background: radial-gradient(circle at 50% 45%, #f8fafc 0%, #eaf0f4 100%);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .canvas-container.dragging {
+            cursor: grabbing;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.77rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+
+        .tool-btn:hover, .tool-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .legend-box {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.73rem;
+            color: var(--primary);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            pointer-events: none;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .dot-mini {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 0.73rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Analysis Card */
+        .analysis-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+        }
+
+        .analysis-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .analysis-title {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        .formula-pill {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--purple);
+            background: #faf5ff;
+            border: 1px solid #d6bcfa;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .metric-box {
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 7px;
+            padding: 7px 9px;
+        }
+
+        .metric-lbl {
+            font-size: 0.69rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+
+        .metric-val {
+            font-family: 'Cambria Math', 'Courier New', monospace;
+            font-size: 0.94rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-val.accent {
+            color: var(--blue);
+        }
+
+        .metric-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        @media (max-width: 860px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 680px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-container {
+                min-height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>3D Volumes of Revolution</h1>
+        <p class="subtitle">IB DP Math AA HL &mdash; Disk &amp; Washer Method about the x-axis: V = &pi; &int; ([R(x)]&sup2; &minus; [r(x)]&sup2;) dx</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Curves -->
+            <div class="section-card">
+                <div class="section-title">1. Curves (Revolved Around x-axis)</div>
+                <div class="fn-row">
+                    <span class="fn-tag outer-col">R(x) =</span>
+                    <input type="text" id="fInput" class="math-input active-target" value="√(x)" autocomplete="off" spellcheck="false">
+                </div>
+
+                <label class="washer-toggle">
+                    <input type="checkbox" id="chkWasher">
+                    Enable Inner Curve r(x) &mdash; Washer Method
+                </label>
+
+                <div class="fn-row disabled" id="innerRow">
+                    <span class="fn-tag inner-col">r(x) =</span>
+                    <input type="text" id="gInput" class="math-input" value="0.5x" autocomplete="off" spellcheck="false">
+                </div>
+
+                <div class="keypad">
+                    <button type="button" class="key-btn" data-insert="x">x</button>
+                    <button type="button" class="key-btn" data-insert="x²">x&sup2;</button>
+                    <button type="button" class="key-btn" data-insert="√()">&radic;( )</button>
+                    <button type="button" class="key-btn" data-insert="sin()">sin( )</button>
+                    <button type="button" class="key-btn" data-insert="cos()">cos( )</button>
+                    <button type="button" class="key-btn" data-insert="e^x">e<sup>x</sup></button>
+                    <button type="button" class="key-btn" data-insert="π">&pi;</button>
+                    <button type="button" class="key-btn" data-insert="1/(x+1)">1/(x+1)</button>
+                    <button type="button" class="key-btn" data-insert=" + ">+</button>
+                    <button type="button" class="key-btn" data-insert=" - ">&minus;</button>
+                    <button type="button" class="key-btn clear-btn" id="btnBack">&larr; Del</button>
+                    <button type="button" class="key-btn clear-btn" id="btnClear">Clear</button>
+                </div>
+                <div class="error-banner" id="errorBanner"></div>
+            </div>
+
+            <!-- 2. Bounds & 3D Sweep -->
+            <div class="section-card">
+                <div class="section-title">2. Interval [a, b] &amp; Revolution</div>
+                <div class="bounds-grid">
+                    <div class="num-field">
+                        <label for="aInput">a =</label>
+                        <input type="number" id="aInput" step="0.25" value="0">
+                    </div>
+                    <div class="num-field">
+                        <label for="bInput">b =</label>
+                        <input type="number" id="bInput" step="0.25" value="4">
+                    </div>
+                </div>
+
+                <div class="slider-header">
+                    <span>Revolution Sweep (&phi;)</span>
+                    <span class="val-badge" id="sweepBadge">360&deg;</span>
+                </div>
+                <div class="sweep-row">
+                    <input type="range" id="sweepSlider" min="0" max="360" step="5" value="360">
+                    <button type="button" class="sweep-btn" id="btnSweepAnim">&#9654; Sweep</button>
+                </div>
+
+                <div class="mode-tabs" style="margin-top:6px;">
+                    <button type="button" class="mode-btn active" data-mode="smooth">Smooth 3D Solid</button>
+                    <button type="button" class="mode-btn" data-mode="slices">Disk/Washer Slices</button>
+                </div>
+
+                <div id="sliceControls" style="display:none;">
+                    <div class="slider-header">
+                        <span>Number of Disks (n)</span>
+                        <span class="val-badge" id="sliceBadge">12</span>
+                    </div>
+                    <input type="range" id="sliceSlider" min="3" max="36" step="1" value="12">
+                </div>
+            </div>
+
+            <!-- 3. Quick IB Presets -->
+            <div class="section-card">
+                <div class="section-title">3. Classic IB AA HL Solids</div>
+                <div class="preset-grid">
+                    <button type="button" class="preset-btn active"
+                        data-f="√(x)" data-g="0" data-washer="0" data-a="0" data-b="4">
+                        Paraboloid (Disk)
+                        <span>R = &radic;(x), [0, 4] &rArr; 8&pi;</span>
+                    </button>
+                    <button type="button" class="preset-btn"
+                        data-f="√(x)" data-g="0.5x" data-washer="1" data-a="0" data-b="4">
+                        Hollow Bowl (Washer)
+                        <span>R = &radic;(x), r = 0.5x &rArr; 8&pi;/3</span>
+                    </button>
+                    <button type="button" class="preset-btn"
+                        data-f="0.4x + 0.8" data-g="0" data-washer="0" data-a="0" data-b="4">
+                        Cone Frustum
+                        <span>R = 0.4x + 0.8, [0, 4]</span>
+                    </button>
+                    <button type="button" class="preset-btn"
+                        data-f="sin(x) + 1.5" data-g="0.5" data-washer="1" data-a="0" data-b="3.14">
+                        Sinusoidal Vase
+                        <span>R = sin(x)+1.5, r = 0.5</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Interactive 3D Stage -->
+        <div class="stage">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="sceneCanvas"></canvas>
+
+                <div class="legend-box">
+                    <div class="legend-item"><span class="dot-mini" style="background:#2b6cb0;"></span> Outer Surface R(x)</div>
+                    <div class="legend-item"><span class="dot-mini" style="background:#d96459;"></span> Inner Cavity r(x)</div>
+                    <div class="legend-item"><span class="dot-mini" style="background:#e69a53;"></span> 2D Generating Region</div>
+                </div>
+
+                <div class="canvas-toolbar">
+                    <button type="button" class="tool-btn" id="btnAutoRotate">&#8635; Spin</button>
+                    <button type="button" class="tool-btn" id="btnZoomIn">+ Zoom</button>
+                    <button type="button" class="tool-btn" id="btnZoomOut">&minus; Zoom</button>
+                    <button type="button" class="tool-btn" id="btnResetView">Reset View</button>
+                </div>
+                <div class="controls-hint">Drag: Orbit 3D | Scroll: Zoom</div>
+            </div>
+
+            <!-- Live Volume & Integral Panel -->
+            <div class="analysis-card">
+                <div class="analysis-top">
+                    <span class="analysis-title">IB DP Calculus Volume Analysis</span>
+                    <span class="formula-pill" id="formulaPill">V = &pi; &int;<sub>0</sub><sup>4</sup> [√(x)]&sup2; dx</span>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-lbl">Exact Volume (in &pi;)</div>
+                        <div class="metric-val accent" id="mVolPi">8.000&pi;</div>
+                        <div class="metric-sub">Full 360&deg; revolution</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Exact Volume (Decimal)</div>
+                        <div class="metric-val" id="mVolDec">25.133</div>
+                        <div class="metric-sub">cubic units (Simpson's Rule)</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl" id="mApproxLbl">Swept Volume (&phi;)</div>
+                        <div class="metric-val" id="mApproxVal">25.133</div>
+                        <div class="metric-sub" id="mApproxSub">100% of full revolution</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">2D Region Area</div>
+                        <div class="metric-val" id="mArea">5.333</div>
+                        <div class="metric-sub">&int; |R(x) &minus; r(x)| dx</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            /* =========================================================
+               SAFE REAL-VALUED MATH PARSER (Supports √, ², π)
+            ========================================================= */
+            var FUNCS = {
+                sqrt: function (v) { return v < 0 ? NaN : Math.sqrt(v); },
+                ln: function (v) { return v <= 0 ? NaN : Math.log(v); },
+                log: function (v) { return v <= 0 ? NaN : (Math.log10 ? Math.log10(v) : Math.log(v) / Math.LN10); },
+                abs: Math.abs,
+                sin: Math.sin,
+                cos: Math.cos,
+                tan: Math.tan,
+                exp: Math.exp
+            };
+
+            function compileExpression(rawStr) {
+                var s = (rawStr || '').trim();
+                if (!s) throw new Error('Expression cannot be empty.');
+
+                s = s.replace(/−/g, '-')
+                     .replace(/×/g, '*')
+                     .replace(/·/g, '*')
+                     .replace(/²/g, '^2')
+                     .replace(/³/g, '^3')
+                     .replace(/π/g, 'pi')
+                     .replace(/\s+/g, '')
+                     .replace(/√\(/g, 'sqrt(')
+                     .replace(/√([0-9.]+|x|pi|e)/gi, 'sqrt($1)');
+
+                var tokens = [];
+                var i = 0;
+                while (i < s.length) {
+                    var ch = s[i];
+                    if (/[0-9.]/.test(ch)) {
+                        var ns = '';
+                        while (i < s.length && /[0-9.]/.test(s[i])) ns += s[i++];
+                        var v = parseFloat(ns);
+                        if (isNaN(v)) throw new Error('Invalid number: ' + ns);
+                        tokens.push({ type: 'NUM', val: v });
+                    } else if (/[a-zA-Z]/.test(ch)) {
+                        var id = '';
+                        while (i < s.length && /[a-zA-Z]/.test(s[i])) id += s[i++];
+                        var low = id.toLowerCase();
+                        if (low === 'x') tokens.push({ type: 'VAR' });
+                        else if (low === 'e') tokens.push({ type: 'NUM', val: Math.E });
+                        else if (low === 'pi') tokens.push({ type: 'NUM', val: Math.PI });
+                        else if (FUNCS[low]) tokens.push({ type: 'FUNC', name: low });
+                        else throw new Error('Unknown identifier: "' + id + '"');
+                    } else if ('+-*/^()'.indexOf(ch) !== -1) {
+                        tokens.push({ type: ch });
+                        i++;
+                    } else {
+                        throw new Error('Unsupported symbol: "' + ch + '"');
+                    }
+                }
+
+                var full = [];
+                for (var k = 0; k < tokens.length; k++) {
+                    full.push(tokens[k]);
+                    if (k < tokens.length - 1) {
+                        var cur = tokens[k].type;
+                        var nxt = tokens[k + 1].type;
+                        var leftOk = (cur === 'NUM' || cur === 'VAR' || cur === ')');
+                        var rightOk = (nxt === 'VAR' || nxt === 'FUNC' || nxt === '(' || (cur === ')' && nxt === 'NUM'));
+                        if (leftOk && rightOk) full.push({ type: '*' });
+                    }
+                }
+
+                var pos = 0;
+                function peek() { return full[pos] || null; }
+                function consume() { return full[pos++]; }
+
+                function parseExpr() {
+                    var node = parseTerm();
+                    while (peek() && (peek().type === '+' || peek().type === '-')) {
+                        var op = consume().type;
+                        node = { op: op, left: node, right: parseTerm() };
+                    }
+                    return node;
+                }
+                function parseTerm() {
+                    var node = parseUnary();
+                    while (peek() && (peek().type === '*' || peek().type === '/')) {
+                        var op = consume().type;
+                        node = { op: op, left: node, right: parseUnary() };
+                    }
+                    return node;
+                }
+                function parseUnary() {
+                    if (peek() && peek().type === '+') { consume(); return parseUnary(); }
+                    if (peek() && peek().type === '-') { consume(); return { op: 'neg', arg: parseUnary() }; }
+                    return parsePower();
+                }
+                function parsePower() {
+                    var base = parsePrimary();
+                    if (peek() && peek().type === '^') {
+                        consume();
+                        return { op: '^', left: base, right: parseUnary() };
+                    }
+                    return base;
+                }
+                function parsePrimary() {
+                    var tok = peek();
+                    if (!tok) throw new Error('Unexpected end of expression.');
+                    if (tok.type === 'NUM') { consume(); return { op: 'num', val: tok.val }; }
+                    if (tok.type === 'VAR') { consume(); return { op: 'var' }; }
+                    if (tok.type === 'FUNC') {
+                        consume();
+                        if (!peek() || peek().type !== '(') throw new Error('Expected "(" after ' + tok.name);
+                        consume();
+                        var arg = parseExpr();
+                        if (!peek() || peek().type !== ')') throw new Error('Missing ")" after ' + tok.name);
+                        consume();
+                        return { op: 'func', name: tok.name, arg: arg };
+                    }
+                    if (tok.type === '(') {
+                        consume();
+                        var inner = parseExpr();
+                        if (!peek() || peek().type !== ')') throw new Error('Missing closing ")".');
+                        consume();
+                        return inner;
+                    }
+                    throw new Error('Unexpected token: ' + tok.type);
+                }
+
+                var ast = parseExpr();
+                if (pos < full.length) throw new Error('Syntax error near "' + full[pos].type + '"');
+
+                function evalNode(n, x) {
+                    switch (n.op) {
+                        case 'num': return n.val;
+                        case 'var': return x;
+                        case 'neg': return -evalNode(n.arg, x);
+                        case '+': return evalNode(n.left, x) + evalNode(n.right, x);
+                        case '-': return evalNode(n.left, x) - evalNode(n.right, x);
+                        case '*': return evalNode(n.left, x) * evalNode(n.right, x);
+                        case '/': {
+                            var d = evalNode(n.right, x);
+                            return Math.abs(d) < 1e-9 ? NaN : evalNode(n.left, x) / d;
+                        }
+                        case '^': return Math.pow(evalNode(n.left, x), evalNode(n.right, x));
+                        case 'func': return FUNCS[n.name](evalNode(n.arg, x));
+                        default: return NaN;
+                    }
+                }
+
+                return function (x) {
+                    var r = evalNode(ast, x);
+                    return (isFinite(r) && !isNaN(r)) ? r : NaN;
+                };
+            }
+
+            /* =========================================================
+               3D & INTEGRATION HELPERS
+            ========================================================= */
+            function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+
+            function simpson(fn, a, b, n) {
+                if (b <= a) return 0;
+                var h = (b - a) / n;
+                var sum = 0;
+                for (var i = 0; i <= n; i++) {
+                    var x = a + i * h;
+                    var y = fn(x);
+                    if (isNaN(y) || !isFinite(y)) y = 0;
+                    var w = (i === 0 || i === n) ? 1 : (i % 2 === 1 ? 4 : 2);
+                    sum += w * y;
+                }
+                return (h / 3) * sum;
+            }
+
+            function init() {
+                var canvas = document.getElementById('sceneCanvas');
+                var ctx = canvas.getContext('2d');
+                var container = document.getElementById('canvasContainer');
+
+                var fInput = document.getElementById('fInput');
+                var gInput = document.getElementById('gInput');
+                var chkWasher = document.getElementById('chkWasher');
+                var innerRow = document.getElementById('innerRow');
+                var errorBanner = document.getElementById('errorBanner');
+                var keyBtns = document.querySelectorAll('.key-btn[data-insert]');
+                var btnBack = document.getElementById('btnBack');
+                var btnClear = document.getElementById('btnClear');
+
+                var aInput = document.getElementById('aInput');
+                var bInput = document.getElementById('bInput');
+                var sweepSlider = document.getElementById('sweepSlider');
+                var sweepBadge = document.getElementById('sweepBadge');
+                var btnSweepAnim = document.getElementById('btnSweepAnim');
+                var modeBtns = document.querySelectorAll('.mode-btn');
+                var sliceControls = document.getElementById('sliceControls');
+                var sliceSlider = document.getElementById('sliceSlider');
+                var sliceBadge = document.getElementById('sliceBadge');
+                var presetBtns = document.querySelectorAll('.preset-btn');
+
+                var btnAutoRotate = document.getElementById('btnAutoRotate');
+                var btnZoomIn = document.getElementById('btnZoomIn');
+                var btnZoomOut = document.getElementById('btnZoomOut');
+                var btnResetView = document.getElementById('btnResetView');
+
+                var formulaPill = document.getElementById('formulaPill');
+                var mVolPi = document.getElementById('mVolPi');
+                var mVolDec = document.getElementById('mVolDec');
+                var mApproxLbl = document.getElementById('mApproxLbl');
+                var mApproxVal = document.getElementById('mApproxVal');
+                var mApproxSub = document.getElementById('mApproxSub');
+                var mArea = document.getElementById('mArea');
+
+                var activeInput = fInput;
+
+                var state = {
+                    fFn: null,
+                    gFn: function () { return 0; },
+                    washer: false,
+                    a: 0,
+                    b: 4,
+                    sweepDeg: 360,
+                    mode: 'smooth', // 'smooth' or 'slices'
+                    slices: 12,
+                    yaw: -0.62,
+                    pitch: 0.34,
+                    scale: 52,
+                    camDist: 24,
+                    autoRotate: false,
+                    sweepAnim: false,
+                    rafId: null,
+                    isDragging: false,
+                    lastX: 0,
+                    lastY: 0
+                };
+
+                function setActiveInput(el) {
+                    activeInput = el;
+                    fInput.classList.toggle('active-target', el === fInput);
+                    gInput.classList.toggle('active-target', el === gInput);
+                }
+
+                fInput.addEventListener('focus', function () { setActiveInput(fInput); });
+                gInput.addEventListener('focus', function () { setActiveInput(gInput); });
+
+                function insertText(txt) {
+                    var el = activeInput;
+                    if (el === gInput && !state.washer) {
+                        el = fInput;
+                        setActiveInput(fInput);
+                    }
+                    var start = el.selectionStart !== null ? el.selectionStart : el.value.length;
+                    var end = el.selectionEnd !== null ? el.selectionEnd : el.value.length;
+                    el.value = el.value.slice(0, start) + txt + el.value.slice(end);
+                    var pos = start + txt.length;
+                    if (txt.slice(-2) === '()') pos -= 1;
+                    el.focus();
+                    el.setSelectionRange(pos, pos);
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                    compileAndCompute();
+                }
+
+                keyBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () { insertText(btn.getAttribute('data-insert')); });
+                });
+
+                btnBack.addEventListener('click', function () {
+                    activeInput.value = activeInput.value.slice(0, -1);
+                    activeInput.focus();
+                    compileAndCompute();
+                });
+
+                btnClear.addEventListener('click', function () {
+                    activeInput.value = '';
+                    activeInput.focus();
+                });
+
+                function compileAndCompute() {
+                    try {
+                        var ff = compileExpression(fInput.value);
+                        var gg = state.washer ? compileExpression(gInput.value) : function () { return 0; };
+                        var a = parseFloat(aInput.value);
+                        var b = parseFloat(bInput.value);
+                        if (isNaN(a) || isNaN(b) || b <= a) {
+                            throw new Error('Ensure interval satisfies a < b.');
+                        }
+                        state.fFn = ff;
+                        state.gFn = gg;
+                        state.a = a;
+                        state.b = b;
+                        errorBanner.style.display = 'none';
+                        updateAnalytics();
+                        draw();
+                    } catch (err) {
+                        errorBanner.textContent = err.message;
+                        errorBanner.style.display = 'block';
+                    }
+                }
+
+                function safeR(x) {
+                    var v = state.fFn(x);
+                    return (isNaN(v) || !isFinite(v)) ? 0 : Math.abs(v);
+                }
+
+                function safeInner(x) {
+                    if (!state.washer) return 0;
+                    var v = state.gFn(x);
+                    return (isNaN(v) || !isFinite(v)) ? 0 : Math.abs(v);
+                }
+
+                function updateAnalytics() {
+                    if (!state.fFn) return;
+                    var a = state.a, b = state.b;
+
+                    var fTxt = fInput.value.trim();
+                    var gTxt = gInput.value.trim();
+                    if (state.washer) {
+                        formulaPill.innerHTML = 'V = &pi; &int;<sub>' + a + '</sub><sup>' + b + '</sup> ([' + fTxt + ']&sup2; &minus; [' + gTxt + ']&sup2;) dx';
+                    } else {
+                        formulaPill.innerHTML = 'V = &pi; &int;<sub>' + a + '</sub><sup>' + b + '</sup> [' + fTxt + ']&sup2; dx';
+                    }
+
+                    // Exact numerical integral (without pi factor first)
+                    var volOverPi = simpson(function (x) {
+                        var R = safeR(x);
+                        var r = safeInner(x);
+                        return Math.abs(R * R - r * r);
+                    }, a, b, 200);
+
+                    var volExact = Math.PI * volOverPi;
+                    var area2D = simpson(function (x) {
+                        return Math.abs(safeR(x) - safeInner(x));
+                    }, a, b, 200);
+
+                    mVolPi.textContent = volOverPi.toFixed(3) + 'π';
+                    mVolDec.textContent = volExact.toFixed(3);
+                    mArea.textContent = area2D.toFixed(3);
+
+                    if (state.mode === 'slices') {
+                        var n = state.slices;
+                        var dx = (b - a) / n;
+                        var riemannVol = 0;
+                        for (var i = 0; i < n; i++) {
+                            var xm = a + (i + 0.5) * dx; // Midpoint rule
+                            var Rm = safeR(xm);
+                            var rm = safeInner(xm);
+                            riemannVol += Math.PI * Math.abs(Rm * Rm - rm * rm) * dx;
+                        }
+                        var errPct = volExact > 1e-9 ? Math.abs(riemannVol - volExact) / volExact * 100 : 0;
+                        mApproxLbl.textContent = 'Midpoint Slices (n=' + n + ')';
+                        mApproxVal.textContent = riemannVol.toFixed(3);
+                        mApproxSub.textContent = 'Error: ' + errPct.toFixed(2) + '% vs exact';
+                    } else {
+                        var frac = state.sweepDeg / 360;
+                        mApproxLbl.textContent = 'Swept Volume (' + state.sweepDeg + '°)';
+                        mApproxVal.textContent = (volExact * frac).toFixed(3);
+                        mApproxSub.textContent = Math.round(frac * 100) + '% of full 360° solid';
+                    }
+                }
+
+                /* =========================================================
+                   3D RENDERING ENGINE (Painter's Algorithm)
+                ========================================================= */
+                function getSize() {
+                    var rect = container.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 640,
+                        h: rect.height > 50 ? rect.height : 430
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    draw();
+                }
+
+                function getCamera() {
+                    // X is horizontal axis of revolution, Y is up, Z is depth
+                    var cy = Math.cos(state.yaw), sy = Math.sin(state.yaw);
+                    var cp = Math.cos(state.pitch), sp = Math.sin(state.pitch);
+                    // Orbit around center of interval
+                    var dir = [cp * sy, sp, cp * cy];
+                    var right = [cy, 0, -sy];
+                    var up = [-sp * sy, cp, -sp * cy];
+                    return { dir: dir, right: right, up: up };
+                }
+
+                function project(pt, cam, centerX, W, H) {
+                    var p = [pt[0] - centerX, pt[1], pt[2]];
+                    var rx = dot(p, cam.right);
+                    var ry = dot(p, cam.up);
+                    var rz = dot(p, cam.dir);
+                    var denom = Math.max(3, state.camDist - rz);
+                    var persp = state.camDist / denom;
+                    return {
+                        x: W / 2 + rx * state.scale * persp,
+                        y: H / 2 - ry * state.scale * persp,
+                        depth: rz
+                    };
+                }
+
+                function drawAxisLine(p1, p2, cam, cx, W, H, color, width, label) {
+                    var a = project(p1, cam, cx, W, H);
+                    var b = project(p2, cam, cx, W, H);
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = width;
+                    ctx.moveTo(a.x, a.y);
+                    ctx.lineTo(b.x, b.y);
+                    ctx.stroke();
+
+                    if (label) {
+                        ctx.font = "bold 12px 'Segoe UI'";
+                        ctx.fillStyle = color;
+                        ctx.fillText(label, b.x + 6, b.y + 4);
+                    }
+                    ctx.restore();
+                }
+
+                function draw() {
+                    var sz = getSize(), W = sz.w, H = sz.h;
+                    ctx.clearRect(0, 0, W, H);
+                    if (!state.fFn) return;
+
+                    var a = state.a, b = state.b;
+                    var cx = (a + b) / 2;
+                    var cam = getCamera();
+                    var sweepRad = state.sweepDeg * Math.PI / 180;
+
+                    // Axes
+                    var xMin = Math.min(-0.8, a - 1.2);
+                    var xMax = Math.max(b + 1.4, 4.5);
+                    drawAxisLine([xMin, 0, 0], [xMax, 0, 0], cam, cx, W, H, '#4a6572', 1.8, 'x (axis)');
+                    drawAxisLine([0, -3.2, 0], [0, 3.6, 0], cam, cx, W, H, '#38a169', 1.4, 'y');
+                    drawAxisLine([0, 0, -3.2], [0, 0, 3.2], cam, cx, W, H, '#3182ce', 1.4, 'z');
+
+                    var quads = [];
+
+                    function addQuad(p1, p2, p3, p4, fillStyle, strokeStyle) {
+                        var q1 = project(p1, cam, cx, W, H);
+                        var q2 = project(p2, cam, cx, W, H);
+                        var q3 = project(p3, cam, cx, W, H);
+                        var q4 = project(p4, cam, cx, W, H);
+                        var avgDepth = (q1.depth + q2.depth + q3.depth + q4.depth) / 4;
+                        quads.push({
+                            pts: [q1, q2, q3, q4],
+                            depth: avgDepth,
+                            fill: fillStyle,
+                            stroke: strokeStyle
+                        });
+                    }
+
+                    var angSteps = Math.max(1, Math.round(28 * (state.sweepDeg / 360)));
+                    var dAng = sweepRad / angSteps;
+
+                    if (state.sweepDeg > 0) {
+                        if (state.mode === 'smooth') {
+                            var xSteps = 26;
+                            var dx = (b - a) / xSteps;
+
+                            for (var i = 0; i < xSteps; i++) {
+                                var x0 = a + i * dx;
+                                var x1 = a + (i + 1) * dx;
+                                var R0 = safeR(x0), R1 = safeR(x1);
+                                var r0 = safeInner(x0), r1 = safeInner(x1);
+
+                                for (var j = 0; j < angSteps; j++) {
+                                    var th0 = j * dAng;
+                                    var th1 = (j + 1) * dAng;
+                                    var c0 = Math.cos(th0), s0 = Math.sin(th0);
+                                    var c1 = Math.cos(th1), s1 = Math.sin(th1);
+
+                                    // Simple shading based on angle
+                                    var shade = 0.55 + 0.35 * Math.cos(th0 - 0.8);
+                                    var outerFill = 'rgba(' + Math.round(43 * shade + 30) + ',' + Math.round(128 * shade + 30) + ',' + Math.round(186 * shade + 35) + ',0.38)';
+                                    var outerStroke = 'rgba(43, 108, 176, 0.28)';
+
+                                    addQuad(
+                                        [x0, R0 * c0, R0 * s0],
+                                        [x1, R1 * c0, R1 * s0],
+                                        [x1, R1 * c1, R1 * s1],
+                                        [x0, R0 * c1, R0 * s1],
+                                        outerFill, outerStroke
+                                    );
+
+                                    if (state.washer && (r0 > 1e-4 || r1 > 1e-4)) {
+                                        var innerFill = 'rgba(217, 100, 89, 0.34)';
+                                        var innerStroke = 'rgba(184, 75, 64, 0.28)';
+                                        addQuad(
+                                            [x0, r0 * c0, r0 * s0],
+                                            [x1, r1 * c0, r1 * s0],
+                                            [x1, r1 * c1, r1 * s1],
+                                            [x0, r0 * c1, r0 * s1],
+                                            innerFill, innerStroke
+                                        );
+                                    }
+                                }
+                            }
+                        } else {
+                            // Disk / Washer Slices (Midpoint cylinders)
+                            var n = state.slices;
+                            var dxs = (b - a) / n;
+                            var sliceAngSteps = Math.max(1, Math.round(22 * (state.sweepDeg / 360)));
+                            var dAs = sweepRad / sliceAngSteps;
+
+                            for (var s = 0; s < n; s++) {
+                                var xs0 = a + s * dxs;
+                                var xs1 = xs0 + dxs;
+                                var xm = (xs0 + xs1) / 2;
+                                var Rm = safeR(xm);
+                                var rm = safeInner(xm);
+                                var isHighlight = (s === Math.floor(n / 2));
+
+                                for (var k = 0; k < sliceAngSteps; k++) {
+                                    var t0 = k * dAs;
+                                    var t1 = (k + 1) * dAs;
+                                    var cc0 = Math.cos(t0), ss0 = Math.sin(t0);
+                                    var cc1 = Math.cos(t1), ss1 = Math.sin(t1);
+
+                                    var rimFill = isHighlight ? 'rgba(230, 154, 83, 0.55)' : 'rgba(91, 154, 160, 0.38)';
+                                    var rimStroke = isHighlight ? 'rgba(183, 108, 35, 0.7)' : 'rgba(74, 101, 114, 0.4)';
+
+                                    // Outer cylinder wall
+                                    addQuad(
+                                        [xs0, Rm * cc0, Rm * ss0],
+                                        [xs1, Rm * cc0, Rm * ss0],
+                                        [xs1, Rm * cc1, Rm * ss1],
+                                        [xs0, Rm * cc1, Rm * ss1],
+                                        rimFill, rimStroke
+                                    );
+
+                                    // Right cap face (annulus)
+                                    var capFill = isHighlight ? 'rgba(230, 154, 83, 0.36)' : 'rgba(43, 108, 176, 0.22)';
+                                    addQuad(
+                                        [xs1, rm * cc0, rm * ss0],
+                                        [xs1, Rm * cc0, Rm * ss0],
+                                        [xs1, Rm * cc1, Rm * ss1],
+                                        [xs1, rm * cc1, rm * ss1],
+                                        capFill, 'rgba(74,101,114,0.18)'
+                                    );
+
+                                    // Inner hole wall if washer
+                                    if (state.washer && rm > 1e-4) {
+                                        addQuad(
+                                            [xs0, rm * cc0, rm * ss0],
+                                            [xs1, rm * cc0, rm * ss0],
+                                            [xs1, rm * cc1, rm * ss1],
+                                            [xs0, rm * cc1, rm * ss1],
+                                            'rgba(217, 100, 89, 0.36)', 'rgba(184,75,64,0.35)'
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Sort back-to-front
+                    quads.sort(function (qA, qB) { return qA.depth - qB.depth; });
+
+                    for (var q = 0; q < quads.length; q++) {
+                        var item = quads[q];
+                        ctx.beginPath();
+                        ctx.moveTo(item.pts[0].x, item.pts[0].y);
+                        ctx.lineTo(item.pts[1].x, item.pts[1].y);
+                        ctx.lineTo(item.pts[2].x, item.pts[2].y);
+                        ctx.lineTo(item.pts[3].x, item.pts[3].y);
+                        ctx.closePath();
+                        ctx.fillStyle = item.fill;
+                        ctx.fill();
+                        ctx.strokeStyle = item.stroke;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+
+                    // Always draw crisp 2D generating region on the xy-plane (z = 0)
+                    var curveSamples = 50;
+                    ctx.save();
+                    ctx.beginPath();
+                    for (var c = 0; c <= curveSamples; c++) {
+                        var xc = a + (b - a) * (c / curveSamples);
+                        var ptTop = project([xc, safeR(xc), 0], cam, cx, W, H);
+                        if (c === 0) ctx.moveTo(ptTop.x, ptTop.y);
+                        else ctx.lineTo(ptTop.x, ptTop.y);
+                    }
+                    for (var c2 = curveSamples; c2 >= 0; c2--) {
+                        var xc2 = a + (b - a) * (c2 / curveSamples);
+                        var ptBot = project([xc2, safeInner(xc2), 0], cam, cx, W, H);
+                        ctx.lineTo(ptBot.x, ptBot.y);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = 'rgba(230, 154, 83, 0.32)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#d97706';
+                    ctx.lineWidth = 2.4;
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Mark bounds a and b on x-axis
+                    var pA = project([a, 0, 0], cam, cx, W, H);
+                    var pB = project([b, 0, 0], cam, cx, W, H);
+                    ctx.save();
+                    ctx.fillStyle = '#4a6572';
+                    ctx.font = "bold 11.5px 'Segoe UI'";
+                    ctx.fillText('a=' + a, pA.x - 10, pA.y + 16);
+                    ctx.fillText('b=' + b, pB.x - 10, pB.y + 16);
+                    ctx.restore();
+                }
+
+                /* =========================================================
+                   EVENTS & ANIMATIONS
+                ========================================================= */
+                [fInput, gInput, aInput, bInput].forEach(function (inp) {
+                    inp.addEventListener('input', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        compileAndCompute();
+                    });
+                });
+
+                chkWasher.addEventListener('change', function () {
+                    state.washer = chkWasher.checked;
+                    innerRow.classList.toggle('disabled', !state.washer);
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                    compileAndCompute();
+                });
+
+                sweepSlider.addEventListener('input', function () {
+                    state.sweepAnim = false;
+                    btnSweepAnim.textContent = '▶ Sweep';
+                    state.sweepDeg = parseInt(sweepSlider.value, 10);
+                    sweepBadge.textContent = state.sweepDeg + '°';
+                    updateAnalytics();
+                    draw();
+                });
+
+                modeBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        modeBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.mode = btn.getAttribute('data-mode');
+                        sliceControls.style.display = state.mode === 'slices' ? 'block' : 'none';
+                        updateAnalytics();
+                        draw();
+                    });
+                });
+
+                sliceSlider.addEventListener('input', function () {
+                    state.slices = parseInt(sliceSlider.value, 10);
+                    sliceBadge.textContent = String(state.slices);
+                    updateAnalytics();
+                    draw();
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        fInput.value = btn.getAttribute('data-f');
+                        gInput.value = btn.getAttribute('data-g');
+                        var useW = btn.getAttribute('data-washer') === '1';
+                        state.washer = useW;
+                        chkWasher.checked = useW;
+                        innerRow.classList.toggle('disabled', !useW);
+                        aInput.value = btn.getAttribute('data-a');
+                        bInput.value = btn.getAttribute('data-b');
+                        compileAndCompute();
+                    });
+                });
+
+                function animLoop() {
+                    var keepGoing = false;
+                    if (state.autoRotate) {
+                        state.yaw += 0.008;
+                        keepGoing = true;
+                    }
+                    if (state.sweepAnim) {
+                        state.sweepDeg += 4;
+                        if (state.sweepDeg >= 360) {
+                            state.sweepDeg = 360;
+                            state.sweepAnim = false;
+                            btnSweepAnim.textContent = '▶ Sweep';
+                        } else {
+                            keepGoing = true;
+                        }
+                        sweepSlider.value = String(state.sweepDeg);
+                        sweepBadge.textContent = state.sweepDeg + '°';
+                        updateAnalytics();
+                    }
+                    draw();
+                    if (keepGoing) {
+                        state.rafId = requestAnimationFrame(animLoop);
+                    } else {
+                        state.rafId = null;
+                    }
+                }
+
+                function ensureLoop() {
+                    if (!state.rafId) state.rafId = requestAnimationFrame(animLoop);
+                }
+
+                btnSweepAnim.addEventListener('click', function () {
+                    if (state.sweepAnim) {
+                        state.sweepAnim = false;
+                        btnSweepAnim.textContent = '▶ Sweep';
+                    } else {
+                        state.sweepDeg = 0;
+                        state.sweepAnim = true;
+                        btnSweepAnim.textContent = '❚❚ Pause';
+                        ensureLoop();
+                    }
+                });
+
+                btnAutoRotate.addEventListener('click', function () {
+                    state.autoRotate = !state.autoRotate;
+                    btnAutoRotate.classList.toggle('active', state.autoRotate);
+                    if (state.autoRotate) ensureLoop();
+                });
+
+                btnZoomIn.addEventListener('click', function () {
+                    state.scale = Math.min(140, state.scale * 1.2);
+                    draw();
+                });
+
+                btnZoomOut.addEventListener('click', function () {
+                    state.scale = Math.max(20, state.scale * 0.83);
+                    draw();
+                });
+
+                btnResetView.addEventListener('click', function () {
+                    state.yaw = -0.62;
+                    state.pitch = 0.34;
+                    state.scale = 52;
+                    draw();
+                });
+
+                canvas.addEventListener('mousedown', function (e) {
+                    state.isDragging = true;
+                    state.lastX = e.clientX;
+                    state.lastY = e.clientY;
+                    container.classList.add('dragging');
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (!state.isDragging) return;
+                    var dx = e.clientX - state.lastX;
+                    var dy = e.clientY - state.lastY;
+                    state.lastX = e.clientX;
+                    state.lastY = e.clientY;
+                    state.yaw -= dx * 0.01;
+                    state.pitch = Math.max(-1.4, Math.min(1.4, state.pitch + dy * 0.01));
+                    draw();
+                });
+
+                window.addEventListener('mouseup', function () {
+                    state.isDragging = false;
+                    container.classList.remove('dragging');
+                });
+
+                canvas.addEventListener('wheel', function (e) {
+                    e.preventDefault();
+                    var factor = Math.exp(-e.deltaY * 0.0012);
+                    state.scale = Math.max(20, Math.min(140, state.scale * factor));
+                    draw();
+                }, { passive: false });
+
+                window.addEventListener('resize', resizeCanvas);
+                resizeCanvas();
+                compileAndCompute();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
