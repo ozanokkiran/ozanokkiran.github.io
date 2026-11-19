@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maclaurin Series &amp; Error Bound Analyzer</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 345px;
+            min-width: 300px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        .fn-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .fn-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 4px;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+
+        .fn-btn span {
+            display: block;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .fn-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .fn-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .fn-btn.active span {
+            color: #cbd5e0;
+        }
+
+        .roc-note {
+            margin-top: 8px;
+            padding: 5px 8px;
+            background: #f8fafc;
+            border-left: 3px solid var(--teal);
+            border-radius: 4px;
+            font-size: 0.76rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Degree & Evaluation Controls */
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .val-badge {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            color: var(--blue);
+            background: #ebf8ff;
+            padding: 1px 8px;
+            border-radius: 4px;
+            font-size: 0.84rem;
+        }
+
+        .deg-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .step-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            background: #eef2f5;
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-btn:hover {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+            accent-color: var(--teal);
+        }
+
+        .input-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .num-field {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .num-field label {
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .num-field input {
+            width: 100%;
+            padding: 5px 7px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-main);
+        }
+
+        .num-field input:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 2px rgba(91, 154, 160, 0.18);
+        }
+
+        .eps-pills {
+            display: flex;
+            gap: 5px;
+        }
+
+        .eps-btn {
+            flex: 1;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 4px 2px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.73rem;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        .eps-btn:hover, .eps-btn.active {
+            background: var(--purple);
+            color: #ffffff;
+            border-color: var(--purple);
+        }
+
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.77rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .checkbox-label input {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        /* Polynomial Box */
+        .poly-box {
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            color: var(--primary);
+            max-height: 82px;
+            overflow-y: auto;
+        }
+
+        /* Right Stage */
+        .stage {
+            flex: 1;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .graphs-wrap {
+            position: relative;
+            flex: 1;
+            min-height: 430px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: ew-resize;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 6px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Analysis Card */
+        .analysis-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px;
+        }
+
+        .analysis-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 9px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .analysis-title {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        .tol-badge {
+            font-size: 0.77rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .tol-badge.pass {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .tol-badge.fail {
+            background: #fff5f5;
+            color: #9b2c2c;
+            border: 1px solid #feb2b2;
+        }
+
+        .tol-badge.div {
+            background: #fefcbf;
+            color: #744210;
+            border: 1px solid #f6e05e;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .metric-box {
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 7px;
+            padding: 7px 9px;
+        }
+
+        .metric-lbl {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .metric-val {
+            font-family: 'Cambria Math', 'Courier New', monospace;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--primary);
+            word-break: break-word;
+        }
+
+        .metric-sub {
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .exam-bar {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #edf2f7;
+            font-size: 0.77rem;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media (max-width: 860px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 680px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Maclaurin Series &amp; Error Bound Analyzer</h1>
+        <p class="subtitle">IB DP Math AA HL &mdash; Truncation Error |R<sub>n</sub>(x)|, Lagrange Remainder Bound &amp; Radius of Convergence</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. IB Standard Maclaurin Functions -->
+            <div class="section-card">
+                <div class="section-title">1. IB Formula Booklet Functions</div>
+                <div class="fn-grid" id="fnGrid">
+                    <button type="button" class="fn-btn active" data-fn="exp">e<sup>x</sup><span>R = &infin;</span></button>
+                    <button type="button" class="fn-btn" data-fn="sin">sin(x)<span>R = &infin;</span></button>
+                    <button type="button" class="fn-btn" data-fn="cos">cos(x)<span>R = &infin;</span></button>
+                    <button type="button" class="fn-btn" data-fn="ln">ln(1+x)<span>&minus;1 &lt; x &le; 1</span></button>
+                    <button type="button" class="fn-btn" data-fn="geom">1/(1&minus;x)<span>|x| &lt; 1</span></button>
+                    <button type="button" class="fn-btn" data-fn="atan">arctan(x)<span>|x| &le; 1</span></button>
+                </div>
+                <div class="roc-note" id="rocNote">Radius of Convergence: R = &infin; (converges for all x &isin; &Ropf;)</div>
+            </div>
+
+            <!-- 2. Degree n, Evaluation x0, Tolerance ε -->
+            <div class="section-card">
+                <div class="section-title">2. Polynomial Degree &amp; Evaluation</div>
+
+                <div class="slider-header">
+                    <span>Maclaurin Degree (n)</span>
+                    <span class="val-badge" id="degBadge">n = 3</span>
+                </div>
+                <div class="deg-row">
+                    <button type="button" class="step-btn" id="btnDegDown">&minus;</button>
+                    <input type="range" id="degSlider" min="0" max="15" step="1" value="3">
+                    <button type="button" class="step-btn" id="btnDegUp">+</button>
+                </div>
+
+                <div class="input-pair">
+                    <div class="num-field">
+                        <label for="x0Input">Evaluation Point x<sub>0</sub></label>
+                        <input type="number" id="x0Input" step="0.1" value="1.0">
+                    </div>
+                    <div class="num-field">
+                        <label for="epsInput">Error Tolerance &epsilon;</label>
+                        <input type="number" id="epsInput" step="0.001" min="0.00001" max="2" value="0.05">
+                    </div>
+                </div>
+
+                <div class="eps-pills">
+                    <button type="button" class="eps-btn" data-eps="0.1">&epsilon; = 0.1</button>
+                    <button type="button" class="eps-btn active" data-eps="0.05">0.05</button>
+                    <button type="button" class="eps-btn" data-eps="0.01">0.01</button>
+                    <button type="button" class="eps-btn" data-eps="0.001">0.001</button>
+                </div>
+            </div>
+
+            <!-- 3. Expanded Maclaurin Polynomial -->
+            <div class="section-card">
+                <div class="section-title">3. Polynomial Expansion P<sub>n</sub>(x)</div>
+                <div class="poly-box" id="polyBox"></div>
+            </div>
+
+            <!-- 4. Visual Layers -->
+            <div class="section-card">
+                <div class="section-title">4. Graphical Overlays</div>
+                <div class="toggle-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkTube" checked> &plusmn;&epsilon; Tolerance Band
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkBound" checked> Lagrange Bound
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkROC" checked> Convergence Zone
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkLogErr"> Log Scale Error
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Interactive Stage -->
+        <div class="stage">
+            <div class="graphs-wrap" id="graphsWrap">
+                <canvas id="mainCanvas"></canvas>
+                <div class="controls-hint">Click or drag on either graph to move x<sub>0</sub></div>
+            </div>
+
+            <!-- Live Error Telemetry -->
+            <div class="analysis-card">
+                <div class="analysis-top">
+                    <span class="analysis-title" id="analysisTitle">Error Analysis at x<sub>0</sub> = 1.00</span>
+                    <span class="tol-badge fail" id="tolBadge">|R<sub>n</sub>(x<sub>0</sub>)| &gt; &epsilon; (Increase n)</span>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-lbl">Exact Value f(x<sub>0</sub>)</div>
+                        <div class="metric-val" style="color:#2b6cb0;" id="mExact">2.718282</div>
+                        <div class="metric-sub" id="mExactSub">True function value</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Approx. P<sub>n</sub>(x<sub>0</sub>)</div>
+                        <div class="metric-val" style="color:#d96459;" id="mApprox">2.666667</div>
+                        <div class="metric-sub" id="mApproxSub">Degree n = 3</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Actual Error |R<sub>n</sub>|</div>
+                        <div class="metric-val" style="color:#e69a53;" id="mActual">0.051615</div>
+                        <div class="metric-sub">|f(x<sub>0</sub>) &minus; P<sub>n</sub>(x<sub>0</sub>)|</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl" id="mBoundLbl">Lagrange Bound</div>
+                        <div class="metric-val" style="color:#7c6992;" id="mBound">0.113262</div>
+                        <div class="metric-sub" id="mBoundSub">Guaranteed upper bound</div>
+                    </div>
+                </div>
+                <div class="exam-bar">
+                    <span id="minNText"><strong>Min degree for |R<sub>n</sub>(x<sub>0</sub>)| &lt; &epsilon;:</strong> n = 4 (Actual) | n = 5 (Lagrange)</span>
+                    <span id="validIntervalText"><strong>Valid interval |R<sub>n</sub>(x)| &lt; &epsilon;:</strong> [&minus;0.98, 0.99]</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            function factorial(k) {
+                var r = 1;
+                for (var i = 2; i <= k; i++) r *= i;
+                return r;
+            }
+
+            function sup(k) {
+                var map = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+                return String(k).split('').map(function (c) { return map[c] || c; }).join('');
+            }
+
+            /* =========================================================
+               IB STANDARD MACLAURIN LIBRARY
+            ========================================================= */
+            var LIB = {
+                exp: {
+                    name: 'eˣ',
+                    roc: Infinity,
+                    rocText: 'Radius of Convergence: R = ∞ (converges for all x ∈ ℝ)',
+                    xRange: [-3.5, 3.5],
+                    yRange: [-1, 10],
+                    defaultX0: 1.0,
+                    f: function (x) { return Math.exp(x); },
+                    evalP: function (x, n) {
+                        var sum = 0, term = 1;
+                        for (var k = 0; k <= n; k++) {
+                            if (k > 0) term *= x / k;
+                            sum += term;
+                        }
+                        return sum;
+                    },
+                    boundLabel: 'Lagrange Bound',
+                    boundFormula: 'e^max(0,x₀) · |x₀|^(n+1)/(n+1)!',
+                    bound: function (x, n) {
+                        var M = x >= 0 ? Math.exp(x) : 1;
+                        return M * Math.pow(Math.abs(x), n + 1) / factorial(n + 1);
+                    },
+                    polyStr: function (n) {
+                        var terms = ['1'];
+                        for (var k = 1; k <= n; k++) {
+                            if (k === 1) terms.push('x');
+                            else terms.push('x' + sup(k) + '/' + k + '!');
+                        }
+                        return 'P' + n + '(x) = ' + terms.join(' + ');
+                    }
+                },
+                sin: {
+                    name: 'sin(x)',
+                    roc: Infinity,
+                    rocText: 'Radius of Convergence: R = ∞ (odd powers only)',
+                    xRange: [-5.5, 5.5],
+                    yRange: [-2.4, 2.4],
+                    defaultX0: 1.5,
+                    f: function (x) { return Math.sin(x); },
+                    evalP: function (x, n) {
+                        var sum = 0;
+                        for (var k = 0; 2 * k + 1 <= n; k++) {
+                            var p = 2 * k + 1;
+                            sum += (k % 2 === 0 ? 1 : -1) * Math.pow(x, p) / factorial(p);
+                        }
+                        return sum;
+                    },
+                    boundLabel: 'Lagrange Bound',
+                    boundFormula: '|x₀|^m / m! (next odd power m)',
+                    bound: function (x, n) {
+                        var m = (n % 2 === 1) ? n + 2 : n + 1;
+                        return Math.pow(Math.abs(x), m) / factorial(m);
+                    },
+                    polyStr: function (n) {
+                        var out = [];
+                        for (var k = 0; 2 * k + 1 <= n; k++) {
+                            var p = 2 * k + 1;
+                            var t = p === 1 ? 'x' : 'x' + sup(p) + '/' + p + '!';
+                            if (k === 0) out.push(t);
+                            else out.push((k % 2 === 0 ? ' + ' : ' − ') + t);
+                        }
+                        return 'P' + n + '(x) = ' + (out.length ? out.join('') : '0');
+                    }
+                },
+                cos: {
+                    name: 'cos(x)',
+                    roc: Infinity,
+                    rocText: 'Radius of Convergence: R = ∞ (even powers only)',
+                    xRange: [-5.5, 5.5],
+                    yRange: [-2.4, 2.4],
+                    defaultX0: 1.5,
+                    f: function (x) { return Math.cos(x); },
+                    evalP: function (x, n) {
+                        var sum = 0;
+                        for (var k = 0; 2 * k <= n; k++) {
+                            var p = 2 * k;
+                            sum += (k % 2 === 0 ? 1 : -1) * Math.pow(x, p) / factorial(p);
+                        }
+                        return sum;
+                    },
+                    boundLabel: 'Lagrange Bound',
+                    boundFormula: '|x₀|^m / m! (next even power m)',
+                    bound: function (x, n) {
+                        var m = (n % 2 === 0) ? n + 2 : n + 1;
+                        return Math.pow(Math.abs(x), m) / factorial(m);
+                    },
+                    polyStr: function (n) {
+                        var out = [];
+                        for (var k = 0; 2 * k <= n; k++) {
+                            var p = 2 * k;
+                            var t = p === 0 ? '1' : 'x' + sup(p) + '/' + p + '!';
+                            if (k === 0) out.push(t);
+                            else out.push((k % 2 === 0 ? ' + ' : ' − ') + t);
+                        }
+                        return 'P' + n + '(x) = ' + out.join('');
+                    }
+                },
+                ln: {
+                    name: 'ln(1+x)',
+                    roc: 1,
+                    rocText: 'Convergence Interval: −1 < x ≤ 1 (R = 1; diverges for |x| > 1)',
+                    xRange: [-1.4, 2.2],
+                    yRange: [-2.8, 2.2],
+                    defaultX0: 0.6,
+                    f: function (x) { return x <= -1 ? NaN : Math.log(1 + x); },
+                    evalP: function (x, n) {
+                        var sum = 0;
+                        for (var k = 1; k <= n; k++) {
+                            sum += ((k - 1) % 2 === 0 ? 1 : -1) * Math.pow(x, k) / k;
+                        }
+                        return sum;
+                    },
+                    boundLabel: 'Lagrange Bound',
+                    boundFormula: 'x₀≥0: x₀^(n+1)/(n+1) | x₀<0: |x₀|^(n+1)/((n+1)(1+x₀)^(n+1))',
+                    bound: function (x, n) {
+                        if (x <= -1) return Infinity;
+                        if (x >= 0) {
+                            return Math.pow(x, n + 1) / (n + 1);
+                        }
+                        return Math.pow(Math.abs(x) / (1 + x), n + 1) / (n + 1);
+                    },
+                    polyStr: function (n) {
+                        if (n === 0) return 'P0(x) = 0';
+                        var out = [];
+                        for (var k = 1; k <= n; k++) {
+                            var t = k === 1 ? 'x' : 'x' + sup(k) + '/' + k;
+                            if (k === 1) out.push(t);
+                            else out.push(((k - 1) % 2 === 0 ? ' + ' : ' − ') + t);
+                        }
+                        return 'P' + n + '(x) = ' + out.join('');
+                    }
+                },
+                geom: {
+                    name: '1/(1−x)',
+                    roc: 1,
+                    rocText: 'Convergence Interval: −1 < x < 1 (R = 1; pole at x = 1)',
+                    xRange: [-1.8, 1.8],
+                    yRange: [-2, 6],
+                    defaultX0: 0.5,
+                    f: function (x) { return Math.abs(1 - x) < 1e-6 ? NaN : 1 / (1 - x); },
+                    evalP: function (x, n) {
+                        var sum = 0, p = 1;
+                        for (var k = 0; k <= n; k++) {
+                            sum += p;
+                            p *= x;
+                        }
+                        return sum;
+                    },
+                    boundLabel: 'Lagrange Bound',
+                    boundFormula: 'x₀≥0: x₀^(n+1)/(1−x₀)^(n+2) | x₀<0: |x₀|^(n+1)',
+                    bound: function (x, n) {
+                        if (x >= 1) return Infinity;
+                        if (x >= 0) return Math.pow(x, n + 1) / Math.pow(1 - x, n + 2);
+                        return Math.pow(Math.abs(x), n + 1);
+                    },
+                    polyStr: function (n) {
+                        var out = ['1'];
+                        for (var k = 1; k <= n; k++) {
+                            out.push(k === 1 ? 'x' : 'x' + sup(k));
+                        }
+                        return 'P' + n + '(x) = ' + out.join(' + ');
+                    }
+                },
+                atan: {
+                    name: 'arctan(x)',
+                    roc: 1,
+                    rocText: 'Convergence Interval: −1 ≤ x ≤ 1 (R = 1; alternating series)',
+                    xRange: [-2.2, 2.2],
+                    yRange: [-1.8, 1.8],
+                    defaultX0: 0.7,
+                    f: function (x) { return Math.atan(x); },
+                    evalP: function (x, n) {
+                        var sum = 0;
+                        for (var k = 0; 2 * k + 1 <= n; k++) {
+                            var p = 2 * k + 1;
+                            sum += (k % 2 === 0 ? 1 : -1) * Math.pow(x, p) / p;
+                        }
+                        return sum;
+                    },
+                    boundLabel: 'Alternating Bound',
+                    boundFormula: '|x₀|^m / m (valid for |x₀| ≤ 1)',
+                    bound: function (x, n) {
+                        if (Math.abs(x) > 1) return Infinity;
+                        var m = (n % 2 === 1) ? n + 2 : n + 1;
+                        return Math.pow(Math.abs(x), m) / m;
+                    },
+                    polyStr: function (n) {
+                        var out = [];
+                        for (var k = 0; 2 * k + 1 <= n; k++) {
+                            var p = 2 * k + 1;
+                            var t = p === 1 ? 'x' : 'x' + sup(p) + '/' + p;
+                            if (k === 0) out.push(t);
+                            else out.push((k % 2 === 0 ? ' + ' : ' − ') + t);
+                        }
+                        return 'P' + n + '(x) = ' + (out.length ? out.join('') : '0');
+                    }
+                }
+            };
+
+            function fmtVal(v) {
+                if (isNaN(v)) return 'Undefined';
+                if (!isFinite(v)) return '∞ (Diverges)';
+                if (Math.abs(v) > 0 && Math.abs(v) < 1e-4) return v.toExponential(3);
+                return v.toFixed(6);
+            }
+
+            function init() {
+                var canvas = document.getElementById('mainCanvas');
+                var ctx = canvas.getContext('2d');
+                var graphsWrap = document.getElementById('graphsWrap');
+
+                var fnBtns = document.querySelectorAll('.fn-btn');
+                var rocNote = document.getElementById('rocNote');
+                var degBadge = document.getElementById('degBadge');
+                var degSlider = document.getElementById('degSlider');
+                var btnDegDown = document.getElementById('btnDegDown');
+                var btnDegUp = document.getElementById('btnDegUp');
+
+                var x0Input = document.getElementById('x0Input');
+                var epsInput = document.getElementById('epsInput');
+                var epsBtns = document.querySelectorAll('.eps-btn');
+                var polyBox = document.getElementById('polyBox');
+
+                var chkTube = document.getElementById('chkTube');
+                var chkBound = document.getElementById('chkBound');
+                var chkROC = document.getElementById('chkROC');
+                var chkLogErr = document.getElementById('chkLogErr');
+
+                var analysisTitle = document.getElementById('analysisTitle');
+                var tolBadge = document.getElementById('tolBadge');
+                var mExact = document.getElementById('mExact');
+                var mApprox = document.getElementById('mApprox');
+                var mApproxSub = document.getElementById('mApproxSub');
+                var mActual = document.getElementById('mActual');
+                var mBoundLbl = document.getElementById('mBoundLbl');
+                var mBound = document.getElementById('mBound');
+                var mBoundSub = document.getElementById('mBoundSub');
+                var minNText = document.getElementById('minNText');
+                var validIntervalText = document.getElementById('validIntervalText');
+
+                var PAD_L = 56, PAD_R = 22;
+
+                var state = {
+                    fnKey: 'exp',
+                    n: 3,
+                    x0: 1.0,
+                    eps: 0.05,
+                    dragging: false
+                };
+
+                function getFn() { return LIB[state.fnKey]; }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var rect = graphsWrap.getBoundingClientRect();
+                    var w = rect.width > 50 ? rect.width : 640;
+                    var h = rect.height > 100 ? rect.height : 430;
+                    canvas.width = Math.round(w * dpr);
+                    canvas.height = Math.round(h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    updateAll();
+                }
+
+                function computeValidInterval(item, n, eps) {
+                    var xMin = item.xRange[0], xMax = item.xRange[1];
+                    var steps = 500;
+                    var dx = (xMax - xMin) / steps;
+
+                    // Expand left and right from 0 while |f(x)-Pn(x)| < eps
+                    var left = 0, right = 0;
+                    for (var x = 0; x <= xMax; x += dx) {
+                        var fv = item.f(x), pv = item.evalP(x, n);
+                        if (isNaN(fv) || Math.abs(fv - pv) >= eps) break;
+                        right = x;
+                    }
+                    for (var x2 = 0; x2 >= xMin; x2 -= dx) {
+                        var fv2 = item.f(x2), pv2 = item.evalP(x2, n);
+                        if (isNaN(fv2) || Math.abs(fv2 - pv2) >= eps) break;
+                        left = x2;
+                    }
+                    return [left, right];
+                }
+
+                function findMinDegree(item, x0, eps) {
+                    var minActual = null, minBound = null;
+                    var fv = item.f(x0);
+                    if (isNaN(fv)) return { actual: null, bound: null };
+
+                    for (var k = 0; k <= 40; k++) {
+                        if (minActual === null) {
+                            var err = Math.abs(fv - item.evalP(x0, k));
+                            if (err < eps) minActual = k;
+                        }
+                        if (minBound === null) {
+                            var bnd = item.bound(x0, k);
+                            if (isFinite(bnd) && bnd < eps) minBound = k;
+                        }
+                        if (minActual !== null && minBound !== null) break;
+                    }
+                    return { actual: minActual, bound: minBound };
+                }
+
+                function updateAll() {
+                    var item = getFn();
+                    degBadge.textContent = 'n = ' + state.n;
+                    degSlider.value = String(state.n);
+                    rocNote.textContent = item.rocText;
+                    polyBox.textContent = item.polyStr(state.n);
+
+                    var x0 = state.x0;
+                    var eps = state.eps;
+                    var exact = item.f(x0);
+                    var approx = item.evalP(x0, state.n);
+                    var actualErr = isNaN(exact) ? NaN : Math.abs(exact - approx);
+                    var bnd = item.bound(x0, state.n);
+
+                    analysisTitle.innerHTML = 'Error Analysis at x<sub>0</sub> = ' + x0.toFixed(2) + ' &nbsp;|&nbsp; Tolerance &epsilon; = ' + eps;
+                    mExact.textContent = fmtVal(exact);
+                    mApprox.textContent = fmtVal(approx);
+                    mApproxSub.textContent = 'Degree n = ' + state.n;
+                    mActual.textContent = fmtVal(actualErr);
+                    mBoundLbl.textContent = item.boundLabel;
+                    mBound.textContent = fmtVal(bnd);
+                    mBoundSub.textContent = item.boundFormula;
+
+                    var outsideROC = isFinite(item.roc) && Math.abs(x0) > item.roc;
+                    if (outsideROC || isNaN(exact)) {
+                        tolBadge.className = 'tol-badge div';
+                        tolBadge.textContent = 'Outside Radius of Convergence (Diverges)';
+                    } else if (actualErr < eps) {
+                        tolBadge.className = 'tol-badge pass';
+                        tolBadge.textContent = 'Within Tolerance (|Rₙ| < ε)';
+                    } else {
+                        tolBadge.className = 'tol-badge fail';
+                        tolBadge.textContent = 'Exceeds Tolerance (|Rₙ| ≥ ε)';
+                    }
+
+                    var mins = findMinDegree(item, x0, eps);
+                    var actStr = mins.actual !== null ? ('n = ' + mins.actual) : '> 40 / Diverges';
+                    var bndStr = mins.bound !== null ? ('n = ' + mins.bound) : '> 40 / N/A';
+                    minNText.innerHTML = '<strong>Min degree for error &lt; &epsilon;:</strong> ' + actStr + ' (Actual) &nbsp;|&nbsp; ' + bndStr + ' (' + item.boundLabel + ')';
+
+                    var iv = computeValidInterval(item, state.n, eps);
+                    validIntervalText.innerHTML = '<strong>Valid interval |R<sub>n</sub>(x)| &lt; &epsilon;:</strong> [' + iv[0].toFixed(2) + ', ' + iv[1].toFixed(2) + ']';
+
+                    drawGraphs(item, exact, approx, actualErr, bnd);
+                }
+
+                function drawGraphs(item, exact, approx, actualErr, bnd) {
+                    var rect = graphsWrap.getBoundingClientRect();
+                    var W = rect.width > 50 ? rect.width : 640;
+                    var H = rect.height > 100 ? rect.height : 430;
+                    ctx.clearRect(0, 0, W, H);
+
+                    var xMin = item.xRange[0], xMax = item.xRange[1];
+                    var plotW = W - PAD_L - PAD_R;
+
+                    function xToPx(x) {
+                        return PAD_L + ((x - xMin) / (xMax - xMin)) * plotW;
+                    }
+
+                    // Split canvas: Top 56% for f(x) vs Pn(x), Bottom 44% for Error |Rn(x)|
+                    var splitY = Math.round(H * 0.56);
+
+                    /* -----------------------------------------------------
+                       TOP GRAPH: f(x) vs Pn(x)
+                    ----------------------------------------------------- */
+                    var topT = 26, topB = splitY - 18;
+                    var topH = topB - topT;
+                    var yMin = item.yRange[0], yMax = item.yRange[1];
+
+                    function yTopPx(y) {
+                        return topB - ((y - yMin) / (yMax - yMin)) * topH;
+                    }
+
+                    // Clip region for top graph
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(PAD_L, topT, plotW, topH);
+                    ctx.clip();
+
+                    // Shade outside Radius of Convergence if finite
+                    if (chkROC.checked && isFinite(item.roc)) {
+                        var leftR = xToPx(-item.roc);
+                        var rightR = xToPx(item.roc);
+                        ctx.fillStyle = 'rgba(217, 100, 89, 0.08)';
+                        if (leftR > PAD_L) ctx.fillRect(PAD_L, topT, leftR - PAD_L, topH);
+                        if (rightR < PAD_L + plotW) ctx.fillRect(rightR, topT, PAD_L + plotW - rightR, topH);
+
+                        ctx.strokeStyle = 'rgba(217, 100, 89, 0.45)';
+                        ctx.setLineDash([4, 4]);
+                        ctx.lineWidth = 1.2;
+                        ctx.beginPath();
+                        ctx.moveTo(leftR, topT); ctx.lineTo(leftR, topB);
+                        ctx.moveTo(rightR, topT); ctx.lineTo(rightR, topB);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+
+                    // Axes inside top graph
+                    var y0Top = yTopPx(0);
+                    var x0Axis = xToPx(0);
+                    ctx.strokeStyle = '#cbd5e0';
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(PAD_L, y0Top); ctx.lineTo(W - PAD_R, y0Top);
+                    ctx.moveTo(x0Axis, topT); ctx.lineTo(x0Axis, topB);
+                    ctx.stroke();
+
+                    var samples = 360;
+                    var dx = (xMax - xMin) / samples;
+
+                    // ±ε Tolerance band around f(x)
+                    if (chkTube.checked) {
+                        ctx.beginPath();
+                        var started = false;
+                        for (var i = 0; i <= samples; i++) {
+                            var x = xMin + i * dx;
+                            var fv = item.f(x);
+                            if (isNaN(fv) || Math.abs(fv) > 40) { started = false; continue; }
+                            var px = xToPx(x), py = yTopPx(fv + state.eps);
+                            if (!started) { ctx.moveTo(px, py); started = true; }
+                            else ctx.lineTo(px, py);
+                        }
+                        for (var j = samples; j >= 0; j--) {
+                            var x2 = xMin + j * dx;
+                            var fv2 = item.f(x2);
+                            if (isNaN(fv2) || Math.abs(fv2) > 40) continue;
+                            ctx.lineTo(xToPx(x2), yTopPx(fv2 - state.eps));
+                        }
+                        ctx.closePath();
+                        ctx.fillStyle = 'rgba(56, 161, 105, 0.16)';
+                        ctx.fill();
+                    }
+
+                    // Exact curve f(x)
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#2b6cb0';
+                    ctx.lineWidth = 2.5;
+                    var first = true;
+                    for (var i2 = 0; i2 <= samples; i2++) {
+                        var x3 = xMin + i2 * dx;
+                        var fv3 = item.f(x3);
+                        if (isNaN(fv3) || Math.abs(fv3) > 60) { first = true; continue; }
+                        var px3 = xToPx(x3), py3 = yTopPx(fv3);
+                        if (first) { ctx.moveTo(px3, py3); first = false; }
+                        else ctx.lineTo(px3, py3);
+                    }
+                    ctx.stroke();
+
+                    // Maclaurin polynomial Pn(x)
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#d96459';
+                    ctx.lineWidth = 2.2;
+                    ctx.setLineDash([6, 4]);
+                    first = true;
+                    for (var i3 = 0; i3 <= samples; i3++) {
+                        var x4 = xMin + i3 * dx;
+                        var pv4 = item.evalP(x4, state.n);
+                        if (!isFinite(pv4) || Math.abs(pv4) > 80) { first = true; continue; }
+                        var px4 = xToPx(x4), py4 = yTopPx(pv4);
+                        if (first) { ctx.moveTo(px4, py4); first = false; }
+                        else ctx.lineTo(px4, py4);
+                    }
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Highlight error segment at x0
+                    var cx0 = xToPx(state.x0);
+                    if (!isNaN(exact) && isFinite(approx)) {
+                        var yEx = yTopPx(exact), yAp = yTopPx(approx);
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#e69a53';
+                        ctx.lineWidth = 3;
+                        ctx.moveTo(cx0, yEx);
+                        ctx.lineTo(cx0, yAp);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(cx0, yEx, 4.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#2b6cb0';
+                        ctx.fill();
+
+                        ctx.beginPath();
+                        ctx.arc(cx0, yAp, 4.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#d96459';
+                        ctx.fill();
+                    }
+
+                    ctx.restore();
+
+                    // Top frame & labels
+                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(PAD_L, topT, plotW, topH);
+
+                    ctx.font = "bold 11.5px 'Segoe UI'";
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#2b6cb0';
+                    ctx.fillText('f(x) = ' + item.name, PAD_L + 6, 16);
+                    ctx.fillStyle = '#d96459';
+                    ctx.fillText('P' + state.n + '(x) (dashed)', PAD_L + 115, 16);
+                    if (chkTube.checked) {
+                        ctx.fillStyle = '#38a169';
+                        ctx.fillText('±ε Band', PAD_L + 225, 16);
+                    }
+
+                    ctx.font = "10px 'Segoe UI'";
+                    ctx.fillStyle = '#718096';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(yMax.toFixed(1), PAD_L - 6, topT + 2);
+                    ctx.fillText(yMin.toFixed(1), PAD_L - 6, topB - 2);
+                    if (yMin < 0 && yMax > 0) ctx.fillText('0', PAD_L - 6, y0Top);
+
+                    /* -----------------------------------------------------
+                       BOTTOM GRAPH: Absolute Error |Rn(x)| vs Lagrange Bound
+                    ----------------------------------------------------- */
+                    var botT = splitY + 22, botB = H - 26;
+                    var botH = botB - botT;
+                    var useLog = chkLogErr.checked;
+
+                    // Vertical scale for error graph
+                    var errMaxLin = Math.max(state.eps * 3.5, isFinite(actualErr) ? Math.min(actualErr * 1.6, 2.5) : 0.5, 0.1);
+                    var logMin = -6, logMax = 1; // 10^-6 to 10^1
+
+                    function errToY(eVal) {
+                        if (useLog) {
+                            var lg = Math.log10(Math.max(1e-7, eVal));
+                            var frac = (lg - logMin) / (logMax - logMin);
+                            return botB - Math.max(0, Math.min(1, frac)) * botH;
+                        }
+                        var fracL = Math.max(0, Math.min(1, eVal / errMaxLin));
+                        return botB - fracL * botH;
+                    }
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(PAD_L, botT, plotW, botH);
+                    ctx.clip();
+
+                    // Shade outside ROC
+                    if (chkROC.checked && isFinite(item.roc)) {
+                        var lR = xToPx(-item.roc), rR = xToPx(item.roc);
+                        ctx.fillStyle = 'rgba(217, 100, 89, 0.08)';
+                        if (lR > PAD_L) ctx.fillRect(PAD_L, botT, lR - PAD_L, botH);
+                        if (rR < PAD_L + plotW) ctx.fillRect(rR, botT, PAD_L + plotW - rR, botH);
+                    }
+
+                    // Tolerance horizontal line y = ε
+                    var yEps = errToY(state.eps);
+                    ctx.fillStyle = 'rgba(56, 161, 105, 0.1)';
+                    ctx.fillRect(PAD_L, yEps, plotW, botB - yEps);
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#38a169';
+                    ctx.setLineDash([5, 4]);
+                    ctx.lineWidth = 1.5;
+                    ctx.moveTo(PAD_L, yEps);
+                    ctx.lineTo(W - PAD_R, yEps);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Lagrange Bound curve
+                    if (chkBound.checked) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#7c6992';
+                        ctx.lineWidth = 1.8;
+                        ctx.setLineDash([4, 3]);
+                        var firstB = true;
+                        for (var b = 0; b <= samples; b++) {
+                            var xb = xMin + b * dx;
+                            var bv = item.bound(xb, state.n);
+                            if (!isFinite(bv) || isNaN(bv)) { firstB = true; continue; }
+                            var pxb = xToPx(xb), pyb = errToY(bv);
+                            if (firstB) { ctx.moveTo(pxb, pyb); firstB = false; }
+                            else ctx.lineTo(pxb, pyb);
+                        }
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+
+                    // Actual Error |Rn(x)| curve
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#e69a53';
+                    ctx.lineWidth = 2.4;
+                    var firstE = true;
+                    for (var e = 0; e <= samples; e++) {
+                        var xe = xMin + e * dx;
+                        var fve = item.f(xe), pve = item.evalP(xe, state.n);
+                        if (isNaN(fve) || !isFinite(pve)) { firstE = true; continue; }
+                        var errv = Math.abs(fve - pve);
+                        var pxe = xToPx(xe), pye = errToY(errv);
+                        if (firstE) { ctx.moveTo(pxe, pye); firstE = false; }
+                        else ctx.lineTo(pxe, pye);
+                    }
+                    ctx.stroke();
+
+                    // Dots at x0
+                    if (!isNaN(actualErr) && isFinite(actualErr)) {
+                        ctx.beginPath();
+                        ctx.arc(cx0, errToY(actualErr), 4.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#e69a53';
+                        ctx.fill();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                    }
+                    if (chkBound.checked && isFinite(bnd)) {
+                        ctx.beginPath();
+                        ctx.arc(cx0, errToY(bnd), 4.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#7c6992';
+                        ctx.fill();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+                    }
+
+                    ctx.restore();
+
+                    // Bottom frame & labels
+                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(PAD_L, botT, plotW, botH);
+
+                    ctx.font = "bold 11.5px 'Segoe UI'";
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'alphabetic';
+                    ctx.fillStyle = '#d97706';
+                    ctx.fillText('Actual Error |R' + state.n + '(x)|', PAD_L + 6, splitY + 14);
+                    if (chkBound.checked) {
+                        ctx.fillStyle = '#7c6992';
+                        ctx.fillText(item.boundLabel + ' (dashed)', PAD_L + 150, splitY + 14);
+                    }
+                    ctx.fillStyle = '#38a169';
+                    ctx.fillText('ε = ' + state.eps, W - PAD_R - 58, splitY + 14);
+
+                    // Error Y-axis ticks
+                    ctx.font = "10px 'Segoe UI'";
+                    ctx.fillStyle = '#718096';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle';
+                    if (useLog) {
+                        ctx.fillText('10¹', PAD_L - 6, botT + 2);
+                        ctx.fillText('10⁻²', PAD_L - 6, errToY(1e-2));
+                        ctx.fillText('10⁻⁶', PAD_L - 6, botB - 2);
+                    } else {
+                        ctx.fillText(errMaxLin.toFixed(2), PAD_L - 6, botT + 2);
+                        ctx.fillText((errMaxLin / 2).toFixed(2), PAD_L - 6, botT + botH / 2);
+                        ctx.fillText('0', PAD_L - 6, botB - 2);
+                    }
+
+                    // Shared X-axis ticks at bottom
+                    var xSpan = xMax - xMin;
+                    var xStep = xSpan <= 4 ? 0.5 : (xSpan <= 8 ? 1 : 2);
+                    var firstX = Math.ceil(xMin / xStep) * xStep;
+                    ctx.font = "10.5px 'Segoe UI'";
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    for (var xt = firstX; xt <= xMax + 1e-6; xt += xStep) {
+                        var pxT = xToPx(xt);
+                        ctx.fillText(Number(xt.toFixed(1)), pxT, botB + 6);
+                    }
+
+                    // Shared vertical x0 cursor across both graphs
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(74, 101, 114, 0.6)';
+                    ctx.setLineDash([4, 4]);
+                    ctx.lineWidth = 1.5;
+                    ctx.moveTo(cx0, topT);
+                    ctx.lineTo(cx0, botB);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#4a6572';
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    ctx.textAlign = 'center';
+                    ctx.fillText('x₀=' + state.x0.toFixed(2), cx0, splitY - 12);
+                    ctx.restore();
+                }
+
+                /* =========================================================
+                   EVENTS
+                ========================================================= */
+                fnBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        fnBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.fnKey = btn.getAttribute('data-fn');
+                        state.x0 = LIB[state.fnKey].defaultX0;
+                        x0Input.value = String(state.x0);
+                        updateAll();
+                    });
+                });
+
+                degSlider.addEventListener('input', function () {
+                    state.n = parseInt(degSlider.value, 10);
+                    updateAll();
+                });
+
+                btnDegDown.addEventListener('click', function () {
+                    if (state.n > 0) { state.n--; updateAll(); }
+                });
+
+                btnDegUp.addEventListener('click', function () {
+                    if (state.n < 15) { state.n++; updateAll(); }
+                });
+
+                x0Input.addEventListener('input', function () {
+                    var v = parseFloat(x0Input.value);
+                    if (!isNaN(v)) { state.x0 = v; updateAll(); }
+                });
+
+                epsInput.addEventListener('input', function () {
+                    var v = parseFloat(epsInput.value);
+                    if (!isNaN(v) && v > 0) {
+                        state.eps = v;
+                        epsBtns.forEach(function (b) { b.classList.remove('active'); });
+                        updateAll();
+                    }
+                });
+
+                epsBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        epsBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.eps = parseFloat(btn.getAttribute('data-eps'));
+                        epsInput.value = String(state.eps);
+                        updateAll();
+                    });
+                });
+
+                [chkTube, chkBound, chkROC, chkLogErr].forEach(function (c) {
+                    c.addEventListener('change', updateAll);
+                });
+
+                function scrubX0(clientX) {
+                    var item = getFn();
+                    var rect = canvas.getBoundingClientRect();
+                    var plotW = rect.width - PAD_L - PAD_R;
+                    var frac = (clientX - rect.left - PAD_L) / plotW;
+                    frac = Math.max(0, Math.min(1, frac));
+                    var xv = item.xRange[0] + frac * (item.xRange[1] - item.xRange[0]);
+                    state.x0 = Math.round(xv * 100) / 100;
+                    x0Input.value = String(state.x0);
+                    updateAll();
+                }
+
+                canvas.addEventListener('mousedown', function (e) {
+                    state.dragging = true;
+                    scrubX0(e.clientX);
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (!state.dragging) return;
+                    scrubX0(e.clientX);
+                });
+
+                window.addEventListener('mouseup', function () {
+                    state.dragging = false;
+                });
+
+                window.addEventListener('resize', resizeCanvas);
+                resizeCanvas();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
