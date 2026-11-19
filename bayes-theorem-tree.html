@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bayes' Theorem &amp; Probability Tree Visualizer</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 350px;
+            min-width: 300px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .branch-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 4px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .param-group-lbl {
+            font-size: 0.71rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 6px 0 5px 0;
+            letter-spacing: 0.3px;
+        }
+
+        .param-row {
+            margin-bottom: 7px;
+        }
+
+        .param-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+
+        .num-mini {
+            width: 62px;
+            padding: 2px 5px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.84rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--blue);
+            background: #f8fafc;
+        }
+
+        .num-mini:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #ffffff;
+        }
+
+        .auto-val {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: #edf2f7;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--teal);
+            height: 5px;
+        }
+
+        /* Target Posterior Pills */
+        .query-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+
+        .query-grid.cols-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .query-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 6px 4px;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 0.83rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .query-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .query-btn.active {
+            background: var(--coral);
+            color: #ffffff;
+            border-color: var(--coral);
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 6px 7px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .preset-btn span {
+            display: block;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 1px;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span {
+            color: #cbd5e0;
+        }
+
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .checkbox-label input {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        /* Right Stage */
+        .stage {
+            flex: 1;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-wrap {
+            position: relative;
+            flex: 1;
+            min-height: 410px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .view-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .legend-bar {
+            position: absolute;
+            top: 10px;
+            left: 12px;
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--primary);
+            pointer-events: none;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dot-mini {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .hover-tooltip {
+            position: absolute;
+            display: none;
+            pointer-events: none;
+            background: rgba(45, 55, 72, 0.95);
+            color: #ffffff;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            line-height: 1.45;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 7px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Analysis Card */
+        .analysis-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px;
+        }
+
+        .analysis-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 9px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .prob-headline {
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 1.06rem;
+            font-weight: 700;
+            color: var(--coral);
+        }
+
+        .formula-pill {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.88rem;
+            font-weight: 700;
+            background: #faf5ff;
+            color: var(--purple);
+            border: 1px solid #d6bcfa;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .metric-box {
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 7px;
+            padding: 7px 9px;
+        }
+
+        .metric-lbl {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .metric-val {
+            font-family: 'Cambria Math', 'Courier New', monospace;
+            font-size: 0.93rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-sub {
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .step-bar {
+            margin-top: 8px;
+            padding: 7px 10px;
+            background: #f8fafc;
+            border-left: 3px solid var(--coral);
+            border-radius: 4px;
+            font-family: 'Cambria Math', 'Courier New', monospace;
+            font-size: 0.82rem;
+            color: var(--text-main);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        @media (max-width: 860px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 680px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-wrap {
+                min-height: 340px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Bayes' Theorem &amp; Probability Tree Visualizer</h1>
+        <p class="subtitle">IB DP Math AA HL &mdash; Conditional Probability, Total Probability Law &amp; Interactive Area Diagram</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Partition & Probabilities -->
+            <div class="section-card">
+                <div class="section-title">1. Partition &amp; Conditional Probabilities</div>
+                <div class="branch-tabs">
+                    <button type="button" class="tab-btn active" data-branches="2">2 Events (B<sub>1</sub>, B<sub>2</sub>)</button>
+                    <button type="button" class="tab-btn" data-branches="3">3 Events (B<sub>1</sub>, B<sub>2</sub>, B<sub>3</sub>)</button>
+                </div>
+
+                <div class="param-group-lbl">Prior Probabilities (Stage 1)</div>
+                <div class="param-row">
+                    <div class="slider-header">
+                        <span id="lblP0">P(Disease)</span>
+                        <input type="number" id="inP0" class="num-mini" min="0.01" max="0.99" step="0.01" value="0.01">
+                    </div>
+                    <input type="range" id="slP0" min="0.01" max="0.99" step="0.01" value="0.01">
+                </div>
+
+                <div class="param-row" id="rowP1" style="display:none;">
+                    <div class="slider-header">
+                        <span id="lblP1">P(B₂)</span>
+                        <input type="number" id="inP1" class="num-mini" min="0.01" max="0.98" step="0.01" value="0.30">
+                    </div>
+                    <input type="range" id="slP1" min="0.01" max="0.98" step="0.01" value="0.30">
+                </div>
+
+                <div class="param-row">
+                    <div class="slider-header">
+                        <span id="lblPLast">P(Healthy) = 1 &minus; P(Disease)</span>
+                        <span class="auto-val" id="valPLast">0.99</span>
+                    </div>
+                </div>
+
+                <div class="param-group-lbl" style="margin-top:9px;">Conditional Probabilities (Stage 2)</div>
+                <div class="param-row">
+                    <div class="slider-header">
+                        <span id="lblC0">P(Pos | Disease)</span>
+                        <input type="number" id="inC0" class="num-mini" min="0.00" max="1.00" step="0.01" value="0.99">
+                    </div>
+                    <input type="range" id="slC0" min="0.00" max="1.00" step="0.01" value="0.99">
+                </div>
+
+                <div class="param-row">
+                    <div class="slider-header">
+                        <span id="lblC1">P(Pos | Healthy)</span>
+                        <input type="number" id="inC1" class="num-mini" min="0.00" max="1.00" step="0.01" value="0.05">
+                    </div>
+                    <input type="range" id="slC1" min="0.00" max="1.00" step="0.01" value="0.05">
+                </div>
+
+                <div class="param-row" id="rowC2" style="display:none;">
+                    <div class="slider-header">
+                        <span id="lblC2">P(A | B₃)</span>
+                        <input type="number" id="inC2" class="num-mini" min="0.00" max="1.00" step="0.01" value="0.05">
+                    </div>
+                    <input type="range" id="slC2" min="0.00" max="1.00" step="0.01" value="0.05">
+                </div>
+            </div>
+
+            <!-- 2. Posterior Query Selector -->
+            <div class="section-card">
+                <div class="section-title">2. Posterior Query to Highlight</div>
+                <div class="query-grid" id="queryGrid"></div>
+            </div>
+
+            <!-- 3. Classic IB Scenarios -->
+            <div class="section-card">
+                <div class="section-title">3. Classic IB AA HL Scenarios</div>
+                <div class="preset-grid">
+                    <button type="button" class="preset-btn active" data-preset="medical">
+                        Medical Test Paradox
+                        <span>2-Branch | Base rate 1%</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="spam">
+                        Email Spam Filter
+                        <span>2-Branch | Prior 30%</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="factories">
+                        3 Factories (IB HL)
+                        <span>3-Branch | Defectives</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="commute">
+                        Commute &amp; Late Arrival
+                        <span>3-Branch | Bus/Train/Bike</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. Visual Options -->
+            <div class="section-card">
+                <div class="section-title">4. Display Options</div>
+                <div class="toggle-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkProportional" checked> Proportional Width
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkJoint" checked> Joint P(B<sub>i</sub> &cap; A)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkPop"> 1,000 Pop. Counts
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkPct"> Show as %
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Interactive Stage -->
+        <div class="stage">
+            <div class="canvas-wrap" id="canvasWrap">
+                <canvas id="mainCanvas"></canvas>
+
+                <div class="legend-bar">
+                    <div class="legend-item"><span class="dot-mini" style="background:#d96459;"></span> Numerator Path</div>
+                    <div class="legend-item"><span class="dot-mini" style="background:#5b9aa0;"></span> Other Denominator Paths</div>
+                    <div class="legend-item"><span class="dot-mini" style="background:#cbd5e0;"></span> Excluded</div>
+                </div>
+
+                <div class="canvas-toolbar">
+                    <button type="button" class="view-btn active" data-view="tree">Tree Diagram</button>
+                    <button type="button" class="view-btn" data-view="area">Unit Square (Area)</button>
+                </div>
+
+                <div class="hover-tooltip" id="hoverTooltip"></div>
+                <div class="controls-hint">Click any leaf node or area block to switch the highlighted Bayes query</div>
+            </div>
+
+            <!-- IB Algebraic Solution Panel -->
+            <div class="analysis-card">
+                <div class="analysis-top">
+                    <span class="prob-headline" id="probHeadline">P(Disease | Pos) = 0.16667 (16.67%)</span>
+                    <span class="formula-pill" id="formulaPill">P(B<sub>1</sub> | A) = P(B<sub>1</sub>)P(A|B<sub>1</sub>) / P(A)</span>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-lbl">Numerator (Joint)</div>
+                        <div class="metric-val" style="color:#d96459;" id="mNum">0.00990</div>
+                        <div class="metric-sub" id="mNumSub">P(Disease &cap; Pos)</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Denominator (Total Prob.)</div>
+                        <div class="metric-val" style="color:#5b9aa0;" id="mDen">0.05940</div>
+                        <div class="metric-sub" id="mDenSub">P(Pos) across all paths</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Prior &rarr; Posterior</div>
+                        <div class="metric-val" style="color:#2b6cb0;" id="mShift">1.0% &rarr; 16.7%</div>
+                        <div class="metric-sub" id="mLift">Likelihood multiplier: 16.7&times;</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Out of 1,000 Cases</div>
+                        <div class="metric-val" style="color:#7c6992;" id="mPop">9.9 / 59.4</div>
+                        <div class="metric-sub" id="mPopSub">Natural frequency check</div>
+                    </div>
+                </div>
+
+                <div class="step-bar" id="stepBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var PRESETS = {
+                medical: {
+                    branches: 2,
+                    bNames: ['Disease', 'Healthy'],
+                    aNames: ['Pos', 'Neg'],
+                    priors: [0.01, 0.99],
+                    condA: [0.99, 0.05],
+                    targetB: 0,
+                    targetA: 0
+                },
+                spam: {
+                    branches: 2,
+                    bNames: ['Spam', 'Inbox'],
+                    aNames: ['Flag', 'Pass'],
+                    priors: [0.30, 0.70],
+                    condA: [0.92, 0.04],
+                    targetB: 0,
+                    targetA: 0
+                },
+                factories: {
+                    branches: 3,
+                    bNames: ['Factory 1', 'Factory 2', 'Factory 3'],
+                    aNames: ['Defect', 'OK'],
+                    priors: [0.50, 0.30, 0.20],
+                    condA: [0.02, 0.04, 0.05],
+                    targetB: 1,
+                    targetA: 0
+                },
+                commute: {
+                    branches: 3,
+                    bNames: ['Bus', 'Train', 'Bike'],
+                    aNames: ['Late', 'OnTime'],
+                    priors: [0.40, 0.35, 0.25],
+                    condA: [0.15, 0.05, 0.10],
+                    targetB: 0,
+                    targetA: 0
+                }
+            };
+
+            function init() {
+                var canvas = document.getElementById('mainCanvas');
+                var ctx = canvas.getContext('2d');
+                var canvasWrap = document.getElementById('canvasWrap');
+                var hoverTooltip = document.getElementById('hoverTooltip');
+
+                var branchTabs = document.querySelectorAll('.tab-btn');
+                var viewBtns = document.querySelectorAll('.view-btn');
+                var presetBtns = document.querySelectorAll('.preset-btn');
+                var queryGrid = document.getElementById('queryGrid');
+
+                var lblP0 = document.getElementById('lblP0');
+                var inP0 = document.getElementById('inP0');
+                var slP0 = document.getElementById('slP0');
+                var rowP1 = document.getElementById('rowP1');
+                var lblP1 = document.getElementById('lblP1');
+                var inP1 = document.getElementById('inP1');
+                var slP1 = document.getElementById('slP1');
+                var lblPLast = document.getElementById('lblPLast');
+                var valPLast = document.getElementById('valPLast');
+
+                var lblC0 = document.getElementById('lblC0');
+                var inC0 = document.getElementById('inC0');
+                var slC0 = document.getElementById('slC0');
+                var lblC1 = document.getElementById('lblC1');
+                var inC1 = document.getElementById('inC1');
+                var slC1 = document.getElementById('slC1');
+                var rowC2 = document.getElementById('rowC2');
+                var lblC2 = document.getElementById('lblC2');
+                var inC2 = document.getElementById('inC2');
+                var slC2 = document.getElementById('slC2');
+
+                var chkProportional = document.getElementById('chkProportional');
+                var chkJoint = document.getElementById('chkJoint');
+                var chkPop = document.getElementById('chkPop');
+                var chkPct = document.getElementById('chkPct');
+
+                var probHeadline = document.getElementById('probHeadline');
+                var formulaPill = document.getElementById('formulaPill');
+                var mNum = document.getElementById('mNum');
+                var mNumSub = document.getElementById('mNumSub');
+                var mDen = document.getElementById('mDen');
+                var mDenSub = document.getElementById('mDenSub');
+                var mShift = document.getElementById('mShift');
+                var mLift = document.getElementById('mLift');
+                var mPop = document.getElementById('mPop');
+                var mPopSub = document.getElementById('mPopSub');
+                var stepBar = document.getElementById('stepBar');
+
+                var state = {
+                    branches: 2,
+                    view: 'tree', // 'tree' or 'area'
+                    bNames: ['Disease', 'Healthy'],
+                    aNames: ['Pos', 'Neg'],
+                    priors: [0.01, 0.99],
+                    condA: [0.99, 0.05],
+                    targetB: 0,
+                    targetA: 0, // 0 = A, 1 = A'
+                    hitRegions: [], // clickable/hoverable leaf or area rects
+                    hoverKey: null
+                };
+
+                function fmtP(val, dec) {
+                    if (chkPct.checked) return (val * 100).toFixed(dec > 2 ? dec - 2 : 1) + '%';
+                    return val.toFixed(dec);
+                }
+
+                function normalizePriors() {
+                    if (state.branches === 2) {
+                        var p0 = Math.max(0.01, Math.min(0.99, state.priors[0]));
+                        state.priors = [p0, +(1 - p0).toFixed(4)];
+                    } else {
+                        var b0 = Math.max(0.01, Math.min(0.98, state.priors[0]));
+                        var b1 = Math.max(0.01, Math.min(0.99 - b0, state.priors[1]));
+                        var b2 = Math.max(0, +(1 - b0 - b1).toFixed(4));
+                        state.priors = [b0, b1, b2];
+                    }
+                }
+
+                function syncControlUI() {
+                    normalizePriors();
+                    var is3 = state.branches === 3;
+                    rowP1.style.display = is3 ? 'block' : 'none';
+                    rowC2.style.display = is3 ? 'block' : 'none';
+
+                    branchTabs.forEach(function (btn) {
+                        btn.classList.toggle('active', parseInt(btn.getAttribute('data-branches'), 10) === state.branches);
+                    });
+
+                    lblP0.textContent = 'P(' + state.bNames[0] + ')';
+                    inP0.value = state.priors[0].toFixed(2);
+                    slP0.value = state.priors[0].toFixed(2);
+
+                    if (is3) {
+                        lblP1.textContent = 'P(' + state.bNames[1] + ')';
+                        inP1.max = (0.99 - state.priors[0]).toFixed(2);
+                        slP1.max = (0.99 - state.priors[0]).toFixed(2);
+                        inP1.value = state.priors[1].toFixed(2);
+                        slP1.value = state.priors[1].toFixed(2);
+                        lblPLast.textContent = 'P(' + state.bNames[2] + ') = 1 − P(' + state.bNames[0] + ') − P(' + state.bNames[1] + ')';
+                        valPLast.textContent = state.priors[2].toFixed(2);
+                    } else {
+                        lblPLast.textContent = 'P(' + state.bNames[1] + ') = 1 − P(' + state.bNames[0] + ')';
+                        valPLast.textContent = state.priors[1].toFixed(2);
+                    }
+
+                    lblC0.textContent = 'P(' + state.aNames[0] + ' | ' + state.bNames[0] + ')';
+                    inC0.value = state.condA[0].toFixed(2);
+                    slC0.value = state.condA[0].toFixed(2);
+
+                    lblC1.textContent = 'P(' + state.aNames[0] + ' | ' + state.bNames[1] + ')';
+                    inC1.value = state.condA[1].toFixed(2);
+                    slC1.value = state.condA[1].toFixed(2);
+
+                    if (is3) {
+                        lblC2.textContent = 'P(' + state.aNames[0] + ' | ' + state.bNames[2] + ')';
+                        inC2.value = state.condA[2].toFixed(2);
+                        slC2.value = state.condA[2].toFixed(2);
+                    }
+
+                    // Rebuild Posterior Query buttons
+                    queryGrid.innerHTML = '';
+                    queryGrid.classList.toggle('cols-3', is3);
+                    for (var aIdx = 0; aIdx < 2; aIdx++) {
+                        for (var bIdx = 0; bIdx < state.branches; bIdx++) {
+                            var btn = document.createElement('button');
+                            btn.type = 'button';
+                            btn.className = 'query-btn' + (state.targetB === bIdx && state.targetA === aIdx ? ' active' : '');
+                            btn.textContent = 'P(' + state.bNames[bIdx] + ' | ' + state.aNames[aIdx] + ')';
+                            (function (bi, ai) {
+                                btn.addEventListener('click', function () {
+                                    state.targetB = bi;
+                                    state.targetA = ai;
+                                    syncControlUI();
+                                    computeAndRender();
+                                });
+                            })(bIdx, aIdx);
+                            queryGrid.appendChild(btn);
+                        }
+                    }
+                }
+
+                function getCond(bIdx, aIdx) {
+                    var pA = state.condA[bIdx];
+                    return aIdx === 0 ? pA : Math.max(0, 1 - pA);
+                }
+
+                function computeAndRender() {
+                    var nB = state.branches;
+                    var tB = state.targetB;
+                    var tA = state.targetA;
+
+                    var num = state.priors[tB] * getCond(tB, tA);
+                    var den = 0;
+                    var denParts = [];
+                    for (var i = 0; i < nB; i++) {
+                        var jnt = state.priors[i] * getCond(i, tA);
+                        den += jnt;
+                        denParts.push('(' + state.priors[i].toFixed(2) + ' × ' + getCond(i, tA).toFixed(2) + ')');
+                    }
+
+                    var post = den > 1e-12 ? (num / den) : NaN;
+                    var bLbl = state.bNames[tB];
+                    var aLbl = state.aNames[tA];
+                    var prior = state.priors[tB];
+
+                    if (isNaN(post)) {
+                        probHeadline.textContent = 'P(' + bLbl + ' | ' + aLbl + ') = Undefined (P(' + aLbl + ') = 0)';
+                    } else {
+                        probHeadline.textContent = 'P(' + bLbl + ' | ' + aLbl + ') = ' + post.toFixed(5) + ' (' + (post * 100).toFixed(2) + '%)';
+                    }
+
+                    formulaPill.textContent = 'P(' + bLbl + ' | ' + aLbl + ') = P(' + bLbl + ')·P(' + aLbl + '|' + bLbl + ') / P(' + aLbl + ')';
+
+                    mNum.textContent = num.toFixed(5);
+                    mNumSub.textContent = 'P(' + bLbl + ' ∩ ' + aLbl + ')';
+                    mDen.textContent = den.toFixed(5);
+                    mDenSub.textContent = 'Total P(' + aLbl + ') across ' + nB + ' paths';
+
+                    if (isNaN(post)) {
+                        mShift.textContent = (prior * 100).toFixed(1) + '% → —';
+                        mLift.textContent = 'Denominator is zero';
+                    } else {
+                        mShift.textContent = (prior * 100).toFixed(1) + '% → ' + (post * 100).toFixed(1) + '%';
+                        var mult = prior > 1e-9 ? post / prior : 0;
+                        mLift.textContent = 'Update factor: ' + mult.toFixed(2) + '× prior';
+                    }
+
+                    mPop.textContent = (num * 1000).toFixed(1) + ' / ' + (den * 1000).toFixed(1);
+                    mPopSub.textContent = 'Out of 1,000, ' + (den * 1000).toFixed(1) + ' are ' + aLbl;
+
+                    var numExpr = '(' + prior.toFixed(2) + ' × ' + getCond(tB, tA).toFixed(2) + ')';
+                    stepBar.textContent = 'P(' + bLbl + ' | ' + aLbl + ') = ' + numExpr + ' / [ ' + denParts.join(' + ') + ' ] = ' +
+                        num.toFixed(4) + ' / ' + den.toFixed(4) + ' = ' + (isNaN(post) ? 'Undefined' : post.toFixed(4));
+
+                    if (state.view === 'tree') drawTree();
+                    else drawArea();
+                }
+
+                /* =========================================================
+                   CANVAS SIZING & DRAWING
+                ========================================================= */
+                function getSize() {
+                    var rect = canvasWrap.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 660,
+                        h: rect.height > 100 ? rect.height : 410
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    computeAndRender();
+                }
+
+                function drawPillLabel(x, y, text, bg, fg, border) {
+                    ctx.save();
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    var tw = ctx.measureText(text).width + 12;
+                    var th = 20;
+                    ctx.fillStyle = bg;
+                    ctx.strokeStyle = border || bg;
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.roundRect ? ctx.roundRect(x - tw / 2, y - th / 2, tw, th, 5) : ctx.rect(x - tw / 2, y - th / 2, tw, th);
+                    ctx.fill();
+                    if (border) ctx.stroke();
+                    ctx.fillStyle = fg;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(text, x, y + 0.5);
+                    ctx.restore();
+                }
+
+                function drawTree() {
+                    var sz = getSize(), W = sz.w, H = sz.h;
+                    ctx.clearRect(0, 0, W, H);
+                    state.hitRegions = [];
+
+                    var nB = state.branches;
+                    var xRoot = 52;
+                    var xMid = Math.round(W * 0.36);
+                    var xLeaf = Math.round(W * 0.72);
+                    var topPad = 56, botPad = 30;
+                    var availH = H - topPad - botPad;
+                    var yRoot = topPad + availH / 2;
+
+                    // Compute leaf Y positions evenly
+                    var totalLeaves = nB * 2;
+                    var leafStep = availH / totalLeaves;
+
+                    // Draw root node
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(xRoot, yRoot, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = '#4a6572';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.restore();
+
+                    for (var i = 0; i < nB; i++) {
+                        var yLeaf0 = topPad + (i * 2 + 0.5) * leafStep;
+                        var yLeaf1 = topPad + (i * 2 + 1.5) * leafStep;
+                        var yMid = (yLeaf0 + yLeaf1) / 2;
+
+                        var prior = state.priors[i];
+                        var isTargetB = (i === state.targetB);
+                        var w1 = chkProportional.checked ? (1.5 + prior * 8) : 2.5;
+
+                        // Stage 1 branch
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.moveTo(xRoot + 8, yRoot);
+                        ctx.lineTo(xMid - 10, yMid);
+                        ctx.strokeStyle = isTargetB ? '#d96459' : '#5b9aa0';
+                        ctx.lineWidth = w1;
+                        ctx.lineCap = 'round';
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // Stage 1 probability pill along midpoint
+                        var mx1 = xRoot + (xMid - xRoot) * 0.52;
+                        var my1 = yRoot + (yMid - yRoot) * 0.52;
+                        drawPillLabel(mx1, my1, fmtP(prior, 2), '#ffffff', isTargetB ? '#c53030' : '#3d757a', isTargetB ? '#feb2b2' : '#b2d8dc');
+
+                        // Stage 2 branches
+                        for (var a = 0; a < 2; a++) {
+                            var yL = (a === 0) ? yLeaf0 : yLeaf1;
+                            var cond = getCond(i, a);
+                            var joint = prior * cond;
+                            var isNum = (i === state.targetB && a === state.targetA);
+                            var isDen = (a === state.targetA);
+                            var key = i + '-' + a;
+                            var isHov = (state.hoverKey === key);
+
+                            var col = isNum ? '#d96459' : (isDen ? '#5b9aa0' : '#cbd5e0');
+                            var w2 = chkProportional.checked ? (1.4 + joint * 14) : (isNum ? 3.5 : (isDen ? 2.5 : 1.8));
+                            if (isHov) w2 += 1.5;
+
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.moveTo(xMid + 10, yMid);
+                            ctx.lineTo(xLeaf - 10, yL);
+                            ctx.strokeStyle = col;
+                            ctx.lineWidth = w2;
+                            ctx.lineCap = 'round';
+                            ctx.stroke();
+                            ctx.restore();
+
+                            // Stage 2 conditional label
+                            var mx2 = xMid + (xLeaf - xMid) * 0.54;
+                            var my2 = yMid + (yL - yMid) * 0.54;
+                            drawPillLabel(
+                                mx2, my2,
+                                fmtP(cond, 2),
+                                '#ffffff',
+                                isNum ? '#c53030' : (isDen ? '#2c7a7b' : '#a0aec0'),
+                                isNum ? '#feb2b2' : (isDen ? '#b2d8dc' : '#e2e8f0')
+                            );
+
+                            // Leaf node
+                            var nodeR = isHov ? 11 : 9;
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.arc(xLeaf, yL, nodeR, 0, Math.PI * 2);
+                            ctx.fillStyle = isNum ? '#d96459' : (isDen ? '#5b9aa0' : '#e2e8f0');
+                            ctx.fill();
+                            ctx.strokeStyle = isHov ? '#2d3748' : '#ffffff';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+
+                            // Right-side Leaf text (Event + Joint + Pop)
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'middle';
+                            ctx.font = "bold 12px 'Segoe UI'";
+                            ctx.fillStyle = isNum ? '#c53030' : (isDen ? '#2d3748' : '#a0aec0');
+                            var leafTitle = state.aNames[a];
+                            ctx.fillText(leafTitle, xLeaf + 15, yL - (chkJoint.checked || chkPop.checked ? 7 : 0));
+
+                            if (chkJoint.checked || chkPop.checked) {
+                                ctx.font = "600 11px 'Courier New', monospace";
+                                ctx.fillStyle = isNum ? '#d96459' : (isDen ? '#4a6572' : '#a0aec0');
+                                var infoParts = [];
+                                if (chkJoint.checked) infoParts.push('P=' + fmtP(joint, 4));
+                                if (chkPop.checked) infoParts.push((joint * 1000).toFixed(1) + '/1k');
+                                ctx.fillText(infoParts.join(' | '), xLeaf + 15, yL + 9);
+                            }
+                            ctx.restore();
+
+                            // Store hit region for click & hover
+                            state.hitRegions.push({
+                                key: key,
+                                bIdx: i,
+                                aIdx: a,
+                                x: xLeaf - 24,
+                                y: yL - 22,
+                                w: W - xLeaf + 18,
+                                h: 44,
+                                prior: prior,
+                                cond: cond,
+                                joint: joint
+                            });
+                        }
+
+                        // Stage 1 node drawn on top of branches
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(xMid, yMid, 10, 0, Math.PI * 2);
+                        ctx.fillStyle = isTargetB ? '#d96459' : '#4a6572';
+                        ctx.fill();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        drawPillLabel(xMid, yMid - 20, state.bNames[i], '#f8fafc', isTargetB ? '#c53030' : '#2d3748', isTargetB ? '#feb2b2' : '#cbd5e0');
+                        ctx.restore();
+                    }
+
+                    // Stage column headers
+                    ctx.save();
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    ctx.fillStyle = '#718096';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('STAGE 1: PRIOR', xMid, H - 10);
+                    ctx.fillText('STAGE 2: CONDITIONAL', (xMid + xLeaf) / 2, H - 10);
+                    ctx.fillText('JOINT OUTCOME', xLeaf + 45, H - 10);
+                    ctx.restore();
+                }
+
+                function drawArea() {
+                    var sz = getSize(), W = sz.w, H = sz.h;
+                    ctx.clearRect(0, 0, W, H);
+                    state.hitRegions = [];
+
+                    var padL = 62, padR = 30, padT = 58, padB = 46;
+                    var sqW = W - padL - padR;
+                    var sqH = H - padT - padB;
+
+                    var curX = padL;
+                    for (var i = 0; i < state.branches; i++) {
+                        var prior = state.priors[i];
+                        var colW = prior * sqW;
+
+                        // Top block: aIdx = 0 (Event A), Bottom block: aIdx = 1 (Event A')
+                        var pA = getCond(i, 0);
+                        var h0 = pA * sqH;
+                        var h1 = sqH - h0;
+
+                        var blocks = [
+                            { aIdx: 0, y: padT, h: h0, cond: pA },
+                            { aIdx: 1, y: padT + h0, h: h1, cond: 1 - pA }
+                        ];
+
+                        blocks.forEach(function (blk) {
+                            var key = i + '-' + blk.aIdx;
+                            var isNum = (i === state.targetB && blk.aIdx === state.targetA);
+                            var isDen = (blk.aIdx === state.targetA);
+                            var isHov = (state.hoverKey === key);
+                            var joint = prior * blk.cond;
+
+                            ctx.save();
+                            ctx.fillStyle = isNum
+                                ? (isHov ? 'rgba(217, 100, 89, 0.85)' : 'rgba(217, 100, 89, 0.68)')
+                                : (isDen
+                                    ? (isHov ? 'rgba(91, 154, 160, 0.65)' : 'rgba(91, 154, 160, 0.45)')
+                                    : (isHov ? 'rgba(203, 213, 224, 0.55)' : 'rgba(226, 232, 240, 0.45)'));
+                            ctx.fillRect(curX, blk.y, colW, blk.h);
+
+                            ctx.strokeStyle = isHov ? '#2d3748' : '#ffffff';
+                            ctx.lineWidth = isHov ? 2.5 : 1.8;
+                            ctx.strokeRect(curX, blk.y, colW, blk.h);
+
+                            // Label inside rectangle if large enough
+                            if (colW > 46 && blk.h > 28) {
+                                ctx.fillStyle = isNum ? '#ffffff' : (isDen ? '#1a365d' : '#718096');
+                                ctx.font = "bold 11.5px 'Segoe UI'";
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                var cx = curX + colW / 2;
+                                var cy = blk.y + blk.h / 2;
+                                ctx.fillText(state.bNames[i] + ' ∩ ' + state.aNames[blk.aIdx], cx, cy - 7);
+                                ctx.font = "700 11px 'Courier New', monospace";
+                                ctx.fillText(fmtP(joint, 4), cx, cy + 8);
+                            }
+                            ctx.restore();
+
+                            state.hitRegions.push({
+                                key: key,
+                                bIdx: i,
+                                aIdx: blk.aIdx,
+                                x: curX,
+                                y: blk.y,
+                                w: Math.max(colW, 6),
+                                h: Math.max(blk.h, 6),
+                                prior: prior,
+                                cond: blk.cond,
+                                joint: joint
+                            });
+                        });
+
+                        // Column width label at bottom
+                        if (colW > 24) {
+                            ctx.save();
+                            ctx.font = "bold 11px 'Segoe UI'";
+                            ctx.fillStyle = i === state.targetB ? '#c53030' : '#4a6572';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(state.bNames[i] + ' (' + fmtP(prior, 2) + ')', curX + colW / 2, padT + sqH + 18);
+                            ctx.restore();
+                        }
+
+                        curX += colW;
+                    }
+
+                    // Outer border & axis labels
+                    ctx.strokeStyle = '#4a6572';
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeRect(padL, padT, sqW, sqH);
+
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(state.aNames[0], padL - 10, padT + 14);
+                    ctx.fillText(state.aNames[1], padL - 10, padT + sqH - 14);
+
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = '#718096';
+                    ctx.fillText('Width = Prior P(Bᵢ)  |  Height = Conditional P(A | Bᵢ)  |  Area = Joint P(Bᵢ ∩ A)', padL + sqW / 2, H - 10);
+                }
+
+                /* =========================================================
+                   EVENTS
+                ========================================================= */
+                function clearPresets() {
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                }
+
+                function bindPair(slider, input, setter) {
+                    slider.addEventListener('input', function () {
+                        var v = parseFloat(slider.value);
+                        if (!isNaN(v)) { setter(v); clearPresets(); syncControlUI(); computeAndRender(); }
+                    });
+                    input.addEventListener('input', function () {
+                        var v = parseFloat(input.value);
+                        if (!isNaN(v)) { setter(v); clearPresets(); syncControlUI(); computeAndRender(); }
+                    });
+                }
+
+                bindPair(slP0, inP0, function (v) { state.priors[0] = v; });
+                bindPair(slP1, inP1, function (v) { state.priors[1] = v; });
+                bindPair(slC0, inC0, function (v) { state.condA[0] = Math.max(0, Math.min(1, v)); });
+                bindPair(slC1, inC1, function (v) { state.condA[1] = Math.max(0, Math.min(1, v)); });
+                bindPair(slC2, inC2, function (v) { state.condA[2] = Math.max(0, Math.min(1, v)); });
+
+                branchTabs.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var nB = parseInt(btn.getAttribute('data-branches'), 10);
+                        if (nB === state.branches) return;
+                        clearPresets();
+                        state.branches = nB;
+                        if (nB === 3) {
+                            state.bNames = ['B₁', 'B₂', 'B₃'];
+                            state.aNames = ['A', 'A\''];
+                            state.priors = [0.50, 0.30, 0.20];
+                            state.condA = [0.10, 0.25, 0.05];
+                            state.targetB = 0;
+                            state.targetA = 0;
+                        } else {
+                            state.bNames = ['B₁', 'B₂'];
+                            state.aNames = ['A', 'A\''];
+                            state.priors = [0.30, 0.70];
+                            state.condA = [0.85, 0.15];
+                            state.targetB = 0;
+                            state.targetA = 0;
+                        }
+                        syncControlUI();
+                        computeAndRender();
+                    });
+                });
+
+                viewBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        viewBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.view = btn.getAttribute('data-view');
+                        computeAndRender();
+                    });
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        var p = PRESETS[btn.getAttribute('data-preset')];
+                        state.branches = p.branches;
+                        state.bNames = p.bNames.slice();
+                        state.aNames = p.aNames.slice();
+                        state.priors = p.priors.slice();
+                        state.condA = p.condA.slice();
+                        state.targetB = p.targetB;
+                        state.targetA = p.targetA;
+                        syncControlUI();
+                        computeAndRender();
+                    });
+                });
+
+                [chkProportional, chkJoint, chkPop, chkPct].forEach(function (c) {
+                    c.addEventListener('change', computeAndRender);
+                });
+
+                function findHit(mx, my) {
+                    for (var i = 0; i < state.hitRegions.length; i++) {
+                        var r = state.hitRegions[i];
+                        if (mx >= r.x && mx <= r.x + r.w && my >= r.y && my <= r.y + r.h) return r;
+                    }
+                    return null;
+                }
+
+                canvas.addEventListener('mousemove', function (e) {
+                    var rect = canvasWrap.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+                    var hit = findHit(mx, my);
+                    var newKey = hit ? hit.key : null;
+
+                    if (newKey !== state.hoverKey) {
+                        state.hoverKey = newKey;
+                        if (state.view === 'tree') drawTree();
+                        else drawArea();
+                    }
+
+                    if (hit) {
+                        var bLbl = state.bNames[hit.bIdx];
+                        var aLbl = state.aNames[hit.aIdx];
+                        hoverTooltip.innerHTML =
+                            '<strong>' + bLbl + ' ∩ ' + aLbl + '</strong><br>' +
+                            'Prior P(' + bLbl + ') = ' + hit.prior.toFixed(3) + '<br>' +
+                            'Cond. P(' + aLbl + ' | ' + bLbl + ') = ' + hit.cond.toFixed(3) + '<br>' +
+                            'Joint = ' + hit.joint.toFixed(5) + ' (' + (hit.joint * 1000).toFixed(1) + ' / 1,000)';
+                        hoverTooltip.style.display = 'block';
+                        var tx = mx + 14;
+                        var ty = my - 14;
+                        if (tx + 210 > rect.width) tx = mx - 220;
+                        if (ty < 8) ty = 8;
+                        hoverTooltip.style.left = tx + 'px';
+                        hoverTooltip.style.top = ty + 'px';
+                    } else {
+                        hoverTooltip.style.display = 'none';
+                    }
+                });
+
+                canvas.addEventListener('mouseleave', function () {
+                    state.hoverKey = null;
+                    hoverTooltip.style.display = 'none';
+                    if (state.view === 'tree') drawTree();
+                    else drawArea();
+                });
+
+                canvas.addEventListener('click', function (e) {
+                    var rect = canvasWrap.getBoundingClientRect();
+                    var hit = findHit(e.clientX - rect.left, e.clientY - rect.top);
+                    if (!hit) return;
+                    state.targetB = hit.bIdx;
+                    state.targetA = hit.aIdx;
+                    syncControlUI();
+                    computeAndRender();
+                });
+
+                window.addEventListener('resize', resizeCanvas);
+                syncControlUI();
+                resizeCanvas();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
