@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correlation &amp; Linear Regression Lab</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 345px;
+            min-width: 300px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 6px 7px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .preset-btn span {
+            display: block;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 1px;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span {
+            color: #cbd5e0;
+        }
+
+        /* Add Point & Predict Inputs */
+        .inline-form {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .inline-form:last-child {
+            margin-bottom: 0;
+        }
+
+        .num-in {
+            width: 100%;
+            padding: 5px 6px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-main);
+        }
+
+        .num-in:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+
+        .mini-lbl {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .act-btn {
+            background: var(--teal);
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 6px 10px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .act-btn:hover {
+            background: #488389;
+        }
+
+        .act-btn.secondary {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .act-btn.secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .act-btn.danger {
+            background: #fff5f5;
+            color: var(--coral);
+            border: 1px solid #fed7d7;
+        }
+
+        .act-btn.danger:hover {
+            background: var(--coral);
+            color: #ffffff;
+        }
+
+        .pred-status {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 5px;
+            margin-top: 6px;
+        }
+
+        .pred-status.interp {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .pred-status.extrap {
+            background: #fff5f5;
+            color: #9b2c2c;
+            border: 1px solid #feb2b2;
+        }
+
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .checkbox-label input {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        /* Data Points Scroll List */
+        .pts-list {
+            max-height: 112px;
+            overflow-y: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding-top: 2px;
+        }
+
+        .pt-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2px 7px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .pt-chip button {
+            background: none;
+            border: none;
+            color: var(--coral);
+            font-weight: 800;
+            cursor: pointer;
+            padding: 0 2px;
+            font-size: 0.85rem;
+            line-height: 1;
+        }
+
+        /* Right Stage */
+        .stage {
+            flex: 1;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-wrap {
+            position: relative;
+            flex: 1;
+            min-height: 410px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: crosshair;
+        }
+
+        .canvas-wrap.dragging {
+            cursor: grabbing;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .legend-bar {
+            position: absolute;
+            top: 10px;
+            left: 12px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--primary);
+            pointer-events: none;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dot-mini {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 7px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Analysis Card */
+        .analysis-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px;
+        }
+
+        .analysis-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 9px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .eq-headline {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.08rem;
+            font-weight: 700;
+            color: var(--blue);
+        }
+
+        .corr-badge {
+            font-size: 0.77rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .corr-badge.strong {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .corr-badge.moderate {
+            background: #ebf8ff;
+            color: #2a4365;
+            border: 1px solid #90cdf4;
+        }
+
+        .corr-badge.weak {
+            background: #fefcbf;
+            color: #744210;
+            border: 1px solid #f6e05e;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .metric-box {
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 7px;
+            padding: 7px 9px;
+        }
+
+        .metric-lbl {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .metric-val {
+            font-family: 'Cambria Math', 'Courier New', monospace;
+            font-size: 0.94rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-sub {
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .footer-bar {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #edf2f7;
+            font-size: 0.76rem;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media (max-width: 860px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 680px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-wrap {
+                min-height: 340px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Correlation &amp; Linear Regression Lab</h1>
+        <p class="subtitle">IB DP Math AA HL &mdash; Pearson's r, Least-Squares Regression (y on x &amp; x on y), Residuals &amp; Extrapolation</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Classic IB Scenarios -->
+            <div class="section-card">
+                <div class="section-title">1. Classic IB Data Sets</div>
+                <div class="preset-grid">
+                    <button type="button" class="preset-btn active" data-preset="pos">
+                        Strong Positive
+                        <span>Study hrs vs. score (r &approx; +0.96)</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="neg">
+                        Strong Negative
+                        <span>Decay trend (r &approx; &minus;0.95)</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="outlier">
+                        Influential Outlier
+                        <span>Drag the lone point to test r!</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="nonlinear">
+                        Non-Linear Trap
+                        <span>Parabolic curve, r &approx; 0</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Prediction Tester -->
+            <div class="section-card">
+                <div class="section-title">2. Prediction &amp; Reliability Check</div>
+                <div class="inline-form">
+                    <span class="mini-lbl">Predict at x<sub>0</sub> =</span>
+                    <input type="number" id="predXInput" class="num-in" step="0.5" value="5.5">
+                    <label class="checkbox-label" style="white-space:nowrap;">
+                        <input type="checkbox" id="chkPred" checked> Show
+                    </label>
+                </div>
+                <div class="pred-status interp" id="predStatus">
+                    Interpolation: x<sub>0</sub> = 5.5 &isin; [1.0, 9.0] &rArr; Reliable
+                </div>
+            </div>
+
+            <!-- 3. Visual Overlays -->
+            <div class="section-card">
+                <div class="section-title">3. Analytical Overlays</div>
+                <div class="toggle-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkMean" checked> Mean M(x&#772;, y&#772;)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkRes" checked> Residual Lines
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkSq"> Squared Residuals
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkXonY"> x-on-y Line (HL)
+                    </label>
+                </div>
+            </div>
+
+            <!-- 4. Add / Manage Data Points -->
+            <div class="section-card">
+                <div class="section-title">
+                    <span>4. Data Points (<span id="ptCount">9</span>)</span>
+                    <div style="display:flex; gap:4px;">
+                        <button type="button" class="act-btn secondary" id="btnRand" style="padding:3px 7px; font-size:0.7rem;">Random</button>
+                        <button type="button" class="act-btn danger" id="btnClear" style="padding:3px 7px; font-size:0.7rem;">Clear</button>
+                    </div>
+                </div>
+                <div class="inline-form">
+                    <span class="mini-lbl">x:</span>
+                    <input type="number" id="addX" class="num-in" step="0.5" value="5">
+                    <span class="mini-lbl">y:</span>
+                    <input type="number" id="addY" class="num-in" step="0.5" value="6">
+                    <button type="button" class="act-btn" id="btnAdd">+ Add</button>
+                </div>
+                <div class="pts-list" id="ptsList"></div>
+            </div>
+
+        </div>
+
+        <!-- Right Interactive Stage -->
+        <div class="stage">
+            <div class="canvas-wrap" id="canvasWrap">
+                <canvas id="scatterCanvas"></canvas>
+
+                <div class="legend-bar">
+                    <div class="legend-item"><span class="dot-mini" style="background:#2b6cb0;"></span> Data (x<sub>i</sub>, y<sub>i</sub>)</div>
+                    <div class="legend-item"><span class="dot-mini" style="background:#d96459;"></span> y on x Line</div>
+                    <div class="legend-item"><span class="dot-mini" style="background:#38a169;"></span> Mean M(x&#772;, y&#772;)</div>
+                    <div class="legend-item"><span class="dot-mini" style="background:#e69a53;"></span> Residuals e<sub>i</sub></div>
+                </div>
+
+                <div class="controls-hint">Click empty space: Add | Drag point: Move live | Right-click point: Delete</div>
+            </div>
+
+            <!-- Live IB Statistics Panel -->
+            <div class="analysis-card">
+                <div class="analysis-top">
+                    <span class="eq-headline" id="eqHeadline">y = 0.85x + 1.20</span>
+                    <span class="corr-badge strong" id="corrBadge">Very Strong Positive Correlation</span>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-lbl">Pearson's r &amp; R&sup2;</div>
+                        <div class="metric-val" style="color:#2b6cb0;" id="mR">0.964</div>
+                        <div class="metric-sub" id="mR2">R&sup2; = 92.9% variance explained</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Mean Point M(x&#772;, y&#772;)</div>
+                        <div class="metric-val" style="color:#38a169;" id="mMean">(5.00, 5.45)</div>
+                        <div class="metric-sub">Always lies on both lines</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Least Squares SSE</div>
+                        <div class="metric-val" style="color:#e69a53;" id="mSSE">3.124</div>
+                        <div class="metric-sub">&Sigma;(y<sub>i</sub> &minus; y&#770;<sub>i</sub>)&sup2; minimized</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl" id="mPredLbl">Prediction y&#770;(5.5)</div>
+                        <div class="metric-val" style="color:#7c6992;" id="mPred">5.88</div>
+                        <div class="metric-sub" id="mPredSub">Interpolation (reliable)</div>
+                    </div>
+                </div>
+
+                <div class="footer-bar">
+                    <span id="xOnYText"><strong>x-on-y Line (HL):</strong> x = 1.09y &minus; 0.94</span>
+                    <span id="covText"><strong>Cov(x,y) = 5.42</strong> | s<sub>x</sub> = 2.58, s<sub>y</sub> = 2.27</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var PRESETS = {
+                pos: [
+                    { x: 1.2, y: 2.1 }, { x: 2.1, y: 3.3 }, { x: 3.0, y: 3.5 },
+                    { x: 4.2, y: 4.9 }, { x: 5.0, y: 5.2 }, { x: 6.1, y: 6.6 },
+                    { x: 7.0, y: 7.1 }, { x: 8.1, y: 8.3 }, { x: 8.9, y: 8.5 }
+                ],
+                neg: [
+                    { x: 1.0, y: 8.8 }, { x: 2.0, y: 8.1 }, { x: 3.2, y: 6.9 },
+                    { x: 4.1, y: 6.5 }, { x: 5.3, y: 5.1 }, { x: 6.2, y: 4.6 },
+                    { x: 7.4, y: 3.2 }, { x: 8.3, y: 2.6 }, { x: 9.1, y: 1.5 }
+                ],
+                outlier: [
+                    { x: 1.2, y: 2.0 }, { x: 2.0, y: 2.9 }, { x: 2.8, y: 3.6 },
+                    { x: 3.6, y: 4.5 }, { x: 4.5, y: 5.3 }, { x: 5.2, y: 6.0 },
+                    { x: 6.0, y: 6.8 }, { x: 9.2, y: 1.4 }
+                ],
+                nonlinear: [
+                    { x: 1.0, y: 8.2 }, { x: 2.0, y: 5.1 }, { x: 3.0, y: 2.9 },
+                    { x: 4.0, y: 1.6 }, { x: 5.0, y: 1.2 }, { x: 6.0, y: 1.7 },
+                    { x: 7.0, y: 3.0 }, { x: 8.0, y: 5.2 }, { x: 9.0, y: 8.3 }
+                ]
+            };
+
+            function clonePts(arr) {
+                return arr.map(function (p) { return { x: p.x, y: p.y }; });
+            }
+
+            function fmtSign(v, dec) {
+                var a = Math.abs(v).toFixed(dec);
+                return v >= 0 ? (' + ' + a) : (' − ' + a);
+            }
+
+            function init() {
+                var canvas = document.getElementById('scatterCanvas');
+                var ctx = canvas.getContext('2d');
+                var canvasWrap = document.getElementById('canvasWrap');
+
+                var presetBtns = document.querySelectorAll('.preset-btn');
+                var predXInput = document.getElementById('predXInput');
+                var chkPred = document.getElementById('chkPred');
+                var predStatus = document.getElementById('predStatus');
+
+                var chkMean = document.getElementById('chkMean');
+                var chkRes = document.getElementById('chkRes');
+                var chkSq = document.getElementById('chkSq');
+                var chkXonY = document.getElementById('chkXonY');
+
+                var ptCount = document.getElementById('ptCount');
+                var ptsList = document.getElementById('ptsList');
+                var addX = document.getElementById('addX');
+                var addY = document.getElementById('addY');
+                var btnAdd = document.getElementById('btnAdd');
+                var btnRand = document.getElementById('btnRand');
+                var btnClear = document.getElementById('btnClear');
+
+                var eqHeadline = document.getElementById('eqHeadline');
+                var corrBadge = document.getElementById('corrBadge');
+                var mR = document.getElementById('mR');
+                var mR2 = document.getElementById('mR2');
+                var mMean = document.getElementById('mMean');
+                var mSSE = document.getElementById('mSSE');
+                var mPredLbl = document.getElementById('mPredLbl');
+                var mPred = document.getElementById('mPred');
+                var mPredSub = document.getElementById('mPredSub');
+                var xOnYText = document.getElementById('xOnYText');
+                var covText = document.getElementById('covText');
+
+                var PAD_L = 48, PAD_R = 24, PAD_T = 36, PAD_B = 38;
+                var X_MIN = 0, X_MAX = 10, Y_MIN = 0, Y_MAX = 10;
+
+                var state = {
+                    pts: clonePts(PRESETS.pos),
+                    predX: 5.5,
+                    dragIdx: -1,
+                    hoverIdx: -1,
+                    stats: null
+                };
+
+                function computeStats() {
+                    var pts = state.pts;
+                    var n = pts.length;
+                    if (n < 2) return null;
+
+                    var sumX = 0, sumY = 0;
+                    var minX = Infinity, maxX = -Infinity;
+                    for (var i = 0; i < n; i++) {
+                        sumX += pts[i].x;
+                        sumY += pts[i].y;
+                        if (pts[i].x < minX) minX = pts[i].x;
+                        if (pts[i].x > maxX) maxX = pts[i].x;
+                    }
+                    var mx = sumX / n;
+                    var my = sumY / n;
+
+                    var sxx = 0, syy = 0, sxy = 0;
+                    for (var j = 0; j < n; j++) {
+                        var dx = pts[j].x - mx;
+                        var dy = pts[j].y - my;
+                        sxx += dx * dx;
+                        syy += dy * dy;
+                        sxy += dx * dy;
+                    }
+
+                    var a = sxx > 1e-9 ? sxy / sxx : NaN;
+                    var b = isFinite(a) ? (my - a * mx) : NaN;
+
+                    var c = syy > 1e-9 ? sxy / syy : NaN;
+                    var d = isFinite(c) ? (mx - c * my) : NaN;
+
+                    var r = (sxx > 1e-9 && syy > 1e-9) ? (sxy / Math.sqrt(sxx * syy)) : NaN;
+                    var r2 = isFinite(r) ? r * r : NaN;
+
+                    var sse = 0;
+                    if (isFinite(a)) {
+                        for (var k = 0; k < n; k++) {
+                            var e = pts[k].y - (a * pts[k].x + b);
+                            sse += e * e;
+                        }
+                    }
+
+                    var cov = sxy / n;
+                    var sx = Math.sqrt(sxx / n);
+                    var sy = Math.sqrt(syy / n);
+
+                    return {
+                        n: n, mx: mx, my: my, minX: minX, maxX: maxX,
+                        a: a, b: b, c: c, d: d,
+                        r: r, r2: r2, sse: sse, cov: cov, sx: sx, sy: sy
+                    };
+                }
+
+                function describeCorrelation(r) {
+                    if (!isFinite(r)) return { text: 'Undefined Correlation', cls: 'weak' };
+                    var ar = Math.abs(r);
+                    var dir = r >= 0 ? 'Positive' : 'Negative';
+                    if (ar >= 0.85) return { text: 'Very Strong ' + dir + ' Correlation', cls: 'strong' };
+                    if (ar >= 0.65) return { text: 'Strong ' + dir + ' Correlation', cls: 'strong' };
+                    if (ar >= 0.40) return { text: 'Moderate ' + dir + ' Correlation', cls: 'moderate' };
+                    if (ar >= 0.20) return { text: 'Weak ' + dir + ' Correlation', cls: 'weak' };
+                    return { text: 'Very Weak / No Linear Correlation', cls: 'weak' };
+                }
+
+                function rebuildPointChips() {
+                    ptCount.textContent = String(state.pts.length);
+                    ptsList.innerHTML = '';
+                    state.pts.forEach(function (pt, idx) {
+                        var chip = document.createElement('span');
+                        chip.className = 'pt-chip';
+                        chip.innerHTML = '(' + pt.x.toFixed(1) + ', ' + pt.y.toFixed(1) + ')';
+                        var del = document.createElement('button');
+                        del.type = 'button';
+                        del.title = 'Remove point';
+                        del.textContent = '×';
+                        del.addEventListener('click', function () {
+                            state.pts.splice(idx, 1);
+                            presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                            updateAll();
+                        });
+                        chip.appendChild(del);
+                        ptsList.appendChild(chip);
+                    });
+                }
+
+                function updateAll() {
+                    state.stats = computeStats();
+                    rebuildPointChips();
+
+                    var st = state.stats;
+                    if (!st || !isFinite(st.a)) {
+                        eqHeadline.textContent = 'Add at least 2 distinct points to compute regression';
+                        corrBadge.className = 'corr-badge weak';
+                        corrBadge.textContent = 'Insufficient Data';
+                        mR.textContent = '—';
+                        mR2.textContent = 'R² = —';
+                        mMean.textContent = '—';
+                        mSSE.textContent = '—';
+                        mPred.textContent = '—';
+                        xOnYText.innerHTML = '<strong>x-on-y Line (HL):</strong> —';
+                        covText.innerHTML = '<strong>Cov(x,y):</strong> —';
+                        draw();
+                        return;
+                    }
+
+                    eqHeadline.textContent = 'y = ' + st.a.toFixed(3) + 'x' + fmtSign(st.b, 3);
+                    var desc = describeCorrelation(st.r);
+                    corrBadge.className = 'corr-badge ' + desc.cls;
+                    corrBadge.textContent = desc.text;
+
+                    mR.textContent = isFinite(st.r) ? (st.r >= 0 ? '+' : '−') + Math.abs(st.r).toFixed(4) : '—';
+                    mR2.textContent = isFinite(st.r2) ? ('R² = ' + (st.r2 * 100).toFixed(1) + '% variance explained') : 'R² = —';
+                    mMean.textContent = '(' + st.mx.toFixed(2) + ', ' + st.my.toFixed(2) + ')';
+                    mSSE.textContent = st.sse.toFixed(3);
+
+                    // Prediction & Interpolation / Extrapolation
+                    var px = state.predX;
+                    var yHat = st.a * px + st.b;
+                    var isInterp = (px >= st.minX - 1e-6 && px <= st.maxX + 1e-6);
+
+                    mPredLbl.textContent = 'Prediction ŷ(' + px.toFixed(1) + ')';
+                    mPred.textContent = yHat.toFixed(2);
+                    mPredSub.textContent = isInterp ? 'Interpolation (reliable)' : 'Extrapolation (caution!)';
+
+                    if (isInterp) {
+                        predStatus.className = 'pred-status interp';
+                        predStatus.innerHTML = 'Interpolation: x<sub>0</sub> = ' + px.toFixed(1) + ' &isin; [' + st.minX.toFixed(1) + ', ' + st.maxX.toFixed(1) + '] &rArr; Reliable';
+                    } else {
+                        predStatus.className = 'pred-status extrap';
+                        predStatus.innerHTML = 'Extrapolation: x<sub>0</sub> = ' + px.toFixed(1) + ' outside [' + st.minX.toFixed(1) + ', ' + st.maxX.toFixed(1) + '] &rArr; Unreliable';
+                    }
+
+                    if (isFinite(st.c)) {
+                        xOnYText.innerHTML = '<strong>x-on-y Line (HL):</strong> x = ' + st.c.toFixed(3) + 'y' + fmtSign(st.d, 3);
+                    } else {
+                        xOnYText.innerHTML = '<strong>x-on-y Line (HL):</strong> Undefined (s<sub>y</sub> = 0)';
+                    }
+
+                    covText.innerHTML = '<strong>Cov(x,y) = ' + st.cov.toFixed(2) + '</strong> | s<sub>x</sub> = ' + st.sx.toFixed(2) + ', s<sub>y</sub> = ' + st.sy.toFixed(2);
+
+                    draw();
+                }
+
+                /* =========================================================
+                   CANVAS SIZING & DRAWING
+                ========================================================= */
+                function getPlotBox() {
+                    var rect = canvasWrap.getBoundingClientRect();
+                    var W = rect.width > 50 ? rect.width : 640;
+                    var H = rect.height > 100 ? rect.height : 410;
+                    return {
+                        W: W, H: H,
+                        plotW: W - PAD_L - PAD_R,
+                        plotH: H - PAD_T - PAD_B
+                    };
+                }
+
+                function xToPx(x, box) {
+                    return PAD_L + ((x - X_MIN) / (X_MAX - X_MIN)) * box.plotW;
+                }
+
+                function yToPx(y, box) {
+                    return PAD_T + box.plotH - ((y - Y_MIN) / (Y_MAX - Y_MIN)) * box.plotH;
+                }
+
+                function pxToData(mx, my, box) {
+                    var x = X_MIN + ((mx - PAD_L) / box.plotW) * (X_MAX - X_MIN);
+                    var y = Y_MIN + ((PAD_T + box.plotH - my) / box.plotH) * (Y_MAX - Y_MIN);
+                    return {
+                        x: Math.max(X_MIN, Math.min(X_MAX, Math.round(x * 10) / 10)),
+                        y: Math.max(Y_MIN, Math.min(Y_MAX, Math.round(y * 10) / 10))
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var box = getPlotBox();
+                    canvas.width = Math.round(box.W * dpr);
+                    canvas.height = Math.round(box.H * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    draw();
+                }
+
+                function draw() {
+                    var box = getPlotBox();
+                    var W = box.W, H = box.H;
+                    ctx.clearRect(0, 0, W, H);
+
+                    // Grid lines
+                    ctx.save();
+                    ctx.font = "10.5px 'Segoe UI'";
+                    ctx.fillStyle = '#718096';
+                    for (var g = 0; g <= 10; g++) {
+                        var gx = xToPx(g, box);
+                        var gy = yToPx(g, box);
+
+                        ctx.beginPath();
+                        ctx.strokeStyle = g === 0 ? '#4a6572' : '#edf2f7';
+                        ctx.lineWidth = g === 0 ? 1.5 : 1;
+                        ctx.moveTo(gx, PAD_T);
+                        ctx.lineTo(gx, PAD_T + box.plotH);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.strokeStyle = g === 0 ? '#4a6572' : '#edf2f7';
+                        ctx.lineWidth = g === 0 ? 1.5 : 1;
+                        ctx.moveTo(PAD_L, gy);
+                        ctx.lineTo(PAD_L + box.plotW, gy);
+                        ctx.stroke();
+
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'top';
+                        ctx.fillText(String(g), gx, PAD_T + box.plotH + 6);
+
+                        ctx.textAlign = 'right';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(String(g), PAD_L - 8, gy);
+                    }
+                    ctx.restore();
+
+                    // Axis titles
+                    ctx.save();
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('x', PAD_L + box.plotW / 2, H - 10);
+                    ctx.fillText('y', 16, PAD_T + box.plotH / 2);
+                    ctx.restore();
+
+                    var st = state.stats;
+
+                    // Clip plot area for lines & squares
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(PAD_L, PAD_T, box.plotW, box.plotH);
+                    ctx.clip();
+
+                    if (st && isFinite(st.a)) {
+                        // Interpolation domain subtle band
+                        var xBandL = xToPx(st.minX, box);
+                        var xBandR = xToPx(st.maxX, box);
+                        ctx.fillStyle = 'rgba(91, 154, 160, 0.05)';
+                        ctx.fillRect(xBandL, PAD_T, xBandR - xBandL, box.plotH);
+
+                        // Squared residuals (visual squares representing e_i^2)
+                        if (chkSq.checked) {
+                            state.pts.forEach(function (pt) {
+                                var yHat = st.a * pt.x + st.b;
+                                var px = xToPx(pt.x, box);
+                                var py = yToPx(pt.y, box);
+                                var pyHat = yToPx(yHat, box);
+                                var side = Math.abs(py - pyHat);
+                                var topY = Math.min(py, pyHat);
+                                var leftX = (pt.y >= yHat) ? px : (px - side);
+
+                                ctx.fillStyle = 'rgba(230, 154, 83, 0.18)';
+                                ctx.strokeStyle = 'rgba(230, 154, 83, 0.55)';
+                                ctx.lineWidth = 1;
+                                ctx.fillRect(leftX, topY, side, side);
+                                ctx.strokeRect(leftX, topY, side, side);
+                            });
+                        }
+
+                        // Residual vertical lines
+                        if (chkRes.checked) {
+                            ctx.strokeStyle = '#e69a53';
+                            ctx.lineWidth = 1.8;
+                            ctx.setLineDash([4, 3]);
+                            state.pts.forEach(function (pt) {
+                                var yHat = st.a * pt.x + st.b;
+                                var px = xToPx(pt.x, box);
+                                ctx.beginPath();
+                                ctx.moveTo(px, yToPx(pt.y, box));
+                                ctx.lineTo(px, yToPx(yHat, box));
+                                ctx.stroke();
+                            });
+                            ctx.setLineDash([]);
+                        }
+
+                        // x-on-y Regression Line (HL)
+                        if (chkXonY.checked && isFinite(st.c)) {
+                            var xAtY0 = st.c * Y_MIN + st.d;
+                            var xAtY10 = st.c * Y_MAX + st.d;
+                            ctx.beginPath();
+                            ctx.strokeStyle = '#7c6992';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([6, 4]);
+                            ctx.moveTo(xToPx(xAtY0, box), yToPx(Y_MIN, box));
+                            ctx.lineTo(xToPx(xAtY10, box), yToPx(Y_MAX, box));
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+                        }
+
+                        // Primary y-on-x Regression Line
+                        var yAtX0 = st.a * X_MIN + st.b;
+                        var yAtX10 = st.a * X_MAX + st.b;
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#d96459';
+                        ctx.lineWidth = 2.6;
+                        ctx.moveTo(xToPx(X_MIN, box), yToPx(yAtX0, box));
+                        ctx.lineTo(xToPx(X_MAX, box), yToPx(yAtX10, box));
+                        ctx.stroke();
+
+                        // Mean point crosshairs & marker M(x̄, ȳ)
+                        if (chkMean.checked) {
+                            var mxPx = xToPx(st.mx, box);
+                            var myPx = yToPx(st.my, box);
+                            ctx.strokeStyle = 'rgba(56, 161, 105, 0.35)';
+                            ctx.lineWidth = 1.2;
+                            ctx.setLineDash([4, 4]);
+                            ctx.beginPath();
+                            ctx.moveTo(mxPx, PAD_T + box.plotH); ctx.lineTo(mxPx, myPx);
+                            ctx.moveTo(PAD_L, myPx); ctx.lineTo(mxPx, myPx);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+
+                            // Diamond marker for Mean
+                            ctx.beginPath();
+                            ctx.moveTo(mxPx, myPx - 8);
+                            ctx.lineTo(mxPx + 8, myPx);
+                            ctx.lineTo(mxPx, myPx + 8);
+                            ctx.lineTo(mxPx - 8, myPx);
+                            ctx.closePath();
+                            ctx.fillStyle = '#38a169';
+                            ctx.fill();
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+
+                            ctx.font = "bold 11px 'Segoe UI'";
+                            ctx.fillStyle = '#22543d';
+                            ctx.textAlign = 'left';
+                            ctx.fillText('M(' + st.mx.toFixed(1) + ', ' + st.my.toFixed(1) + ')', mxPx + 10, myPx - 10);
