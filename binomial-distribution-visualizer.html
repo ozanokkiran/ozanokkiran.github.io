@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binomial Distribution Visualizer</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 345px;
+            min-width: 300px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        .dist-banner {
+            background: #f8fafc;
+            border-left: 3px solid var(--teal);
+            padding: 6px 9px;
+            border-radius: 4px;
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .param-row {
+            margin-bottom: 10px;
+        }
+
+        .param-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .num-mini {
+            width: 66px;
+            padding: 3px 6px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--blue);
+            background: #f8fafc;
+        }
+
+        .num-mini:focus {
+            outline: none;
+            border-color: var(--teal);
+            background: #ffffff;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--teal);
+        }
+
+        /* Query Mode Tabs */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .mode-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 6px 3px;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .bound-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 6px 7px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .preset-btn span {
+            display: block;
+            font-family: 'Cambria Math', 'Segoe UI', sans-serif;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 1px;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span {
+            color: #cbd5e0;
+        }
+
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.77rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .checkbox-label input {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        /* Right Stage */
+        .stage {
+            flex: 1;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-wrap {
+            position: relative;
+            flex: 1;
+            min-height: 410px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hover-tooltip {
+            position: absolute;
+            display: none;
+            pointer-events: none;
+            background: rgba(45, 55, 72, 0.94);
+            color: #ffffff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.76rem;
+            line-height: 1.45;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 7px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Analysis Card */
+        .analysis-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px;
+        }
+
+        .analysis-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 9px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .prob-headline {
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--blue);
+        }
+
+        .gdc-pill {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: #faf5ff;
+            color: var(--purple);
+            border: 1px solid #d6bcfa;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .metric-box {
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 7px;
+            padding: 7px 9px;
+        }
+
+        .metric-lbl {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .metric-val {
+            font-family: 'Cambria Math', 'Courier New', monospace;
+            font-size: 0.94rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-sub {
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .norm-bar {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #edf2f7;
+            font-size: 0.77rem;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .badge-ok { color: #22543d; font-weight: 700; }
+        .badge-no { color: #9b2c2c; font-weight: 700; }
+
+        @media (max-width: 860px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 680px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-wrap {
+                min-height: 330px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Binomial Distribution Visualizer</h1>
+        <p class="subtitle">IB DP Math AA HL &mdash; X ~ B(n, p), Cumulative Probabilities, Expected Value &amp; Normal Approximation</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Distribution Parameters -->
+            <div class="section-card">
+                <div class="section-title">1. Distribution Parameters</div>
+                <div class="dist-banner" id="distBanner">X ~ B(12, 0.50)</div>
+
+                <div class="param-row">
+                    <div class="slider-header">
+                        <span>Number of Trials (n)</span>
+                        <input type="number" id="nInput" class="num-mini" min="1" max="60" step="1" value="12">
+                    </div>
+                    <input type="range" id="nSlider" min="1" max="60" step="1" value="12">
+                </div>
+
+                <div class="param-row">
+                    <div class="slider-header">
+                        <span>Success Probability (p)</span>
+                        <input type="number" id="pInput" class="num-mini" min="0.01" max="0.99" step="0.01" value="0.50">
+                    </div>
+                    <input type="range" id="pSlider" min="0.01" max="0.99" step="0.01" value="0.50">
+                </div>
+            </div>
+
+            <!-- 2. Probability Query -->
+            <div class="section-card">
+                <div class="section-title">2. Probability Query (GDC Equivalent)</div>
+                <div class="mode-grid" id="modeGrid">
+                    <button type="button" class="mode-btn" data-mode="eq">X = k</button>
+                    <button type="button" class="mode-btn active" data-mode="le">X &le; k</button>
+                    <button type="button" class="mode-btn" data-mode="ge">X &ge; k</button>
+                    <button type="button" class="mode-btn" data-mode="between">a &le; X &le; b</button>
+                </div>
+
+                <div class="bound-controls">
+                    <div id="singleKWrap">
+                        <div class="slider-header">
+                            <span id="kLabel">Value k</span>
+                            <input type="number" id="kInput" class="num-mini" min="0" max="12" step="1" value="6">
+                        </div>
+                        <input type="range" id="kSlider" min="0" max="12" step="1" value="6">
+                    </div>
+
+                    <div id="rangeWrap" style="display:none;">
+                        <div class="param-row">
+                            <div class="slider-header">
+                                <span>Lower Bound (a)</span>
+                                <input type="number" id="aInput" class="num-mini" min="0" max="12" step="1" value="4">
+                            </div>
+                            <input type="range" id="aSlider" min="0" max="12" step="1" value="4">
+                        </div>
+                        <div class="param-row">
+                            <div class="slider-header">
+                                <span>Upper Bound (b)</span>
+                                <input type="number" id="bInput" class="num-mini" min="0" max="12" step="1" value="8">
+                            </div>
+                            <input type="range" id="bSlider" min="0" max="12" step="1" value="8">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Classic IB Presets -->
+            <div class="section-card">
+                <div class="section-title">3. Classic IB Scenarios</div>
+                <div class="preset-grid">
+                    <button type="button" class="preset-btn active"
+                        data-n="12" data-p="0.5" data-mode="le" data-k="6" data-a="4" data-b="8">
+                        Fair Coin (n=12)
+                        <span>Symmetric, p = 0.50</span>
+                    </button>
+                    <button type="button" class="preset-btn"
+                        data-n="15" data-p="0.17" data-mode="ge" data-k="4" data-a="2" data-b="5">
+                        Rolling Sixes
+                        <span>Right-skewed, p &approx; 1/6</span>
+                    </button>
+                    <button type="button" class="preset-btn"
+                        data-n="20" data-p="0.85" data-mode="le" data-k="16" data-a="15" data-b="19">
+                        Quality Control
+                        <span>Left-skewed, p = 0.85</span>
+                    </button>
+                    <button type="button" class="preset-btn"
+                        data-n="40" data-p="0.40" data-mode="between" data-k="16" data-a="12" data-b="20">
+                        Normal Approx.
+                        <span>n=40, np=16 &ge; 5</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. Visual Overlays -->
+            <div class="section-card">
+                <div class="section-title">4. Analytical Overlays</div>
+                <div class="toggle-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkMean" checked> Mean &mu; &amp; &sigma; Band
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkNormal"> Normal Curve N(&mu;,&sigma;&sup2;)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkLabels" checked> Bar Values (n &le; 20)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkGrid" checked> Horizontal Grid
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Interactive Stage -->
+        <div class="stage">
+            <div class="canvas-wrap" id="canvasWrap">
+                <canvas id="histCanvas"></canvas>
+                <div class="hover-tooltip" id="hoverTooltip"></div>
+                <div class="controls-hint">Hover any bar for exact P(X=k) | Click bar to set k</div>
+            </div>
+
+            <!-- IB Statistical Summary -->
+            <div class="analysis-card">
+                <div class="analysis-top">
+                    <span class="prob-headline" id="probHeadline">P(X &le; 6) = 0.61279 (61.28%)</span>
+                    <span class="gdc-pill" id="gdcPill">binomCdf(12, 0.50, 0, 6)</span>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-lbl">Expected Value E(X)</div>
+                        <div class="metric-val" style="color:#2b6cb0;" id="mMean">6.000</div>
+                        <div class="metric-sub">&mu; = np</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Variance Var(X)</div>
+                        <div class="metric-val" style="color:#5b9aa0;" id="mVar">3.000</div>
+                        <div class="metric-sub">&sigma;&sup2; = np(1 &minus; p)</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Std. Deviation (&sigma;)</div>
+                        <div class="metric-val" style="color:#7c6992;" id="mStd">1.732</div>
+                        <div class="metric-sub">&sigma; = &radic;(np(1 &minus; p))</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Mode(s) &amp; Skewness</div>
+                        <div class="metric-val" style="color:#e69a53;" id="mMode">6</div>
+                        <div class="metric-sub" id="mSkew">Skewness: 0.000 (Symmetric)</div>
+                    </div>
+                </div>
+
+                <div class="norm-bar">
+                    <span id="normCheckText"><strong>Normal Approx. Check:</strong> np = 6.00 &ge; 5, nq = 6.00 &ge; 5 &rArr; <span class="badge-ok">Valid</span></span>
+                    <span id="compProbText"><strong>Complement:</strong> P(X &gt; 6) = 0.38721</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            /* =========================================================
+               LOG-FACTORIAL BINOMIAL ENGINE (Overflow-Safe up to n=100)
+            ========================================================= */
+            var LOG_FACT = [0];
+            for (var f = 1; f <= 100; f++) {
+                LOG_FACT[f] = LOG_FACT[f - 1] + Math.log(f);
+            }
+
+            function binomPMF(n, p, k) {
+                if (k < 0 || k > n) return 0;
+                if (p <= 0) return k === 0 ? 1 : 0;
+                if (p >= 1) return k === n ? 1 : 0;
+                var logP = LOG_FACT[n] - LOG_FACT[k] - LOG_FACT[n - k] +
+                           k * Math.log(p) + (n - k) * Math.log(1 - p);
+                return Math.exp(logP);
+            }
+
+            function normalPDF(x, mu, sigma) {
+                if (sigma < 1e-9) return 0;
+                var z = (x - mu) / sigma;
+                return Math.exp(-0.5 * z * z) / (sigma * Math.sqrt(2 * Math.PI));
+            }
+
+            function init() {
+                var canvas = document.getElementById('histCanvas');
+                var ctx = canvas.getContext('2d');
+                var canvasWrap = document.getElementById('canvasWrap');
+                var hoverTooltip = document.getElementById('hoverTooltip');
+
+                var distBanner = document.getElementById('distBanner');
+                var nInput = document.getElementById('nInput');
+                var nSlider = document.getElementById('nSlider');
+                var pInput = document.getElementById('pInput');
+                var pSlider = document.getElementById('pSlider');
+
+                var modeBtns = document.querySelectorAll('.mode-btn');
+                var singleKWrap = document.getElementById('singleKWrap');
+                var rangeWrap = document.getElementById('rangeWrap');
+                var kInput = document.getElementById('kInput');
+                var kSlider = document.getElementById('kSlider');
+                var aInput = document.getElementById('aInput');
+                var aSlider = document.getElementById('aSlider');
+                var bInput = document.getElementById('bInput');
+                var bSlider = document.getElementById('bSlider');
+
+                var presetBtns = document.querySelectorAll('.preset-btn');
+                var chkMean = document.getElementById('chkMean');
+                var chkNormal = document.getElementById('chkNormal');
+                var chkLabels = document.getElementById('chkLabels');
+                var chkGrid = document.getElementById('chkGrid');
+
+                var probHeadline = document.getElementById('probHeadline');
+                var gdcPill = document.getElementById('gdcPill');
+                var mMean = document.getElementById('mMean');
+                var mVar = document.getElementById('mVar');
+                var mStd = document.getElementById('mStd');
+                var mMode = document.getElementById('mMode');
+                var mSkew = document.getElementById('mSkew');
+                var normCheckText = document.getElementById('normCheckText');
+                var compProbText = document.getElementById('compProbText');
+
+                var PAD_L = 56, PAD_R = 24, PAD_T = 32, PAD_B = 42;
+
+                var state = {
+                    n: 12,
+                    p: 0.50,
+                    mode: 'le', // 'eq', 'le', 'ge', 'between'
+                    k: 6,
+                    a: 4,
+                    b: 8,
+                    probs: [],
+                    cdf: [],
+                    hoverK: -1
+                };
+
+                function clampBounds() {
+                    var n = state.n;
+                    kInput.max = String(n); kSlider.max = String(n);
+                    aInput.max = String(n); aSlider.max = String(n);
+                    bInput.max = String(n); bSlider.max = String(n);
+
+                    state.k = Math.max(0, Math.min(n, state.k));
+                    state.a = Math.max(0, Math.min(n, state.a));
+                    state.b = Math.max(0, Math.min(n, state.b));
+                    if (state.a > state.b) state.b = state.a;
+
+                    nInput.value = String(n);
+                    nSlider.value = String(n);
+                    pInput.value = state.p.toFixed(2);
+                    pSlider.value = state.p.toFixed(2);
+                    kInput.value = String(state.k);
+                    kSlider.value = String(state.k);
+                    aInput.value = String(state.a);
+                    aSlider.value = String(state.a);
+                    bInput.value = String(state.b);
+                    bSlider.value = String(state.b);
+                }
+
+                function isHighlighted(idx) {
+                    if (state.mode === 'eq') return idx === state.k;
+                    if (state.mode === 'le') return idx <= state.k;
+                    if (state.mode === 'ge') return idx >= state.k;
+                    return idx >= state.a && idx <= state.b;
+                }
+
+                function computeAndRender() {
+                    clampBounds();
+                    var n = state.n, p = state.p, q = 1 - p;
+                    distBanner.textContent = 'X ~ B(' + n + ', ' + p.toFixed(2) + ')';
+
+                    var probs = [];
+                    var cdf = [];
+                    var run = 0;
+                    var selProb = 0;
+
+                    for (var i = 0; i <= n; i++) {
+                        var pr = binomPMF(n, p, i);
+                        probs.push(pr);
+                        run += pr;
+                        cdf.push(Math.min(1, run));
+                        if (isHighlighted(i)) selProb += pr;
+                    }
+                    state.probs = probs;
+                    state.cdf = cdf;
+
+                    var mu = n * p;
+                    var variance = n * p * q;
+                    var sigma = Math.sqrt(variance);
+                    var skew = sigma > 1e-9 ? (1 - 2 * p) / sigma : 0;
+
+                    // Mode calculation
+                    var np1 = (n + 1) * p;
+                    var modeStr;
+                    if (Math.abs(np1 - Math.round(np1)) < 1e-9 && np1 > 0 && np1 <= n) {
+                        var mInt = Math.round(np1);
+                        modeStr = (mInt - 1) + ' & ' + mInt;
+                    } else {
+                        modeStr = String(Math.floor(np1));
+                    }
+
+                    // Query labels & GDC syntax
+                    var qStr, compStr, gdcStr;
+                    var pStr = p.toFixed(2);
+                    if (state.mode === 'eq') {
+                        qStr = 'P(X = ' + state.k + ')';
+                        compStr = 'P(X ≠ ' + state.k + ') = ' + Math.max(0, 1 - selProb).toFixed(5);
+                        gdcStr = 'binomPdf(' + n + ', ' + pStr + ', ' + state.k + ')';
+                    } else if (state.mode === 'le') {
+                        qStr = 'P(X ≤ ' + state.k + ')';
+                        compStr = 'P(X > ' + state.k + ') = ' + Math.max(0, 1 - selProb).toFixed(5);
+                        gdcStr = 'binomCdf(' + n + ', ' + pStr + ', 0, ' + state.k + ')';
+                    } else if (state.mode === 'ge') {
+                        qStr = 'P(X ≥ ' + state.k + ')';
+                        compStr = 'P(X < ' + state.k + ') = ' + Math.max(0, 1 - selProb).toFixed(5);
+                        gdcStr = 'binomCdf(' + n + ', ' + pStr + ', ' + state.k + ', ' + n + ')';
+                    } else {
+                        qStr = 'P(' + state.a + ' ≤ X ≤ ' + state.b + ')';
+                        compStr = 'Complement = ' + Math.max(0, 1 - selProb).toFixed(5);
+                        gdcStr = 'binomCdf(' + n + ', ' + pStr + ', ' + state.a + ', ' + state.b + ')';
+                    }
+
+                    probHeadline.textContent = qStr + ' = ' + selProb.toFixed(5) + ' (' + (selProb * 100).toFixed(2) + '%)';
+                    gdcPill.textContent = gdcStr;
+
+                    mMean.textContent = mu.toFixed(3);
+                    mVar.textContent = variance.toFixed(3);
+                    mStd.textContent = sigma.toFixed(3);
+                    mMode.textContent = modeStr;
+
+                    var skewLabel = Math.abs(skew) < 0.08 ? 'Symmetric' : (skew > 0 ? 'Right-skewed' : 'Left-skewed');
+                    mSkew.textContent = 'Skewness: ' + skew.toFixed(3) + ' (' + skewLabel + ')';
+
+                    var np = n * p, nq = n * q;
+                    var validNorm = (np >= 5 && nq >= 5);
+                    normCheckText.innerHTML = '<strong>Normal Approx. (np ≥ 5, nq ≥ 5):</strong> np = ' + np.toFixed(2) + ', nq = ' + nq.toFixed(2) +
+                        ' &rArr; <span class="' + (validNorm ? 'badge-ok' : 'badge-no') + '">' + (validNorm ? 'Valid' : 'Not Recommended') + '</span>';
+                    compProbText.innerHTML = '<strong>Complement:</strong> ' + compStr;
+
+                    drawHistogram(mu, sigma);
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var rect = canvasWrap.getBoundingClientRect();
+                    var w = rect.width > 50 ? rect.width : 640;
+                    var h = rect.height > 100 ? rect.height : 410;
+                    canvas.width = Math.round(w * dpr);
+                    canvas.height = Math.round(h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    computeAndRender();
+                }
+
+                function getPlotMetrics() {
+                    var rect = canvasWrap.getBoundingClientRect();
+                    var W = rect.width > 50 ? rect.width : 640;
+                    var H = rect.height > 100 ? rect.height : 410;
+                    return {
+                        W: W, H: H,
+                        plotW: W - PAD_L - PAD_R,
+                        plotH: H - PAD_T - PAD_B
+                    };
+                }
+
+                function drawHistogram(mu, sigma) {
+                    var m = getPlotMetrics();
+                    var W = m.W, H = m.H, plotW = m.plotW, plotH = m.plotH;
+                    ctx.clearRect(0, 0, W, H);
+
+                    var n = state.n;
+                    var numBars = n + 1;
+                    var maxP = 0;
+                    for (var i = 0; i < numBars; i++) {
+                        if (state.probs[i] > maxP) maxP = state.probs[i];
+                    }
+                    var normPeak = sigma > 0.2 ? normalPDF(mu, mu, sigma) : 0;
+                    var yMax = Math.max(maxP, chkNormal.checked ? normPeak : 0) * 1.18;
+                    if (yMax < 0.05) yMax = 0.05;
+
+                    function valToY(v) {
+                        return PAD_T + plotH - (v / yMax) * plotH;
+                    }
+
+                    var slotW = plotW / numBars;
+                    var barW = Math.max(2, slotW * (numBars > 35 ? 0.82 : 0.74));
+
+                    function kToCenterX(kVal) {
+                        return PAD_L + (kVal + 0.5) * slotW;
+                    }
+
+                    // Horizontal grid & Y labels
+                    var gridSteps = 5;
+                    ctx.font = "10.5px 'Segoe UI'";
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle';
+                    for (var g = 0; g <= gridSteps; g++) {
+                        var yv = (yMax / gridSteps) * g;
+                        var gy = valToY(yv);
+                        if (chkGrid.checked && g > 0) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = '#edf2f7';
+                            ctx.lineWidth = 1;
+                            ctx.moveTo(PAD_L, gy);
+                            ctx.lineTo(W - PAD_R, gy);
+                            ctx.stroke();
+                        }
+                        ctx.fillStyle = '#718096';
+                        ctx.fillText(yv.toFixed(2), PAD_L - 8, gy);
+                    }
+
+                    // Mean ± 1σ shaded band
+                    if (chkMean.checked && sigma > 0) {
+                        var xL = Math.max(PAD_L, kToCenterX(mu - sigma));
+                        var xR = Math.min(W - PAD_R, kToCenterX(mu + sigma));
+                        ctx.fillStyle = 'rgba(124, 105, 146, 0.08)';
+                        ctx.fillRect(xL, PAD_T, xR - xL, plotH);
+                    }
+
+                    // Bars
+                    for (var k = 0; k < numBars; k++) {
+                        var pr = state.probs[k];
+                        var cx = kToCenterX(k);
+                        var bx = cx - barW / 2;
+                        var by = valToY(pr);
+                        var bh = PAD_T + plotH - by;
+                        var hi = isHighlighted(k);
+                        var isHov = (k === state.hoverK);
+
+                        ctx.fillStyle = hi ? (isHov ? '#2c5282' : '#5b9aa0') : (isHov ? '#a0aec0' : '#dce3e8');
+                        ctx.strokeStyle = isHov ? '#d96459' : (hi ? '#3d757a' : '#cbd5e0');
+                        ctx.lineWidth = isHov ? 2 : 1;
+
+                        if (bh > 0.5) {
+                            ctx.beginPath();
+                            ctx.rect(bx, by, barW, bh);
+                            ctx.fill();
+                            ctx.stroke();
+                        }
+
+                        // Probability label above bar for smaller n
+                        if (chkLabels.checked && n <= 20 && pr >= 0.002) {
+                            ctx.font = "600 9.5px 'Segoe UI'";
+                            ctx.fillStyle = hi ? '#2d3748' : '#718096';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
+                            ctx.fillText(pr.toFixed(3), cx, by - 3);
+                        }
+                    }
+
+                    // Mean vertical dashed line
+                    if (chkMean.checked) {
+                        var xMu = kToCenterX(mu);
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#7c6992';
+                        ctx.setLineDash([5, 4]);
+                        ctx.lineWidth = 1.8;
+                        ctx.moveTo(xMu, PAD_T);
+                        ctx.lineTo(xMu, PAD_T + plotH);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        ctx.font = "bold 11px 'Segoe UI'";
+                        ctx.fillStyle = '#7c6992';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText('μ = ' + mu.toFixed(2), xMu, PAD_T - 5);
+                        ctx.restore();
+                    }
+
+                    // Normal Approximation Curve N(np, npq)
+                    if (chkNormal.checked && sigma > 0.15) {
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#d96459';
+                        ctx.lineWidth = 2.4;
+                        var pts = 240;
+                        for (var s = 0; s <= pts; s++) {
+                            var xVal = -0.5 + ((n + 1) * s) / pts;
+                            var px = kToCenterX(xVal);
+                            var py = valToY(normalPDF(xVal, mu, sigma));
+                            if (s === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+
+                    // Axes
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#4a6572';
+                    ctx.lineWidth = 1.4;
+                    ctx.moveTo(PAD_L, PAD_T);
+                    ctx.lineTo(PAD_L, PAD_T + plotH);
+                    ctx.lineTo(W - PAD_R, PAD_T + plotH);
+                    ctx.stroke();
+
+                    // X-axis tick labels
+                    var xStep = numBars <= 16 ? 1 : (numBars <= 32 ? 2 : 5);
+                    ctx.font = "10.5px 'Segoe UI'";
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    for (var xt = 0; xt <= n; xt += xStep) {
+                        ctx.fillText(String(xt), kToCenterX(xt), PAD_T + plotH + 7);
+                    }
+
+                    // Axis titles
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Number of Successes (k)', PAD_L + plotW / 2, H - 14);
+
+                    ctx.save();
+                    ctx.translate(15, PAD_T + plotH / 2);
+                    ctx.rotate(-Math.PI / 2);
+                    ctx.fillText('P(X = k)', 0, 0);
+                    ctx.restore();
+                }
+
+                /* =========================================================
+                   EVENTS
+                ========================================================= */
+                function clearPresets() {
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                }
+
+                nSlider.addEventListener('input', function () {
+                    state.n = parseInt(nSlider.value, 10);
+                    clearPresets();
+                    computeAndRender();
+                });
+
+                nInput.addEventListener('input', function () {
+                    var v = parseInt(nInput.value, 10);
+                    if (!isNaN(v) && v >= 1 && v <= 60) {
+                        state.n = v;
+                        clearPresets();
+                        computeAndRender();
+                    }
+                });
+
+                pSlider.addEventListener('input', function () {
+                    state.p = parseFloat(pSlider.value);
+                    clearPresets();
+                    computeAndRender();
+                });
+
+                pInput.addEventListener('input', function () {
+                    var v = parseFloat(pInput.value);
+                    if (!isNaN(v) && v >= 0.01 && v <= 0.99) {
+                        state.p = v;
+                        clearPresets();
+                        computeAndRender();
+                    }
+                });
+
+                modeBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        modeBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.mode = btn.getAttribute('data-mode');
+                        var isBetween = state.mode === 'between';
+                        singleKWrap.style.display = isBetween ? 'none' : 'block';
+                        rangeWrap.style.display = isBetween ? 'block' : 'none';
+                        clearPresets();
+                        computeAndRender();
+                    });
+                });
+
+                kSlider.addEventListener('input', function () {
+                    state.k = parseInt(kSlider.value, 10);
+                    clearPresets();
+                    computeAndRender();
+                });
+
+                kInput.addEventListener('input', function () {
+                    var v = parseInt(kInput.value, 10);
+                    if (!isNaN(v)) { state.k = v; clearPresets(); computeAndRender(); }
+                });
+
+                aSlider.addEventListener('input', function () {
+                    state.a = parseInt(aSlider.value, 10);
+                    if (state.a > state.b) state.b = state.a;
+                    clearPresets();
+                    computeAndRender();
+                });
+
+                aInput.addEventListener('input', function () {
+                    var v = parseInt(aInput.value, 10);
+                    if (!isNaN(v)) { state.a = v; if (state.a > state.b) state.b = state.a; clearPresets(); computeAndRender(); }
+                });
+
+                bSlider.addEventListener('input', function () {
+                    state.b = parseInt(bSlider.value, 10);
+                    if (state.b < state.a) state.a = state.b;
+                    clearPresets();
+                    computeAndRender();
+                });
+
+                bInput.addEventListener('input', function () {
+                    var v = parseInt(bInput.value, 10);
+                    if (!isNaN(v)) { state.b = v; if (state.b < state.a) state.a = state.b; clearPresets(); computeAndRender(); }
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.n = parseInt(btn.getAttribute('data-n'), 10);
+                        state.p = parseFloat(btn.getAttribute('data-p'));
+                        state.mode = btn.getAttribute('data-mode');
+                        state.k = parseInt(btn.getAttribute('data-k'), 10);
+                        state.a = parseInt(btn.getAttribute('data-a'), 10);
+                        state.b = parseInt(btn.getAttribute('data-b'), 10);
+
+                        modeBtns.forEach(function (mb) {
+                            mb.classList.toggle('active', mb.getAttribute('data-mode') === state.mode);
+                        });
+                        var isBetween = state.mode === 'between';
+                        singleKWrap.style.display = isBetween ? 'none' : 'block';
+                        rangeWrap.style.display = isBetween ? 'block' : 'none';
+                        if (state.n >= 30) chkNormal.checked = true;
+                        computeAndRender();
+                    });
+                });
+
+                [chkMean, chkNormal, chkLabels, chkGrid].forEach(function (c) {
+                    c.addEventListener('change', computeAndRender);
+                });
+
+                function getHoveredK(clientX) {
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = clientX - rect.left;
+                    var plotW = rect.width - PAD_L - PAD_R;
+                    if (mx < PAD_L || mx > rect.width - PAD_R) return -1;
+                    var idx = Math.floor(((mx - PAD_L) / plotW) * (state.n + 1));
+                    return (idx >= 0 && idx <= state.n) ? idx : -1;
+                }
+
+                canvas.addEventListener('mousemove', function (e) {
+                    var hk = getHoveredK(e.clientX);
+                    if (hk !== state.hoverK) {
+                        state.hoverK = hk;
+                        drawHistogram(state.n * state.p, Math.sqrt(state.n * state.p * (1 - state.p)));
+                    }
+                    if (hk >= 0) {
+                        var rect = canvasWrap.getBoundingClientRect();
+                        var pr = state.probs[hk];
+                        var cd = state.cdf[hk];
+                        hoverTooltip.innerHTML =
+                            '<strong>k = ' + hk + '</strong><br>' +
+                            'P(X = ' + hk + ') = ' + pr.toFixed(5) + ' (' + (pr * 100).toFixed(2) + '%)<br>' +
+                            'P(X ≤ ' + hk + ') = ' + cd.toFixed(5);
+                        hoverTooltip.style.display = 'block';
+                        var tx = e.clientX - rect.left + 14;
+                        var ty = e.clientY - rect.top - 12;
+                        if (tx + 185 > rect.width) tx = e.clientX - rect.left - 195;
+                        if (ty < 8) ty = 8;
+                        hoverTooltip.style.left = tx + 'px';
+                        hoverTooltip.style.top = ty + 'px';
+                    } else {
+                        hoverTooltip.style.display = 'none';
+                    }
+                });
+
+                canvas.addEventListener('mouseleave', function () {
+                    state.hoverK = -1;
+                    hoverTooltip.style.display = 'none';
+                    drawHistogram(state.n * state.p, Math.sqrt(state.n * state.p * (1 - state.p)));
+                });
+
+                canvas.addEventListener('click', function (e) {
+                    var ck = getHoveredK(e.clientX);
+                    if (ck < 0) return;
+                    clearPresets();
+                    if (state.mode === 'between') {
+                        // Snap closer bound (a or b) to clicked bar
+                        if (Math.abs(ck - state.a) <= Math.abs(ck - state.b)) {
+                            state.a = ck;
+                            if (state.a > state.b) state.b = state.a;
+                        } else {
+                            state.b = ck;
+                            if (state.b < state.a) state.a = state.b;
+                        }
+                    } else {
+                        state.k = ck;
+                    }
+                    computeAndRender();
+                });
+
+                window.addEventListener('resize', resizeCanvas);
+                resizeCanvas();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
