@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinematics Motion Visualizer: s(t), v(t), a(t)</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 345px;
+            min-width: 300px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        .fn-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fn-tag {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: var(--blue);
+            width: 50px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .math-input {
+            flex: 1;
+            padding: 6px 9px;
+            font-family: 'Cambria Math', 'Segoe UI', sans-serif;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--text-main);
+            background: #f7fcfc;
+            border: 1.5px solid var(--teal);
+            border-radius: 6px;
+        }
+
+        .math-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(91, 154, 160, 0.18);
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .key-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 5px 3px;
+            font-family: 'Cambria Math', 'Segoe UI', serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .key-btn:hover {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        .key-btn.clear-btn {
+            background: #fff5f5;
+            color: var(--coral);
+            border-color: #fed7d7;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.74rem;
+        }
+
+        .key-btn.clear-btn:hover {
+            background: var(--coral);
+            color: #ffffff;
+        }
+
+        .error-banner {
+            display: none;
+            margin-top: 7px;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            border-radius: 5px;
+            padding: 6px 8px;
+            font-size: 0.76rem;
+            font-weight: 600;
+        }
+
+        /* Playback & Time Controls */
+        .time-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .num-inline {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .num-inline input {
+            width: 68px;
+            padding: 4px 6px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 5px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .num-inline input:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 3px;
+        }
+
+        .val-badge {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+            color: var(--blue);
+            background: #ebf8ff;
+            padding: 1px 7px;
+            border-radius: 4px;
+            font-size: 0.83rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin-bottom: 8px;
+        }
+
+        .playback-bar {
+            display: flex;
+            gap: 6px;
+        }
+
+        .play-btn {
+            flex: 1.4;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .play-btn:hover {
+            background: #3a505b;
+        }
+
+        .play-btn.playing {
+            background: var(--coral);
+        }
+
+        .reset-btn {
+            flex: 0.8;
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .reset-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .speed-select {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 6px 7px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .preset-btn span {
+            display: block;
+            font-family: 'Cambria Math', 'Segoe UI', sans-serif;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-top: 1px;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span {
+            color: #cbd5e0;
+        }
+
+        .toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .checkbox-label input {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        /* Right Stage */
+        .stage {
+            flex: 1;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* 1D Motion Track Card */
+        .track-card {
+            background: linear-gradient(135deg, #f8fafc, #eef2f5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+
+        .track-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .track-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+        }
+
+        .motion-pill {
+            font-size: 0.77rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 12px;
+        }
+
+        .motion-pill.speeding {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+
+        .motion-pill.slowing {
+            background: #fff5f5;
+            color: #9b2c2c;
+            border: 1px solid #feb2b2;
+        }
+
+        .motion-pill.rest {
+            background: #fefcbf;
+            color: #744210;
+            border: 1px solid #f6e05e;
+        }
+
+        .track-canvas-wrap {
+            width: 100%;
+            height: 82px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            overflow: hidden;
+        }
+
+        /* Stacked Graphs Canvas */
+        .graphs-wrap {
+            position: relative;
+            flex: 1;
+            min-height: 360px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: ew-resize;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 6px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        /* Analysis Card */
+        .analysis-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .metric-box {
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 7px;
+            padding: 7px 9px;
+        }
+
+        .metric-lbl {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .metric-val {
+            font-family: 'Cambria Math', 'Courier New', monospace;
+            font-size: 0.94rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-sub {
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .rest-bar {
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #edf2f7;
+            font-size: 0.77rem;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media (max-width: 960px) {
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 680px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Kinematics Motion Visualizer</h1>
+        <p class="subtitle">IB DP Math AA HL &mdash; Synchronized s(t), v(t) = s'(t), a(t) = s''(t), Displacement vs. Total Distance</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Displacement Function -->
+            <div class="section-card">
+                <div class="section-title">1. Displacement Function s(t)</div>
+                <div class="fn-row">
+                    <span class="fn-tag">s(t) =</span>
+                    <input type="text" id="sInput" class="math-input" value="t³ - 6t² + 9t" autocomplete="off" spellcheck="false">
+                </div>
+
+                <div class="keypad">
+                    <button type="button" class="key-btn" data-insert="t">t</button>
+                    <button type="button" class="key-btn" data-insert="t²">t&sup2;</button>
+                    <button type="button" class="key-btn" data-insert="t³">t&sup3;</button>
+                    <button type="button" class="key-btn" data-insert="√()">&radic;( )</button>
+                    <button type="button" class="key-btn" data-insert="sin()">sin( )</button>
+                    <button type="button" class="key-btn" data-insert="cos()">cos( )</button>
+                    <button type="button" class="key-btn" data-insert="e^()">e^( )</button>
+                    <button type="button" class="key-btn" data-insert="ln()">ln( )</button>
+                    <button type="button" class="key-btn" data-insert=" + ">+</button>
+                    <button type="button" class="key-btn" data-insert=" - ">&minus;</button>
+                    <button type="button" class="key-btn clear-btn" id="btnBack">&larr; Del</button>
+                    <button type="button" class="key-btn clear-btn" id="btnClear">Clear</button>
+                </div>
+                <div class="error-banner" id="errorBanner"></div>
+            </div>
+
+            <!-- 2. Time & Playback -->
+            <div class="section-card">
+                <div class="section-title">2. Time Domain &amp; Playback</div>
+                <div class="time-row">
+                    <div class="num-inline">
+                        <label for="tMaxInput">Interval [0, T] : T =</label>
+                        <input type="number" id="tMaxInput" min="1" max="30" step="0.5" value="5">
+                    </div>
+                    <select id="speedSelect" class="speed-select" title="Playback Speed">
+                        <option value="0.5">0.5&times;</option>
+                        <option value="1" selected>1.0&times;</option>
+                        <option value="1.5">1.5&times;</option>
+                    </select>
+                </div>
+
+                <div class="slider-header">
+                    <span>Current Time t</span>
+                    <span class="val-badge" id="tValBadge">1.50 s</span>
+                </div>
+                <input type="range" id="tSlider" min="0" max="5" step="0.01" value="1.5">
+
+                <div class="playback-bar">
+                    <button type="button" class="play-btn" id="btnPlay">&#9654; Play Motion</button>
+                    <button type="button" class="reset-btn" id="btnReset">t = 0</button>
+                </div>
+            </div>
+
+            <!-- 3. Classic IB Presets -->
+            <div class="section-card">
+                <div class="section-title">3. Classic IB Exam Motions</div>
+                <div class="preset-grid">
+                    <button type="button" class="preset-btn active"
+                        data-s="t³ - 6t² + 9t" data-tmax="5" data-t="1.5">
+                        Cubic Reversal
+                        <span>t&sup3; &minus; 6t&sup2; + 9t (rest at 1, 3)</span>
+                    </button>
+                    <button type="button" class="preset-btn"
+                        data-s="3cos(t)" data-tmax="6.28" data-t="1.0">
+                        Harmonic (SHM)
+                        <span>3cos(t), a(t) = &minus;s(t)</span>
+                    </button>
+                    <button type="button" class="preset-btn"
+                        data-s="4e^(-0.35t)sin(2t)" data-tmax="8" data-t="1.2">
+                        Damped Wave
+                        <span>4e<sup>&minus;0.35t</sup>sin(2t)</span>
+                    </button>
+                    <button type="button" class="preset-btn"
+                        data-s="4ln(t + 1) - t" data-tmax="6" data-t="2.0">
+                        Log Deceleration
+                        <span>4ln(t+1) &minus; t (max at t=3)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4. Visual Overlays -->
+            <div class="section-card">
+                <div class="section-title">4. Analytical Overlays</div>
+                <div class="toggle-grid">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkArea" checked> Shaded &int;v dt
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkRoots" checked> Rest Points (v=0)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkVectors" checked> Track Vectors
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkTrail" checked> Motion Trail
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Interactive Stage -->
+        <div class="stage">
+
+            <!-- 1D Particle Motion Track -->
+            <div class="track-card">
+                <div class="track-top">
+                    <span class="track-title">1D Particle Motion Along the s-Axis</span>
+                    <span class="motion-pill speeding" id="motionPill">Speeding Up (v &middot; a &gt; 0)</span>
+                </div>
+                <div class="track-canvas-wrap" id="trackWrap">
+                    <canvas id="trackCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- 3 Synchronized Stacked Graphs -->
+            <div class="graphs-wrap" id="graphsWrap">
+                <canvas id="graphsCanvas"></canvas>
+                <div class="controls-hint">Click or drag anywhere on the graphs to scrub time t</div>
+            </div>
+
+            <!-- IB Kinematics Telemetry -->
+            <div class="analysis-card">
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-lbl">Position s(t)</div>
+                        <div class="metric-val" style="color:#2b6cb0;" id="mPos">3.375</div>
+                        <div class="metric-sub">m from origin</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Velocity v(t)</div>
+                        <div class="metric-val" style="color:#38a169;" id="mVel">&minus;2.250</div>
+                        <div class="metric-sub" id="mSpeedSub">Speed |v| = 2.250</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Acceleration a(t)</div>
+                        <div class="metric-val" style="color:#d96459;" id="mAcc">&minus;3.000</div>
+                        <div class="metric-sub">m/s&sup2;</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Net Displacement</div>
+                        <div class="metric-val" style="color:#7c6992;" id="mDisp">3.375</div>
+                        <div class="metric-sub">&int;<sub>0</sub><sup>t</sup> v(u) du = s(t)&minus;s(0)</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-lbl">Total Distance</div>
+                        <div class="metric-val" style="color:#e69a53;" id="mDist">4.625</div>
+                        <div class="metric-sub">&int;<sub>0</sub><sup>t</sup> |v(u)| du</div>
+                    </div>
+                </div>
+                <div class="rest-bar">
+                    <span id="restTimesText"><strong>Instantaneous Rest (v = 0):</strong> t = 1.00, 3.00</span>
+                    <span id="vaCheckText"><strong>v &middot; a = +6.750</strong> (&gt; 0 &rArr; Speeding up)</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            /* =========================================================
+               SAFE REAL-VALUED MATH PARSER (Variable: t or x)
+            ========================================================= */
+            var FUNCS = {
+                sqrt: function (v) { return v < 0 ? NaN : Math.sqrt(v); },
+                ln: function (v) { return v <= 0 ? NaN : Math.log(v); },
+                log: function (v) { return v <= 0 ? NaN : (Math.log10 ? Math.log10(v) : Math.log(v) / Math.LN10); },
+                abs: Math.abs,
+                sin: Math.sin,
+                cos: Math.cos,
+                tan: Math.tan,
+                exp: Math.exp
+            };
+
+            function compileExpression(rawStr) {
+                var s = (rawStr || '').trim();
+                if (!s) throw new Error('Expression cannot be empty.');
+
+                s = s.replace(/−/g, '-')
+                     .replace(/×/g, '*')
+                     .replace(/·/g, '*')
+                     .replace(/²/g, '^2')
+                     .replace(/³/g, '^3')
+                     .replace(/π/g, 'pi')
+                     .replace(/\s+/g, '')
+                     .replace(/√\(/g, 'sqrt(')
+                     .replace(/√([0-9.]+|t|x|pi|e)/gi, 'sqrt($1)');
+
+                var tokens = [];
+                var i = 0;
+                while (i < s.length) {
+                    var ch = s[i];
+                    if (/[0-9.]/.test(ch)) {
+                        var ns = '';
+                        while (i < s.length && /[0-9.]/.test(s[i])) ns += s[i++];
+                        var v = parseFloat(ns);
+                        if (isNaN(v)) throw new Error('Invalid number: ' + ns);
+                        tokens.push({ type: 'NUM', val: v });
+                    } else if (/[a-zA-Z]/.test(ch)) {
+                        var id = '';
+                        while (i < s.length && /[a-zA-Z]/.test(s[i])) id += s[i++];
+                        var low = id.toLowerCase();
+                        if (low === 't' || low === 'x') tokens.push({ type: 'VAR' });
+                        else if (low === 'e') tokens.push({ type: 'NUM', val: Math.E });
+                        else if (low === 'pi') tokens.push({ type: 'NUM', val: Math.PI });
+                        else if (FUNCS[low]) tokens.push({ type: 'FUNC', name: low });
+                        else throw new Error('Unknown identifier: "' + id + '"');
+                    } else if ('+-*/^()'.indexOf(ch) !== -1) {
+                        tokens.push({ type: ch });
+                        i++;
+                    } else {
+                        throw new Error('Unsupported symbol: "' + ch + '"');
+                    }
+                }
+
+                var full = [];
+                for (var k = 0; k < tokens.length; k++) {
+                    full.push(tokens[k]);
+                    if (k < tokens.length - 1) {
+                        var cur = tokens[k].type;
+                        var nxt = tokens[k + 1].type;
+                        var leftOk = (cur === 'NUM' || cur === 'VAR' || cur === ')');
+                        var rightOk = (nxt === 'VAR' || nxt === 'FUNC' || nxt === '(' || (cur === ')' && nxt === 'NUM'));
+                        if (leftOk && rightOk) full.push({ type: '*' });
+                    }
+                }
+
+                var pos = 0;
+                function peek() { return full[pos] || null; }
+                function consume() { return full[pos++]; }
+
+                function parseExpr() {
+                    var node = parseTerm();
+                    while (peek() && (peek().type === '+' || peek().type === '-')) {
+                        var op = consume().type;
+                        node = { op: op, left: node, right: parseTerm() };
+                    }
+                    return node;
+                }
+                function parseTerm() {
+                    var node = parseUnary();
+                    while (peek() && (peek().type === '*' || peek().type === '/')) {
+                        var op = consume().type;
+                        node = { op: op, left: node, right: parseUnary() };
+                    }
+                    return node;
+                }
+                function parseUnary() {
+                    if (peek() && peek().type === '+') { consume(); return parseUnary(); }
+                    if (peek() && peek().type === '-') { consume(); return { op: 'neg', arg: parseUnary() }; }
+                    return parsePower();
+                }
+                function parsePower() {
+                    var base = parsePrimary();
+                    if (peek() && peek().type === '^') {
+                        consume();
+                        return { op: '^', left: base, right: parseUnary() };
+                    }
+                    return base;
+                }
+                function parsePrimary() {
+                    var tok = peek();
+                    if (!tok) throw new Error('Unexpected end of expression.');
+                    if (tok.type === 'NUM') { consume(); return { op: 'num', val: tok.val }; }
+                    if (tok.type === 'VAR') { consume(); return { op: 'var' }; }
+                    if (tok.type === 'FUNC') {
+                        consume();
+                        if (!peek() || peek().type !== '(') throw new Error('Expected "(" after ' + tok.name);
+                        consume();
+                        var arg = parseExpr();
+                        if (!peek() || peek().type !== ')') throw new Error('Missing ")" after ' + tok.name);
+                        consume();
+                        return { op: 'func', name: tok.name, arg: arg };
+                    }
+                    if (tok.type === '(') {
+                        consume();
+                        var inner = parseExpr();
+                        if (!peek() || peek().type !== ')') throw new Error('Missing closing ")".');
+                        consume();
+                        return inner;
+                    }
+                    throw new Error('Unexpected token: ' + tok.type);
+                }
+
+                var ast = parseExpr();
+                if (pos < full.length) throw new Error('Syntax error near "' + full[pos].type + '"');
+
+                function evalNode(n, t) {
+                    switch (n.op) {
+                        case 'num': return n.val;
+                        case 'var': return t;
+                        case 'neg': return -evalNode(n.arg, t);
+                        case '+': return evalNode(n.left, t) + evalNode(n.right, t);
+                        case '-': return evalNode(n.left, t) - evalNode(n.right, t);
+                        case '*': return evalNode(n.left, t) * evalNode(n.right, t);
+                        case '/': {
+                            var d = evalNode(n.right, t);
+                            return Math.abs(d) < 1e-9 ? NaN : evalNode(n.left, t) / d;
+                        }
+                        case '^': return Math.pow(evalNode(n.left, t), evalNode(n.right, t));
+                        case 'func': return FUNCS[n.name](evalNode(n.arg, t));
+                        default: return NaN;
+                    }
+                }
+
+                return function (t) {
+                    var r = evalNode(ast, t);
+                    return (isFinite(r) && !isNaN(r)) ? r : NaN;
+                };
+            }
+
+            function fmtNum(v, dec) {
+                if (isNaN(v) || !isFinite(v)) return '—';
+                if (Math.abs(v) < 1e-6) return (0).toFixed(dec);
+                var s = Math.abs(v).toFixed(dec);
+                return v < 0 ? '−' + s : s;
+            }
+
+            /* =========================================================
+               MAIN APPLICATION
+            ========================================================= */
+            function init() {
+                var trackCanvas = document.getElementById('trackCanvas');
+                var tCtx = trackCanvas.getContext('2d');
+                var trackWrap = document.getElementById('trackWrap');
+
+                var graphsCanvas = document.getElementById('graphsCanvas');
+                var gCtx = graphsCanvas.getContext('2d');
+                var graphsWrap = document.getElementById('graphsWrap');
+
+                var sInput = document.getElementById('sInput');
+                var errorBanner = document.getElementById('errorBanner');
+                var keyBtns = document.querySelectorAll('.key-btn[data-insert]');
+                var btnBack = document.getElementById('btnBack');
+                var btnClear = document.getElementById('btnClear');
+
+                var tMaxInput = document.getElementById('tMaxInput');
+                var speedSelect = document.getElementById('speedSelect');
+                var tSlider = document.getElementById('tSlider');
+                var tValBadge = document.getElementById('tValBadge');
+                var btnPlay = document.getElementById('btnPlay');
+                var btnReset = document.getElementById('btnReset');
+                var presetBtns = document.querySelectorAll('.preset-btn');
+
+                var chkArea = document.getElementById('chkArea');
+                var chkRoots = document.getElementById('chkRoots');
+                var chkVectors = document.getElementById('chkVectors');
+                var chkTrail = document.getElementById('chkTrail');
+
+                var motionPill = document.getElementById('motionPill');
+                var mPos = document.getElementById('mPos');
+                var mVel = document.getElementById('mVel');
+                var mSpeedSub = document.getElementById('mSpeedSub');
+                var mAcc = document.getElementById('mAcc');
+                var mDisp = document.getElementById('mDisp');
+                var mDist = document.getElementById('mDist');
+                var restTimesText = document.getElementById('restTimesText');
+                var vaCheckText = document.getElementById('vaCheckText');
+
+                var PAD_L = 54, PAD_R = 20;
+
+                var state = {
+                    sFn: null,
+                    tMax: 5,
+                    t: 1.5,
+                    playing: false,
+                    lastFrame: 0,
+                    rafId: null,
+                    scrubbing: false,
+                    samples: [], // {t, s, v, a, dist}
+                    ranges: {
+                        sMin: -1, sMax: 5,
+                        vMin: -4, vMax: 10,
+                        aMin: -14, aMax: 20
+                    },
+                    restTimes: []
+                };
+
+                function insertText(txt) {
+                    var el = sInput;
+                    var start = el.selectionStart !== null ? el.selectionStart : el.value.length;
+                    var end = el.selectionEnd !== null ? el.selectionEnd : el.value.length;
+                    el.value = el.value.slice(0, start) + txt + el.value.slice(end);
+                    var pos = start + txt.length;
+                    if (txt.slice(-2) === '()') pos -= 1;
+                    el.focus();
+                    el.setSelectionRange(pos, pos);
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                    compileAndSample();
+                }
+
+                keyBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () { insertText(btn.getAttribute('data-insert')); });
+                });
+
+                btnBack.addEventListener('click', function () {
+                    sInput.value = sInput.value.slice(0, -1);
+                    sInput.focus();
+                    compileAndSample();
+                });
+
+                btnClear.addEventListener('click', function () {
+                    sInput.value = '';
+                    sInput.focus();
+                });
+
+                function evalV(fn, t) {
+                    var h = 1e-4;
+                    var fp = fn(t + h), fm = fn(t - h);
+                    if (!isNaN(fp) && !isNaN(fm)) return (fp - fm) / (2 * h);
+                    var f0 = fn(t);
+                    if (!isNaN(fp) && !isNaN(f0)) return (fp - f0) / h;
+                    if (!isNaN(fm) && !isNaN(f0)) return (f0 - fm) / h;
+                    return NaN;
+                }
+
+                function evalA(fn, t) {
+                    var h = 1e-3;
+                    var fp = fn(t + h), f0 = fn(t), fm = fn(t - h);
+                    if (!isNaN(fp) && !isNaN(f0) && !isNaN(fm)) {
+                        return (fp - 2 * f0 + fm) / (h * h);
+                    }
+                    // Fallback one-sided using velocity
+                    var vp = evalV(fn, t + h), v0 = evalV(fn, t);
+                    if (!isNaN(vp) && !isNaN(v0)) return (vp - v0) / h;
+                    return NaN;
+                }
+
+                function niceRange(minV, maxV) {
+                    if (!isFinite(minV) || !isFinite(maxV)) return [-1, 1];
+                    if (Math.abs(maxV - minV) < 1e-5) return [minV - 1, maxV + 1];
+                    var pad = (maxV - minV) * 0.14;
+                    var lo = Math.min(0, minV - pad);
+                    var hi = Math.max(0, maxV + pad);
+                    return [lo, hi];
+                }
+
+                function compileAndSample() {
+                    try {
+                        var fn = compileExpression(sInput.value);
+                        var tm = parseFloat(tMaxInput.value);
+                        if (isNaN(tm) || tm <= 0.2) throw new Error('Interval T must be > 0.2.');
+                        state.sFn = fn;
+                        state.tMax = tm;
+                        tSlider.max = String(tm);
+                        if (state.t > tm) {
+                            state.t = tm;
+                            tSlider.value = String(tm);
+                        }
+
+                        var N = 600;
+                        var dt = tm / N;
+                        var samples = [];
+                        var sMin = Infinity, sMax = -Infinity;
+                        var vMin = Infinity, vMax = -Infinity;
+                        var aMin = Infinity, aMax = -Infinity;
+                        var cumDist = 0;
+                        var prevV = null;
+                        var restTimes = [];
+
+                        for (var i = 0; i <= N; i++) {
+                            var ti = i * dt;
+                            var si = fn(ti);
+                            var vi = evalV(fn, ti);
+                            var ai = evalA(fn, ti);
+
+                            if (i > 0 && !isNaN(vi) && !isNaN(prevV)) {
+                                // Trapezoidal integration of |v(t)|
+                                cumDist += 0.5 * (Math.abs(prevV) + Math.abs(vi)) * dt;
+
+                                // Detect root of v(t) = 0
+                                if ((prevV > 0 && vi <= 0) || (prevV < 0 && vi >= 0)) {
+                                    var frac = Math.abs(prevV) / (Math.abs(prevV) + Math.abs(vi) + 1e-12);
+                                    var tRoot = (i - 1 + frac) * dt;
+                                    if (tRoot > 0.02 && tRoot < tm - 0.02) {
+                                        if (!restTimes.length || Math.abs(tRoot - restTimes[restTimes.length - 1]) > 0.08) {
+                                            restTimes.push(tRoot);
+                                        }
+                                    }
+                                }
+                            }
+                            prevV = vi;
+
+                            if (!isNaN(si)) { sMin = Math.min(sMin, si); sMax = Math.max(sMax, si); }
+                            if (!isNaN(vi)) { vMin = Math.min(vMin, vi); vMax = Math.max(vMax, vi); }
+                            if (!isNaN(ai)) { aMin = Math.min(aMin, ai); aMax = Math.max(aMax, ai); }
+
+                            samples.push({ t: ti, s: si, v: vi, a: ai, dist: cumDist });
+                        }
+
+                        var sr = niceRange(sMin, sMax);
+                        var vr = niceRange(vMin, vMax);
+                        var ar = niceRange(aMin, aMax);
+
+                        state.samples = samples;
+                        state.ranges = {
+                            sMin: sr[0], sMax: sr[1],
+                            vMin: vr[0], vMax: vr[1],
+                            aMin: ar[0], aMax: ar[1]
+                        };
+                        state.restTimes = restTimes;
+
+                        errorBanner.style.display = 'none';
+                        updateAll();
+                    } catch (err) {
+                        errorBanner.textContent = err.message;
+                        errorBanner.style.display = 'block';
+                    }
+                }
+
+                function getSampleAt(t) {
+                    if (!state.samples.length) return { t: t, s: 0, v: 0, a: 0, dist: 0 };
+                    var idx = Math.round((t / state.tMax) * (state.samples.length - 1));
+                    idx = Math.max(0, Math.min(state.samples.length - 1, idx));
+                    return state.samples[idx];
+                }
+
+                function updateAll() {
+                    if (!state.sFn) return;
+                    var cur = getSampleAt(state.t);
+                    var s0 = state.samples[0].s;
+
+                    tValBadge.textContent = state.t.toFixed(2) + ' s';
+                    mPos.textContent = fmtNum(cur.s, 3);
+                    mVel.textContent = fmtNum(cur.v, 3);
+                    mSpeedSub.textContent = 'Speed |v| = ' + fmtNum(Math.abs(cur.v), 3);
+                    mAcc.textContent = fmtNum(cur.a, 3);
+
+                    var netDisp = (!isNaN(cur.s) && !isNaN(s0)) ? (cur.s - s0) : NaN;
+                    mDisp.textContent = fmtNum(netDisp, 3);
+                    mDist.textContent = fmtNum(cur.dist, 3);
+
+                    var va = cur.v * cur.a;
+                    if (Math.abs(cur.v) < 0.04) {
+                        motionPill.className = 'motion-pill rest';
+                        motionPill.textContent = 'Instantaneously at Rest (v ≈ 0)';
+                        vaCheckText.innerHTML = '<strong>v ≈ 0</strong> (Turning point / Rest)';
+                    } else if (va > 0) {
+                        motionPill.className = 'motion-pill speeding';
+                        motionPill.textContent = 'Speeding Up (v · a > 0)';
+                        vaCheckText.innerHTML = '<strong>v · a = +' + Math.abs(va).toFixed(2) + '</strong> (&gt; 0 &rArr; Same sign, speeding up)';
+                    } else {
+                        motionPill.className = 'motion-pill slowing';
+                        motionPill.textContent = 'Slowing Down (v · a < 0)';
+                        vaCheckText.innerHTML = '<strong>v · a = −' + Math.abs(va).toFixed(2) + '</strong> (&lt; 0 &rArr; Opposite signs, slowing down)';
+                    }
+
+                    if (state.restTimes.length) {
+                        var list = state.restTimes.map(function (r) { return r.toFixed(2) + 's'; }).join(', ');
+                        restTimesText.innerHTML = '<strong>Instantaneous Rest (v = 0):</strong> t = ' + list;
+                    } else {
+                        restTimesText.innerHTML = '<strong>Instantaneous Rest (v = 0):</strong> None in (0, ' + state.tMax + ')';
+                    }
+
+                    drawTrack(cur);
+                    drawGraphs(cur);
+                }
+
+                /* =========================================================
+                   DRAW 1D PARTICLE TRACK
+                ========================================================= */
+                function resizeCanvases() {
+                    var dpr = window.devicePixelRatio || 1;
+
+                    var tr = trackWrap.getBoundingClientRect();
+                    var tw = tr.width > 50 ? tr.width : 640;
+                    var th = tr.height > 30 ? tr.height : 82;
+                    trackCanvas.width = Math.round(tw * dpr);
+                    trackCanvas.height = Math.round(th * dpr);
+                    tCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    var gr = graphsWrap.getBoundingClientRect();
+                    var gw = gr.width > 50 ? gr.width : 640;
+                    var gh = gr.height > 100 ? gr.height : 360;
+                    graphsCanvas.width = Math.round(gw * dpr);
+                    graphsCanvas.height = Math.round(gh * dpr);
+                    gCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    updateAll();
+                }
+
+                function drawTrackArrow(ctx, x1, y, x2, color, label) {
+                    if (Math.abs(x2 - x1) < 3) return;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2.4;
+                    ctx.moveTo(x1, y);
+                    ctx.lineTo(x2, y);
+                    ctx.stroke();
+
+                    var dir = x2 > x1 ? 1 : -1;
+                    ctx.beginPath();
+                    ctx.fillStyle = color;
+                    ctx.moveTo(x2, y);
+                    ctx.lineTo(x2 - dir * 8, y - 4.5);
+                    ctx.lineTo(x2 - dir * 8, y + 4.5);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    ctx.textAlign = 'center';
+                    ctx.fillText(label, (x1 + x2) / 2, y - 6);
+                    ctx.restore();
+                }
+
+                function drawTrack(cur) {
+                    var tr = trackWrap.getBoundingClientRect();
+                    var W = tr.width > 50 ? tr.width : 640;
+                    var H = tr.height > 30 ? tr.height : 82;
+                    tCtx.clearRect(0, 0, W, H);
+
+                    var sMin = state.ranges.sMin, sMax = state.ranges.sMax;
+                    var padX = 36;
+                    var trackY = H * 0.58;
+
+                    function sToX(sVal) {
+                        return padX + ((sVal - sMin) / (sMax - sMin)) * (W - 2 * padX);
+                    }
+
+                    // Main axis
+                    tCtx.beginPath();
+                    tCtx.strokeStyle = '#cbd5e0';
+                    tCtx.lineWidth = 2;
+                    tCtx.moveTo(padX - 10, trackY);
+                    tCtx.lineTo(W - padX + 10, trackY);
+                    tCtx.stroke();
+
+                    // Ticks
+                    var span = sMax - sMin;
+                    var step = Math.pow(10, Math.floor(Math.log10(span / 6)));
+                    if (span / step > 10) step *= 2;
+                    if (span / step > 10) step *= 2.5;
+
+                    tCtx.font = "10.5px 'Segoe UI'";
+                    tCtx.fillStyle = '#718096';
+                    tCtx.textAlign = 'center';
+                    var firstTick = Math.ceil(sMin / step) * step;
+                    for (var v = firstTick; v <= sMax + 1e-6; v += step) {
+                        var tx = sToX(v);
+                        var isZero = Math.abs(v) < 1e-6;
+                        tCtx.beginPath();
+                        tCtx.strokeStyle = isZero ? '#4a6572' : '#cbd5e0';
+                        tCtx.lineWidth = isZero ? 2 : 1;
+                        tCtx.moveTo(tx, trackY - (isZero ? 8 : 5));
+                        tCtx.lineTo(tx, trackY + (isZero ? 8 : 5));
+                        tCtx.stroke();
+                        tCtx.fillStyle = isZero ? '#2d3748' : '#718096';
+                        tCtx.fillText(Number(v.toFixed(2)), tx, trackY + 18);
+                    }
+
+                    // Trail from 0 to current t
+                    if (chkTrail.checked && state.samples.length) {
+                        var endIdx = Math.round((state.t / state.tMax) * (state.samples.length - 1));
+                        for (var i = 1; i <= endIdx; i++) {
+                            var p0 = state.samples[i - 1], p1 = state.samples[i];
+                            if (isNaN(p0.s) || isNaN(p1.s)) continue;
+                            var alpha = 0.12 + 0.55 * (i / Math.max(1, endIdx));
+                            tCtx.beginPath();
+                            tCtx.strokeStyle = p1.v >= 0 ? 'rgba(56, 161, 105,' + alpha + ')' : 'rgba(217, 100, 89,' + alpha + ')';
+                            tCtx.lineWidth = 4;
+                            tCtx.moveTo(sToX(p0.s), trackY);
+                            tCtx.lineTo(sToX(p1.s), trackY);
+                            tCtx.stroke();
+                        }
+                    }
+
+                    // Initial position marker s(0)
+                    var s0 = state.samples[0] ? state.samples[0].s : 0;
+                    if (!isNaN(s0)) {
+                        var x0 = sToX(s0);
+                        tCtx.beginPath();
+                        tCtx.arc(x0, trackY, 4, 0, Math.PI * 2);
+                        tCtx.fillStyle = '#a0aec0';
+                        tCtx.fill();
+                    }
+
+                    // Current particle
+                    if (!isNaN(cur.s)) {
+                        var px = sToX(cur.s);
+
+                        // Velocity & acceleration arrows
+                        if (chkVectors.checked) {
+                            var maxV = Math.max(Math.abs(state.ranges.vMin), Math.abs(state.ranges.vMax), 1);
+                            var maxA = Math.max(Math.abs(state.ranges.aMin), Math.abs(state.ranges.aMax), 1);
+                            var vLen = (cur.v / maxV) * 65;
+                            var aLen = (cur.a / maxA) * 55;
+                            drawTrackArrow(tCtx, px, trackY - 22, px + vLen, '#38a169', 'v');
+                            drawTrackArrow(tCtx, px, trackY - 38, px + aLen, '#d96459', 'a');
+                        }
+
+                        tCtx.beginPath();
+                        tCtx.arc(px, trackY, 7.5, 0, Math.PI * 2);
+                        tCtx.fillStyle = '#2b6cb0';
+                        tCtx.fill();
+                        tCtx.strokeStyle = '#ffffff';
+                        tCtx.lineWidth = 2.2;
+                        tCtx.stroke();
+                    }
+                }
+
+                /* =========================================================
+                   DRAW 3 SYNCHRONIZED STACKED GRAPHS
+                ========================================================= */
+                function drawGraphs(cur) {
+                    var gr = graphsWrap.getBoundingClientRect();
+                    var W = gr.width > 50 ? gr.width : 640;
+                    var H = gr.height > 100 ? gr.height : 360;
+                    gCtx.clearRect(0, 0, W, H);
+
+                    if (!state.samples.length) return;
+
+                    var plotW = W - PAD_L - PAD_R;
+                    var bandH = H / 3;
+                    var padTop = 18, padBot = 20;
+
+                    var panels = [
+                        { key: 's', label: 'Position  s(t)', color: '#2b6cb0', min: state.ranges.sMin, max: state.ranges.sMax },
+                        { key: 'v', label: 'Velocity  v(t) = s\'(t)', color: '#38a169', min: state.ranges.vMin, max: state.ranges.vMax },
+                        { key: 'a', label: 'Acceleration  a(t) = s\'\'(t)', color: '#d96459', min: state.ranges.aMin, max: state.ranges.aMax }
+                    ];
+
+                    function tToX(tv) {
+                        return PAD_L + (tv / state.tMax) * plotW;
+                    }
+
+                    panels.forEach(function (cfg, idx) {
+                        var topY = idx * bandH + padTop;
+                        var botY = (idx + 1) * bandH - padBot;
+                        var h = botY - topY;
+
+                        function valToY(val) {
+                            return botY - ((val - cfg.min) / (cfg.max - cfg.min)) * h;
+                        }
+
+                        // Subtle panel divider
+                        if (idx > 0) {
+                            gCtx.beginPath();
+                            gCtx.strokeStyle = '#edf2f7';
+                            gCtx.lineWidth = 1;
+                            gCtx.moveTo(0, idx * bandH);
+                            gCtx.lineTo(W, idx * bandH);
+                            gCtx.stroke();
+                        }
+
+                        // Zero horizontal axis
+                        var y0 = valToY(0);
+                        gCtx.beginPath();
+                        gCtx.strokeStyle = '#a0aec0';
+                        gCtx.lineWidth = 1.2;
+                        gCtx.moveTo(PAD_L, y0);
+                        gCtx.lineTo(W - PAD_R, y0);
+                        gCtx.stroke();
+
+                        // Left vertical axis
+                        gCtx.beginPath();
+                        gCtx.strokeStyle = '#cbd5e0';
+                        gCtx.lineWidth = 1.2;
+                        gCtx.moveTo(PAD_L, topY);
+                        gCtx.lineTo(PAD_L, botY);
+                        gCtx.stroke();
+
+                        // Min / 0 / Max Y labels
+                        gCtx.font = "10px 'Segoe UI'";
+                        gCtx.fillStyle = '#718096';
+                        gCtx.textAlign = 'right';
+                        gCtx.textBaseline = 'middle';
+                        gCtx.fillText(Number(cfg.max.toFixed(1)), PAD_L - 6, topY + 2);
+                        gCtx.fillText(Number(cfg.min.toFixed(1)), PAD_L - 6, botY - 2);
+                        if (Math.abs(y0 - topY) > 12 && Math.abs(y0 - botY) > 12) {
+                            gCtx.fillText('0', PAD_L - 6, y0);
+                        }
+
+                        // Panel title badge
+                        gCtx.font = "bold 11.5px 'Segoe UI'";
+                        gCtx.fillStyle = cfg.color;
+                        gCtx.textAlign = 'left';
+                        gCtx.textBaseline = 'top';
+                        gCtx.fillText(cfg.label, PAD_L + 8, idx * bandH + 4);
+
+                        // Shaded signed area under v(t) from 0 to current t
+                        if (cfg.key === 'v' && chkArea.checked) {
+                            var endIdx = Math.round((state.t / state.tMax) * (state.samples.length - 1));
+                            for (var k = 1; k <= endIdx; k++) {
+                                var p0 = state.samples[k - 1], p1 = state.samples[k];
+                                if (isNaN(p0.v) || isNaN(p1.v)) continue;
+                                var x0 = tToX(p0.t), x1 = tToX(p1.t);
+                                var yp0 = valToY(p0.v), yp1 = valToY(p1.v);
+                                gCtx.beginPath();
+                                gCtx.moveTo(x0, y0);
+                                gCtx.lineTo(x0, yp0);
+                                gCtx.lineTo(x1, yp1);
+                                gCtx.lineTo(x1, y0);
+                                gCtx.closePath();
+                                gCtx.fillStyle = (p0.v + p1.v >= 0) ? 'rgba(56, 161, 105, 0.22)' : 'rgba(217, 100, 89, 0.22)';
+                                gCtx.fill();
+                            }
+                        }
+
+                        // Curve
+                        gCtx.beginPath();
+                        gCtx.strokeStyle = cfg.color;
+                        gCtx.lineWidth = 2.3;
+                        var first = true;
+                        for (var i = 0; i < state.samples.length; i++) {
+                            var pt = state.samples[i];
+                            var yv = pt[cfg.key];
+                            if (isNaN(yv) || !isFinite(yv)) { first = true; continue; }
+                            var px = tToX(pt.t);
+                            var py = valToY(yv);
+                            if (first) { gCtx.moveTo(px, py); first = false; }
+                            else gCtx.lineTo(px, py);
+                        }
+                        gCtx.stroke();
+
+                        // Rest point markers (v=0) on s(t) and v(t)
+                        if (chkRoots.checked && (cfg.key === 's' || cfg.key === 'v')) {
+                            state.restTimes.forEach(function (tr) {
+                                var rs = getSampleAt(tr);
+                                var rx = tToX(tr);
+                                var ry = valToY(cfg.key === 's' ? rs.s : 0);
+                                gCtx.beginPath();
+                                gCtx.arc(rx, ry, 4, 0, Math.PI * 2);
+                                gCtx.fillStyle = '#ffffff';
+                                gCtx.fill();
+                                gCtx.strokeStyle = '#e69a53';
+                                gCtx.lineWidth = 2;
+                                gCtx.stroke();
+                            });
+                        }
+
+                        // Current time dot on curve
+                        var curVal = cur[cfg.key];
+                        if (!isNaN(curVal)) {
+                            var cx = tToX(state.t);
+                            var cy = valToY(curVal);
+                            gCtx.beginPath();
+                            gCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+                            gCtx.fillStyle = cfg.color;
+                            gCtx.fill();
+                            gCtx.strokeStyle = '#ffffff';
+                            gCtx.lineWidth = 2;
+                            gCtx.stroke();
+                        }
+
+                        // Time axis ticks on bottom graph
+                        if (idx === 2) {
+                            var tStep = state.tMax <= 6 ? 1 : (state.tMax <= 12 ? 2 : 5);
+                            gCtx.font = "10.5px 'Segoe UI'";
+                            gCtx.fillStyle = '#4a6572';
+                            gCtx.textAlign = 'center';
+                            gCtx.textBaseline = 'top';
+                            for (var tt = 0; tt <= state.tMax + 1e-6; tt += tStep) {
+                                var tx = tToX(tt);
+                                gCtx.fillText(tt + 's', tx, botY + 5);
+                            }
+                        }
+                    });
+
+                    // Vertical synchronized time crosshair across all 3 graphs
+                    var crossX = tToX(state.t);
+                    gCtx.save();
+                    gCtx.beginPath();
+                    gCtx.strokeStyle = 'rgba(74, 101, 114, 0.55)';
+                    gCtx.setLineDash([4, 4]);
+                    gCtx.lineWidth = 1.5;
+                    gCtx.moveTo(crossX, 6);
+                    gCtx.lineTo(crossX, H - 16);
+                    gCtx.stroke();
+                    gCtx.restore();
+                }
+
+                /* =========================================================
+                   EVENTS & ANIMATION
+                ========================================================= */
+                sInput.addEventListener('input', function () {
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                    compileAndSample();
+                });
+
+                tMaxInput.addEventListener('input', function () {
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                    compileAndSample();
+                });
+
+                tSlider.addEventListener('input', function () {
+                    state.t = parseFloat(tSlider.value);
+                    updateAll();
+                });
+
+                function stopPlay() {
+                    state.playing = false;
+                    btnPlay.classList.remove('playing');
+                    btnPlay.textContent = '▶ Play Motion';
+                    if (state.rafId) { cancelAnimationFrame(state.rafId); state.rafId = null; }
+                }
+
+                function playLoop(ts) {
+                    if (!state.playing) return;
+                    if (!state.lastFrame) state.lastFrame = ts;
+                    var dtReal = (ts - state.lastFrame) / 1000;
+                    state.lastFrame = ts;
+
+                    var mult = parseFloat(speedSelect.value) || 1;
+                    state.t += dtReal * mult;
+                    if (state.t >= state.tMax) {
+                        state.t = state.tMax;
+                        tSlider.value = String(state.t);
+                        updateAll();
+                        stopPlay();
+                        return;
+                    }
+                    tSlider.value = String(state.t);
+                    updateAll();
+                    state.rafId = requestAnimationFrame(playLoop);
+                }
+
+                btnPlay.addEventListener('click', function () {
+                    if (state.playing) {
+                        stopPlay();
+                    } else {
+                        if (state.t >= state.tMax - 0.02) state.t = 0;
+                        state.playing = true;
+                        state.lastFrame = 0;
+                        btnPlay.classList.add('playing');
+                        btnPlay.textContent = '❚❚ Pause';
+                        state.rafId = requestAnimationFrame(playLoop);
+                    }
+                });
+
+                btnReset.addEventListener('click', function () {
+                    stopPlay();
+                    state.t = 0;
+                    tSlider.value = '0';
+                    updateAll();
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        stopPlay();
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        sInput.value = btn.getAttribute('data-s');
+                        tMaxInput.value = btn.getAttribute('data-tmax');
+                        state.t = parseFloat(btn.getAttribute('data-t'));
+                        tSlider.value = String(state.t);
+                        compileAndSample();
+                    });
+                });
+
+                [chkArea, chkRoots, chkVectors, chkTrail].forEach(function (c) {
+                    c.addEventListener('change', updateAll);
+                });
+
+                function scrubFromClientX(clientX) {
+                    var rect = graphsCanvas.getBoundingClientRect();
+                    var plotW = rect.width - PAD_L - PAD_R;
+                    var frac = (clientX - rect.left - PAD_L) / plotW;
+                    frac = Math.max(0, Math.min(1, frac));
+                    state.t = frac * state.tMax;
+                    tSlider.value = String(state.t);
+                    updateAll();
+                }
+
+                graphsCanvas.addEventListener('mousedown', function (e) {
+                    stopPlay();
+                    state.scrubbing = true;
+                    scrubFromClientX(e.clientX);
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (!state.scrubbing) return;
+                    scrubFromClientX(e.clientX);
+                });
+
+                window.addEventListener('mouseup', function () {
+                    state.scrubbing = false;
+                });
+
+                window.addEventListener('resize', resizeCanvases);
+                resizeCanvases();
+                compileAndSample();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
