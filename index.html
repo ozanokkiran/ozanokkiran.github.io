@@ -339,4 +339,798 @@
         .vec-3d-y { position: absolute; top: 50%; left: 50%; width: 40px; height: 2px; background: #68d391; transform-origin: left; transform: rotate(90deg); }
         .vec-3d-z { position: absolute; top: 50%; left: 50%; width: 40px; height: 2px; background: #63b3ed; transform-origin: left; transform: rotateY(-90deg); }
         .vec-3d-u { position: absolute; top: 50%; left: 50%; width: 35px; height: 2px; background: #319795; transform-origin: left; transform: rotate(20deg) translateZ(15px); }
-        .vec-3d-v { position: absolute; top: 50%; left: 50%; width: 25px; height: 2px; background: #dd6b20; transform-origin: left; transform: rotate(110deg) translateZ(-5px
+        .vec-3d-v { position: absolute; top: 50%; left: 50%; width: 25px; height: 2px; background: #dd6b20; transform-origin: left; transform: rotate(110deg) translateZ(-5px); }
+
+        .ill-deriv { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .deriv-curve { position: absolute; width: 80px; height: 80px; border-bottom: 2px solid #3182ce; border-radius: 50%; transform: scaleX(1.5) rotate(10deg) translateY(-10px); }
+        .deriv-tan { position: absolute; width: 60px; height: 2px; background: #38a169; transform: rotate(-20deg) translate(5px, -5px); }
+        .deriv-dot { position: absolute; width: 6px; height: 6px; background: #ed8936; border-radius: 50%; transform: translate(15px, 2px); }
+
+        .ill-riemann { position: relative; width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 26px; gap: 2px; }
+        .rie-bar { background: #e2e8f0; border: 1px solid #cbd5e0; width: 16px; border-radius: 1px 1px 0 0; }
+        .rie-curve { position: absolute; width: 120px; height: 80px; border-top: 2px solid #fc8181; border-radius: 50%; top: 26px; }
+
+        .ill-monte { position: relative; width: 60px; height: 60px; border: 1.5px solid #4a5568; border-radius: 6px; }
+        .mon-circ { position: absolute; top: -1px; left: -1px; width: 100%; height: 100%; border: 1px solid #4a5568; border-radius: 50%; }
+        .mon-dot { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #3182ce; }
+        .mon-dot.out { background: #dd6b20; }
+
+        .ill-normal { position: relative; width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 26px; }
+        .norm-fill { width: 100px; height: 60px; background: #ebf8ff; clip-path: polygon(0 100%, 10% 98%, 20% 90%, 30% 60%, 40% 20%, 50% 5%, 60% 20%, 70% 60%, 80% 90%, 90% 98%, 100% 100%); }
+        .norm-line { position: absolute; width: 100px; height: 60px; border-top: 2px solid #63b3ed; border-radius: 50% 50% 0 0; }
+        .norm-mid { position: absolute; height: 60px; width: 1px; border-left: 1.5px dashed #4299e1; }
+
+        .ill-quad { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .quad-curve { position: absolute; width: 80px; height: 80px; border-bottom: 2px solid #38b2ac; border-radius: 50%; transform: translateY(-20px); }
+        .quad-dot { position: absolute; width: 6px; height: 6px; background: #e53e3e; border-radius: 50%; transform: translateY(18px); }
+
+        .ill-roots { position: relative; width: 60px; height: 60px; }
+        .root-circ { position: absolute; width: 100%; height: 100%; border: 1px dashed #a0aec0; border-radius: 50%; }
+        .root-tri { position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border: 1.5px solid #38b2ac; clip-path: polygon(50% 0%, 100% 75%, 0% 75%); }
+        .root-l1 { position: absolute; top: 50%; left: 50%; width: 50%; height: 1px; background: #e2e8f0; transform-origin: left; transform: rotate(-90deg); }
+        .root-l2 { position: absolute; top: 50%; left: 50%; width: 50%; height: 1px; background: #e2e8f0; transform-origin: left; transform: rotate(30deg); }
+        .root-l3 { position: absolute; top: 50%; left: 50%; width: 50%; height: 1px; background: #e2e8f0; transform-origin: left; transform: rotate(150deg); }
+
+        .ill-taylor { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .tay-sin { position: absolute; width: 120px; height: 50px; border-top: 1.5px solid #718096; border-bottom: 1.5px solid #718096; border-radius: 50%; }
+        .tay-poly { position: absolute; width: 90px; height: 120px; border-top: 1.5px solid #e53e3e; border-left: 1.5px solid #e53e3e; border-radius: 50%; transform: rotate(45deg); }
+
+        .ill-trig { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .trig-w1 { position: absolute; width: 60px; height: 40px; border-top: 2px solid #805ad5; border-radius: 50%; transform: translateX(-30px); }
+        .trig-w2 { position: absolute; width: 60px; height: 40px; border-bottom: 2px solid #805ad5; border-radius: 50%; transform: translateX(30px); }
+
+        .ill-unit { position: relative; width: 60px; height: 60px; }
+        .uc-circ { position: absolute; width: 100%; height: 100%; border: 1.5px solid #4a5568; border-radius: 50%; }
+        .uc-tri { position: absolute; top: 15%; left: 50%; width: 35%; height: 35%; border-bottom: 1.5px solid #3182ce; border-right: 1.5px solid #e53e3e; background: #ebf8ff; }
+        .uc-hyp { position: absolute; top: 50%; left: 50%; width: 49%; height: 1.5px; background: #2d3748; transform-origin: left; transform: rotate(-45deg); }
+
+        .ill-slope { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        .slope-line { position: absolute; width: 10px; height: 1px; background: #cbd5e0; }
+        .slope-curve { position: absolute; width: 100px; height: 60px; border-bottom: 2px solid #d53f8c; border-right: 2px solid #d53f8c; border-radius: 50%; transform: rotate(15deg); }
+
+        @media (max-width: 640px) {
+            h1 { font-size: 1.85rem; }
+            .topic-header { padding: 16px; }
+            .topic-body { padding: 4px 16px 18px 16px; }
+            .topic-sub { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Interactive Mathematics Laboratory</h1>
+        <div class="subtitle">Dynamic visualizers and conceptual models for IB DP Mathematics AA HL</div>
+        <div class="developer-badge">Developed by Ozan Okkıran</div>
+        <div class="last-updated" id="lastUpdated">Checking for latest updates...</div>
+    </div>
+
+    <!-- Filter & Expand Controls -->
+    <div class="controls-bar">
+        <div class="filter-pills" id="filterPills">
+            <button type="button" class="filter-btn active" data-filter="all">All Topics (28)</button>
+            <button type="button" class="filter-btn" data-filter="topic1">1. Number &amp; Algebra</button>
+            <button type="button" class="filter-btn" data-filter="topic2">2. Functions</button>
+            <button type="button" class="filter-btn" data-filter="topic3">3. Geometry &amp; Trig</button>
+            <button type="button" class="filter-btn" data-filter="topic4">4. Calculus</button>
+            <button type="button" class="filter-btn" data-filter="topic5">5. Statistics &amp; Prob.</button>
+        </div>
+        <button type="button" class="toggle-all-btn" id="btnToggleAll">Expand All</button>
+    </div>
+
+    <!-- 5 IB DP Math AA HL Topics -->
+    <div class="topics-wrapper" id="topicsWrapper">
+
+        <!-- ===================================================== -->
+        <!-- TOPIC 1: NUMBER AND ALGEBRA -->
+        <!-- ===================================================== -->
+        <section class="topic-section" data-topic="topic1">
+            <button type="button" class="topic-header" aria-expanded="false">
+                <div class="topic-left">
+                    <div class="topic-num t1">1</div>
+                    <div class="topic-meta">
+                        <h2 class="topic-title">Number and Algebra</h2>
+                        <span class="topic-sub">Prime Factorization, Logarithms, Binomial Theorem, Induction &amp; Complex Numbers</span>
+                    </div>
+                </div>
+                <div class="topic-right">
+                    <span class="count-badge">5 Labs</span>
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+            </button>
+            <div class="topic-body">
+                <div class="grid-container">
+
+                    <!-- Prime Factor Calculator -->
+                    <a href="prime-factor-calculator.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <rect x="28" y="18" width="164" height="44" rx="8" fill="#ebf8ff" stroke="#bee3f8" stroke-width="1.5"/>
+                                <text x="110" y="47" text-anchor="middle" font-family="Cambria Math, serif" font-size="22" font-weight="700" fill="#2c5282">2<tspan dy="-8" font-size="13" fill="#e53e3e">3</tspan><tspan dy="8"> × 3</tspan><tspan dy="-8" font-size="13" fill="#e53e3e">2</tspan><tspan dy="8"> × 5</tspan></text>
+                                <text x="110" y="84" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" fill="#718096">Divisors: 1, 2, 3, 4, 5, 6, ...</text>
+                            </svg>
+                        </div>
+                        <div class="card-title">Prime Factorization &amp; Divisors</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Logarithm Properties Visualizer -->
+                    <a href="logarithm-properties-visualizer.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <line x1="20" y1="68" x2="200" y2="68" stroke="#e2e8f0" stroke-width="1.5"/>
+                                <line x1="78" y1="10" x2="78" y2="100" stroke="#e2e8f0" stroke-width="1.5"/>
+                                <line x1="42" y1="104" x2="146" y2="0" stroke="#e69a53" stroke-width="1.5" stroke-dasharray="4 4"/>
+                                <path d="M 84 102 C 88 74, 112 52, 192 38" fill="none" stroke="#2b6cb0" stroke-width="2.5"/>
+                                <path d="M 28 63 C 70 60, 96 46, 114 10" fill="none" stroke="#d96459" stroke-width="2"/>
+                                <circle cx="102" cy="68" r="3.5" fill="#2b6cb0"/>
+                                <circle cx="78" cy="44" r="3.5" fill="#d96459"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Logarithm Properties Visualizer</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Binomial Expansion & Pascal's Triangle -->
+                    <a href="binomial-expansion-visualizer.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <g font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" text-anchor="middle">
+                                    <rect x="98" y="8" width="24" height="18" rx="4" fill="#fff" stroke="#cbd5e0"/><text x="110" y="21" fill="#4a6572">1</text>
+                                    <rect x="82" y="32" width="24" height="18" rx="4" fill="#fff" stroke="#cbd5e0"/><text x="94" y="45" fill="#4a6572">1</text>
+                                    <rect x="114" y="32" width="24" height="18" rx="4" fill="#fff" stroke="#cbd5e0"/><text x="126" y="45" fill="#4a6572">1</text>
+                                    <rect x="66" y="56" width="24" height="18" rx="4" fill="#fef3c7" stroke="#e69a53"/><text x="78" y="69" fill="#9c4221">1</text>
+                                    <rect x="98" y="56" width="24" height="18" rx="4" fill="#fef3c7" stroke="#e69a53"/><text x="110" y="69" fill="#9c4221">2</text>
+                                    <rect x="130" y="56" width="24" height="18" rx="4" fill="#fff" stroke="#cbd5e0"/><text x="142" y="69" fill="#4a6572">1</text>
+                                    <rect x="50" y="80" width="24" height="18" rx="4" fill="#f0f9fa" stroke="#5b9aa0"/><text x="62" y="93" fill="#4a6572">1</text>
+                                    <rect x="82" y="80" width="24" height="18" rx="4" fill="#d96459" stroke="#b84b40"/><text x="94" y="93" fill="#fff">3</text>
+                                    <rect x="114" y="80" width="24" height="18" rx="4" fill="#f0f9fa" stroke="#5b9aa0"/><text x="126" y="93" fill="#4a6572">3</text>
+                                    <rect x="146" y="80" width="24" height="18" rx="4" fill="#f0f9fa" stroke="#5b9aa0"/><text x="158" y="93" fill="#4a6572">1</text>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="card-title">Binomial Expansion &amp; Pascal</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Mathematical Induction Engine -->
+                    <a href="mathematical-induction-engine.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <line x1="20" y1="88" x2="200" y2="88" stroke="#cbd5e0" stroke-width="2"/>
+                                <g transform="translate(36,88) rotate(38)">
+                                    <rect x="0" y="-48" width="18" height="48" rx="3" fill="#5b9aa0" stroke="#3d757a" stroke-width="1.5"/>
+                                </g>
+                                <g transform="translate(74,88) rotate(24)">
+                                    <rect x="0" y="-48" width="18" height="48" rx="3" fill="#5b9aa0" stroke="#3d757a" stroke-width="1.5"/>
+                                </g>
+                                <g transform="translate(114,88) rotate(10)">
+                                    <rect x="0" y="-48" width="18" height="48" rx="3" fill="#fef3c7" stroke="#e69a53" stroke-width="1.5"/>
+                                </g>
+                                <g transform="translate(154,88)">
+                                    <rect x="0" y="-48" width="18" height="48" rx="3" fill="#fff5f5" stroke="#d96459" stroke-width="1.5"/>
+                                </g>
+                                <text x="110" y="22" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#4a6572">P(n₀) &nbsp;⇒&nbsp; P(k) &nbsp;⇒&nbsp; P(k+1)</text>
+                            </svg>
+                        </div>
+                        <div class="card-title">Mathematical Induction Engine</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Roots of Unity -->
+                    <a href="roots_of_unity.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-roots">
+                                <div class="root-circ"></div>
+                                <div class="root-tri"></div>
+                                <div class="root-l1"></div>
+                                <div class="root-l2"></div>
+                                <div class="root-l3"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Roots of Unity</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- TOPIC 2: FUNCTIONS -->
+        <!-- ===================================================== -->
+        <section class="topic-section" data-topic="topic2">
+            <button type="button" class="topic-header" aria-expanded="false">
+                <div class="topic-left">
+                    <div class="topic-num t2">2</div>
+                    <div class="topic-meta">
+                        <h2 class="topic-title">Functions</h2>
+                        <span class="topic-sub">Quadratics, Rational Asymptotes, Polynomial Roots, Composites &amp; Inverse Trig</span>
+                    </div>
+                </div>
+                <div class="topic-right">
+                    <span class="count-badge">5 Labs</span>
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+            </button>
+            <div class="topic-body">
+                <div class="grid-container">
+
+                    <!-- Quadratic Explorer -->
+                    <a href="quadratic-explorer.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-quad">
+                                <div class="axis-h"></div><div class="axis-v"></div>
+                                <div class="quad-curve"></div>
+                                <div class="quad-dot"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Quadratic Explorer</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Rational Function Asymptotes -->
+                    <a href="rational-function-asymptotes.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <line x1="20" y1="55" x2="200" y2="55" stroke="#e2e8f0" stroke-width="1.2"/>
+                                <line x1="110" y1="8" x2="110" y2="102" stroke="#e2e8f0" stroke-width="1.2"/>
+                                <line x1="118" y1="8" x2="118" y2="102" stroke="#d96459" stroke-width="1.6" stroke-dasharray="4 3"/>
+                                <line x1="24" y1="92" x2="196" y2="18" stroke="#e69a53" stroke-width="1.6" stroke-dasharray="4 3"/>
+                                <path d="M 28 84 Q 100 54, 113 102" fill="none" stroke="#2b6cb0" stroke-width="2.4"/>
+                                <path d="M 123 8 Q 134 46, 194 24" fill="none" stroke="#2b6cb0" stroke-width="2.4"/>
+                                <circle cx="66" cy="68" r="4" fill="#fff" stroke="#7c6992" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Rational Function Asymptotes</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Polynomial Root Finder -->
+                    <a href="polynomial-root-finder.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <line x1="18" y1="74" x2="202" y2="74" stroke="#cbd5e0" stroke-width="1.5"/>
+                                <path d="M 30 98 C 70 92, 118 68, 178 14" fill="none" stroke="#2b6cb0" stroke-width="2.5"/>
+                                <line x1="164" y1="28" x2="164" y2="74" stroke="#7c6992" stroke-width="1.5" stroke-dasharray="3 3"/>
+                                <line x1="164" y1="28" x2="122" y2="74" stroke="#d96459" stroke-width="2"/>
+                                <circle cx="164" cy="28" r="3.5" fill="#d96459"/>
+                                <circle cx="122" cy="74" r="4" fill="#38a169"/>
+                                <text x="122" y="92" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#38a169">x₁</text>
+                                <text x="164" y="92" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="10" font-weight="700" fill="#718096">x₀</text>
+                            </svg>
+                        </div>
+                        <div class="card-title">Polynomial Root Finder</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Composite Function Machine -->
+                    <a href="composite-function-machine.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <rect x="10" y="38" width="32" height="32" rx="6" fill="#fff" stroke="#cbd5e0" stroke-width="1.5"/>
+                                <text x="26" y="59" text-anchor="middle" font-family="Cambria Math, serif" font-size="14" font-weight="700" fill="#4a6572">x</text>
+                                <text x="51" y="59" text-anchor="middle" font-size="14" fill="#a0aec0">→</text>
+                                <rect x="60" y="34" width="40" height="40" rx="7" fill="#38a169"/>
+                                <text x="80" y="59" text-anchor="middle" font-family="Cambria Math, serif" font-size="14" font-weight="700" fill="#fff">g(x)</text>
+                                <text x="109" y="59" text-anchor="middle" font-size="14" fill="#a0aec0">→</text>
+                                <rect x="118" y="34" width="40" height="40" rx="7" fill="#2b6cb0"/>
+                                <text x="138" y="59" text-anchor="middle" font-family="Cambria Math, serif" font-size="14" font-weight="700" fill="#fff">f(u)</text>
+                                <text x="167" y="59" text-anchor="middle" font-size="14" fill="#a0aec0">→</text>
+                                <rect x="176" y="38" width="36" height="32" rx="6" fill="#faf5ff" stroke="#7c6992" stroke-width="1.5"/>
+                                <text x="194" y="58" text-anchor="middle" font-family="Cambria Math, serif" font-size="12" font-weight="700" fill="#7c6992">f∘g</text>
+                            </svg>
+                        </div>
+                        <div class="card-title">Composite Function Machine</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Inverse Trigonometry Visualizer -->
+                    <a href="inverse-trigonometry-visualizer.html" class="card">
+                        <div class="card-graphic">
+                            <div style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+                                <div class="axis-h"></div><div class="axis-v"></div>
+                                <div style="position: absolute; width: 100%; height: 1px; background: #f2ae72; transform: rotate(-45deg);"></div>
+                                <div style="position: absolute; width: 40px; height: 40px; border-bottom: 2px solid #4a6572; border-right: 2px solid transparent; border-radius: 50%; transform: translate(-20px, 10px) rotate(45deg);"></div>
+                                <div style="position: absolute; width: 40px; height: 40px; border-top: 2px solid #d96459; border-left: 2px solid transparent; border-radius: 50%; transform: translate(10px, -20px) rotate(45deg);"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Inverse Trigonometry</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- TOPIC 3: GEOMETRY AND TRIGONOMETRY -->
+        <!-- ===================================================== -->
+        <section class="topic-section" data-topic="topic3">
+            <button type="button" class="topic-header" aria-expanded="false">
+                <div class="topic-left">
+                    <div class="topic-num t3">3</div>
+                    <div class="topic-meta">
+                        <h2 class="topic-title">Geometry and Trigonometry</h2>
+                        <span class="topic-sub">Unit Circle, Trig Transformations, 2D/3D Vectors, Line–Plane Intersections &amp; Projectile Motion</span>
+                    </div>
+                </div>
+                <div class="topic-right">
+                    <span class="count-badge">6 Labs</span>
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+            </button>
+            <div class="topic-body">
+                <div class="grid-container">
+
+                    <!-- Unit Circle Explorer -->
+                    <a href="unit-circle-explorer.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-unit">
+                                <div class="axis-h"></div><div class="axis-v"></div>
+                                <div class="uc-circ"></div>
+                                <div class="uc-tri"></div>
+                                <div class="uc-hyp"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Unit Circle Explorer</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Trigonometric Transformations -->
+                    <a href="trigonometric-transformations.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-trig">
+                                <div class="axis-h"></div><div class="axis-v"></div>
+                                <div class="trig-w1"></div>
+                                <div class="trig-w2"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Trigonometric Transformations</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- 2D Vector Addition -->
+                    <a href="2d-vector-addition.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-2dvec">
+                                <div class="axis-h"></div><div class="axis-v"></div>
+                                <div class="vec-2d-1"></div>
+                                <div class="vec-2d-2"></div>
+                                <div class="vec-2d-r"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">2D Vector Addition</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- 3D Vector Laboratory -->
+                    <a href="3d-vector-laboratory.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-3dvec">
+                                <div class="vec-3d-x"></div>
+                                <div class="vec-3d-y"></div>
+                                <div class="vec-3d-z"></div>
+                                <div class="vec-3d-u"></div>
+                                <div class="vec-3d-v"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">3D Vector Laboratory</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- 3D Line & Plane Intersection -->
+                    <a href="3d-line-plane-intersection.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <!-- Dashed part of line behind plane -->
+                                <line x1="112" y1="54" x2="152" y2="96" stroke="#d96459" stroke-width="2" stroke-dasharray="4 3" opacity="0.6"/>
+                                <!-- Translucent Plane -->
+                                <polygon points="34,76 82,36 186,42 138,84" fill="rgba(91,154,160,0.25)" stroke="#4a6572" stroke-width="1.6"/>
+                                <!-- Projection on plane -->
+                                <line x1="78" y1="68" x2="150" y2="48" stroke="#e69a53" stroke-width="1.5" stroke-dasharray="3 3"/>
+                                <!-- Normal vector -->
+                                <line x1="112" y1="54" x2="112" y2="16" stroke="#7c6992" stroke-width="2"/>
+                                <polygon points="112,11 108,19 116,19" fill="#7c6992"/>
+                                <!-- Solid part of line in front of plane -->
+                                <line x1="72" y1="12" x2="112" y2="54" stroke="#d96459" stroke-width="2.4"/>
+                                <!-- Intersection point -->
+                                <circle cx="112" cy="54" r="4.5" fill="#38a169" stroke="#fff" stroke-width="1.5"/>
+                                <text x="166" y="54" font-family="Cambria Math, serif" font-size="12" font-weight="700" fill="#3d757a">Π</text>
+                            </svg>
+                        </div>
+                        <div class="card-title">3D Line &amp; Plane Intersection</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Projectile Motion Simulator -->
+                    <a href="projectile-motion-simulator.html" class="card">
+                        <div class="card-graphic">
+                            <div style="position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 20px;">
+                                <div class="axis-h" style="top: 85%; width: 100%;"></div>
+                                <div class="axis-v" style="left: 10%;"></div>
+                                <div style="position: absolute; width: 80%; height: 60%; border-top: 2px dashed #e53e3e; border-left: 2px dashed transparent; border-right: 2px dashed transparent; border-radius: 50%; top: 15%; left: 10%;"></div>
+                                <div style="position: absolute; width: 8px; height: 8px; background: #ed8936; border-radius: 50%; top: 11%; left: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Projectile Motion</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- TOPIC 4: CALCULUS -->
+        <!-- ===================================================== -->
+        <section class="topic-section" data-topic="topic4">
+            <button type="button" class="topic-header" aria-expanded="false">
+                <div class="topic-left">
+                    <div class="topic-num t4">4</div>
+                    <div class="topic-meta">
+                        <h2 class="topic-title">Calculus</h2>
+                        <span class="topic-sub">Derivatives, Riemann Sums, 3D Volumes, Kinematics, Taylor/Maclaurin &amp; Diff. Equations</span>
+                    </div>
+                </div>
+                <div class="topic-right">
+                    <span class="count-badge">7 Labs</span>
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+            </button>
+            <div class="topic-body">
+                <div class="grid-container">
+
+                    <!-- Derivative Visualizer -->
+                    <a href="derivative-visualizer.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-deriv">
+                                <div class="axis-h" style="top: 80%;"></div><div class="axis-v" style="left: 20%;"></div>
+                                <div class="deriv-curve"></div>
+                                <div class="deriv-tan"></div>
+                                <div class="deriv-dot"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Derivative Visualizer</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Dynamic Riemann Sums -->
+                    <a href="dynamic-riemann-sums.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-riemann">
+                                <div class="axis-h" style="top: 90%; width: 100%;"></div>
+                                <div class="rie-curve"></div>
+                                <div class="rie-bar" style="height: 20px;"></div>
+                                <div class="rie-bar" style="height: 40px;"></div>
+                                <div class="rie-bar" style="height: 60px;"></div>
+                                <div class="rie-bar" style="height: 50px;"></div>
+                                <div class="rie-bar" style="height: 25px;"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Dynamic Riemann Sums</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- 3D Volumes of Revolution -->
+                    <a href="volumes-of-revolution-3d.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <!-- Axis of revolution -->
+                                <line x1="20" y1="55" x2="200" y2="55" stroke="#cbd5e0" stroke-width="1.4" stroke-dasharray="4 3"/>
+                                <!-- Paraboloid solid body -->
+                                <path d="M 42 55 Q 85 20, 168 18 L 168 92 Q 85 90, 42 55 Z" fill="rgba(43,108,176,0.18)" stroke="#2b6cb0" stroke-width="1.8"/>
+                                <!-- Middle disk slice highlight -->
+                                <ellipse cx="106" cy="55" rx="9" ry="28" fill="rgba(230,154,83,0.32)" stroke="#d97706" stroke-width="1.6"/>
+                                <!-- End cap ellipse -->
+                                <ellipse cx="168" cy="55" rx="13" ry="37" fill="rgba(91,154,160,0.24)" stroke="#2b6cb0" stroke-width="1.8"/>
+                                <!-- Generating curve -->
+                                <path d="M 42 55 Q 85 20, 168 18" fill="none" stroke="#d96459" stroke-width="2.2"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">3D Volumes of Revolution</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Kinematics Motion Visualizer -->
+                    <a href="kinematics-motion-visualizer.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <!-- 3 stacked mini axes -->
+                                <line x1="22" y1="30" x2="198" y2="30" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="22" y1="62" x2="198" y2="62" stroke="#e2e8f0" stroke-width="1"/>
+                                <line x1="22" y1="92" x2="198" y2="92" stroke="#e2e8f0" stroke-width="1"/>
+                                <!-- s(t), v(t), a(t) curves -->
+                                <path d="M 24 34 C 65 8, 125 44, 194 14" fill="none" stroke="#2b6cb0" stroke-width="2"/>
+                                <path d="M 24 48 Q 108 82, 194 46" fill="none" stroke="#38a169" stroke-width="2"/>
+                                <line x1="24" y1="100" x2="194" y2="78" stroke="#d96459" stroke-width="2"/>
+                                <!-- Synchronized time crosshair -->
+                                <line x1="120" y1="10" x2="120" y2="102" stroke="#4a6572" stroke-width="1.2" stroke-dasharray="3 3"/>
+                                <circle cx="120" cy="28" r="3" fill="#2b6cb0"/>
+                                <circle cx="120" cy="65" r="3" fill="#38a169"/>
+                                <circle cx="120" cy="88" r="3" fill="#d96459"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Kinematics Motion Visualizer</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Taylor Series Approximation -->
+                    <a href="taylor-series-approximation.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-taylor">
+                                <div class="axis-h"></div><div class="axis-v"></div>
+                                <div class="tay-sin"></div>
+                                <div class="tay-poly"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Taylor Series Approximation</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Maclaurin Series & Error Bound Analyzer -->
+                    <a href="maclaurin-error-analysis.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <!-- Top half: f(x) + tolerance tube -->
+                                <path d="M 22 60 Q 110 48, 194 18" fill="none" stroke="rgba(56,161,105,0.22)" stroke-width="12"/>
+                                <path d="M 22 60 Q 110 48, 194 18" fill="none" stroke="#2b6cb0" stroke-width="2"/>
+                                <path d="M 22 62 Q 110 50, 194 34" fill="none" stroke="#d96459" stroke-width="1.8" stroke-dasharray="4 3"/>
+                                <!-- Bottom half: Error curve & ε line -->
+                                <line x1="22" y1="84" x2="198" y2="84" stroke="#38a169" stroke-width="1.2" stroke-dasharray="4 3"/>
+                                <path d="M 24 96 Q 110 98, 194 68" fill="none" stroke="#e69a53" stroke-width="2"/>
+                                <line x1="158" y1="14" x2="158" y2="100" stroke="#4a6572" stroke-width="1.2" stroke-dasharray="3 3"/>
+                                <circle cx="158" cy="84" r="3" fill="#e69a53"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Maclaurin Error Bound Analyzer</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Slope Fields & Differential Equations -->
+                    <a href="slope-fields-differential-equations.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-slope">
+                                <div class="axis-h"></div><div class="axis-v"></div>
+                                <div class="slope-line" style="top:30%; left:30%; transform: rotate(20deg);"></div>
+                                <div class="slope-line" style="top:30%; left:50%; transform: rotate(40deg);"></div>
+                                <div class="slope-line" style="top:30%; left:70%; transform: rotate(60deg);"></div>
+                                <div class="slope-line" style="top:50%; left:30%; transform: rotate(10deg);"></div>
+                                <div class="slope-line" style="top:50%; left:70%; transform: rotate(80deg);"></div>
+                                <div class="slope-line" style="top:70%; left:30%; transform: rotate(-10deg);"></div>
+                                <div class="slope-line" style="top:70%; left:50%; transform: rotate(-30deg);"></div>
+                                <div class="slope-line" style="top:70%; left:70%; transform: rotate(-50deg);"></div>
+                                <div class="slope-curve"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Slope Fields &amp; Diff. Eq.</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- TOPIC 5: STATISTICS AND PROBABILITY -->
+        <!-- ===================================================== -->
+        <section class="topic-section" data-topic="topic5">
+            <button type="button" class="topic-header" aria-expanded="false">
+                <div class="topic-left">
+                    <div class="topic-num t5">5</div>
+                    <div class="topic-meta">
+                        <h2 class="topic-title">Statistics and Probability</h2>
+                        <span class="topic-sub">Normal &amp; Binomial Distributions, Bayes' Theorem, Correlation &amp; Monte Carlo Simulation</span>
+                    </div>
+                </div>
+                <div class="topic-right">
+                    <span class="count-badge">5 Labs</span>
+                    <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+            </button>
+            <div class="topic-body">
+                <div class="grid-container">
+
+                    <!-- Binomial Distribution Visualizer -->
+                    <a href="binomial-distribution-visualizer.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <line x1="22" y1="92" x2="198" y2="92" stroke="#4a6572" stroke-width="1.4"/>
+                                <rect x="30" y="80" width="16" height="12" fill="#5b9aa0" rx="1"/>
+                                <rect x="52" y="64" width="16" height="28" fill="#5b9aa0" rx="1"/>
+                                <rect x="74" y="40" width="16" height="52" fill="#5b9aa0" rx="1"/>
+                                <rect x="96" y="24" width="16" height="68" fill="#5b9aa0" rx="1"/>
+                                <rect x="118" y="34" width="16" height="58" fill="#dce3e8" rx="1"/>
+                                <rect x="140" y="58" width="16" height="34" fill="#dce3e8" rx="1"/>
+                                <rect x="162" y="78" width="16" height="14" fill="#dce3e8" rx="1"/>
+                                <path d="M 28 88 C 62 84, 82 20, 108 20 C 134 20, 156 84, 190 88" fill="none" stroke="#d96459" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Binomial Distribution Visualizer</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Normal Distribution -->
+                    <a href="normal-distribution.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-normal">
+                                <div class="axis-h" style="top: 90%; width: 100%;"></div>
+                                <div class="norm-fill"></div>
+                                <div class="norm-line"></div>
+                                <div class="norm-mid"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Normal Distribution</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Bayes' Theorem & Probability Tree -->
+                    <a href="bayes-theorem-tree.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <!-- Highlighted numerator path -->
+                                <line x1="28" y1="55" x2="96" y2="30" stroke="#d96459" stroke-width="2.6"/>
+                                <line x1="96" y1="30" x2="176" y2="18" stroke="#d96459" stroke-width="2.6"/>
+                                <!-- Other denominator path -->
+                                <line x1="28" y1="55" x2="96" y2="80" stroke="#5b9aa0" stroke-width="2"/>
+                                <line x1="96" y1="80" x2="176" y2="66" stroke="#5b9aa0" stroke-width="2"/>
+                                <!-- Excluded paths -->
+                                <line x1="96" y1="30" x2="176" y2="44" stroke="#cbd5e0" stroke-width="1.6"/>
+                                <line x1="96" y1="80" x2="176" y2="94" stroke="#cbd5e0" stroke-width="1.6"/>
+                                <!-- Nodes -->
+                                <circle cx="28" cy="55" r="5" fill="#4a6572"/>
+                                <circle cx="96" cy="30" r="5.5" fill="#d96459"/>
+                                <circle cx="96" cy="80" r="5.5" fill="#4a6572"/>
+                                <circle cx="176" cy="18" r="5" fill="#d96459"/>
+                                <circle cx="176" cy="44" r="4.5" fill="#cbd5e0"/>
+                                <circle cx="176" cy="66" r="5" fill="#5b9aa0"/>
+                                <circle cx="176" cy="94" r="4.5" fill="#cbd5e0"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Bayes' Theorem &amp; Tree Diagram</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Correlation & Linear Regression Lab -->
+                    <a href="correlation-regression-lab.html" class="card">
+                        <div class="card-graphic">
+                            <svg viewBox="0 0 220 110" width="200" height="100">
+                                <line x1="26" y1="92" x2="196" y2="92" stroke="#cbd5e0" stroke-width="1.3"/>
+                                <line x1="26" y1="14" x2="26" y2="92" stroke="#cbd5e0" stroke-width="1.3"/>
+                                <!-- Regression line -->
+                                <line x1="34" y1="84" x2="188" y2="22" stroke="#d96459" stroke-width="2.2"/>
+                                <!-- Residual dashes -->
+                                <line x1="58" y1="62" x2="58" y2="74" stroke="#e69a53" stroke-width="1.5" stroke-dasharray="2 2"/>
+                                <line x1="142" y1="54" x2="142" y2="41" stroke="#e69a53" stroke-width="1.5" stroke-dasharray="2 2"/>
+                                <!-- Scatter points -->
+                                <circle cx="44" cy="80" r="3.8" fill="#2b6cb0"/>
+                                <circle cx="58" cy="62" r="3.8" fill="#2b6cb0"/>
+                                <circle cx="84" cy="66" r="3.8" fill="#2b6cb0"/>
+                                <circle cx="110" cy="52" r="3.8" fill="#2b6cb0"/>
+                                <circle cx="142" cy="54" r="3.8" fill="#2b6cb0"/>
+                                <circle cx="166" cy="30" r="3.8" fill="#2b6cb0"/>
+                                <circle cx="182" cy="28" r="3.8" fill="#2b6cb0"/>
+                                <!-- Mean diamond -->
+                                <polygon points="110,47 115,52 110,57 105,52" fill="#38a169" stroke="#fff" stroke-width="1"/>
+                            </svg>
+                        </div>
+                        <div class="card-title">Correlation &amp; Linear Regression</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                    <!-- Monte Carlo Simulation -->
+                    <a href="monte-carlo-simulation.html" class="card">
+                        <div class="card-graphic">
+                            <div class="ill-monte">
+                                <div class="mon-circ"></div>
+                                <div class="mon-dot" style="top:30%; left:40%;"></div>
+                                <div class="mon-dot" style="top:60%; left:50%;"></div>
+                                <div class="mon-dot" style="top:40%; left:70%;"></div>
+                                <div class="mon-dot out" style="top:15%; left:15%;"></div>
+                                <div class="mon-dot out" style="top:80%; left:80%;"></div>
+                            </div>
+                        </div>
+                        <div class="card-title">Monte Carlo Simulation</div>
+                        <div class="card-action">Launch interactive laboratory &rarr;</div>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        (function () {
+            document.addEventListener('DOMContentLoaded', function () {
+                var sections = Array.prototype.slice.call(document.querySelectorAll('.topic-section'));
+                var filterBtns = Array.prototype.slice.call(document.querySelectorAll('.filter-btn'));
+                var btnToggleAll = document.getElementById('btnToggleAll');
+                var updateDiv = document.getElementById('lastUpdated');
+
+                // Auto-count cards per topic and total
+                var totalCards = 0;
+                sections.forEach(function (sec) {
+                    var count = sec.querySelectorAll('.card').length;
+                    totalCards += count;
+                    var badge = sec.querySelector('.count-badge');
+                    if (badge) badge.textContent = count + (count === 1 ? ' Lab' : ' Labs');
+                });
+                if (filterBtns[0]) {
+                    filterBtns[0].textContent = 'All Topics (' + totalCards + ')';
+                }
+
+                function updateToggleAllLabel() {
+                    var visible = sections.filter(function (s) { return !s.classList.contains('hidden-topic'); });
+                    var allOpen = visible.length > 0 && visible.every(function (s) { return s.classList.contains('open'); });
+                    btnToggleAll.textContent = allOpen ? 'Collapse All' : 'Expand All';
+                }
+
+                // Accordion toggle on header click
+                sections.forEach(function (sec) {
+                    var header = sec.querySelector('.topic-header');
+                    header.addEventListener('click', function () {
+                        var isOpen = sec.classList.toggle('open');
+                        header.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                        updateToggleAllLabel();
+                    });
+                });
+
+                // Filter pills
+                filterBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        filterBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        var target = btn.getAttribute('data-filter');
+
+                        sections.forEach(function (sec) {
+                            var header = sec.querySelector('.topic-header');
+                            if (target === 'all') {
+                                sec.classList.remove('hidden-topic');
+                            } else if (sec.getAttribute('data-topic') === target) {
+                                sec.classList.remove('hidden-topic');
+                                sec.classList.add('open');
+                                header.setAttribute('aria-expanded', 'true');
+                            } else {
+                                sec.classList.add('hidden-topic');
+                            }
+                        });
+                        updateToggleAllLabel();
+                    });
+                });
+
+                // Expand / Collapse All
+                btnToggleAll.addEventListener('click', function () {
+                    var visible = sections.filter(function (s) { return !s.classList.contains('hidden-topic'); });
+                    var shouldOpen = !visible.every(function (s) { return s.classList.contains('open'); });
+                    visible.forEach(function (sec) {
+                        var header = sec.querySelector('.topic-header');
+                        sec.classList.toggle('open', shouldOpen);
+                        header.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+                    });
+                    updateToggleAllLabel();
+                });
+
+                // GitHub Last Updated Fetcher
+                fetch('https://api.github.com/repos/ozanokkiran/ozanokkiran.github.io/commits/main')
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('API Rate Limit');
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        if (data && data.commit && data.commit.author) {
+                            var date = new Date(data.commit.author.date);
+                            var options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                            updateDiv.innerText = 'Last Updated: ' + date.toLocaleDateString('en-US', options);
+                        } else {
+                            updateDiv.innerText = 'Status: Live & Up to date';
+                        }
+                    })
+                    .catch(function () {
+                        updateDiv.innerText = 'Status: Live & Up to date';
+                    });
+            });
+        })();
+    </script>
+</body>
+</html>
