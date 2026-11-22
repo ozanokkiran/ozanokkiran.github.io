@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Transformations &amp; Eigenvectors Lab</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 340px;
+            min-width: 295px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        /* 2x2 Matrix Editor */
+        .matrix-editor {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 10px;
+        }
+
+        .mat-label {
+            font-family: 'Cambria Math', 'Times New Roman', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .mat-bracket {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 6px 12px;
+            border-left: 2.5px solid var(--primary);
+            border-right: 2.5px solid var(--primary);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .mat-input {
+            width: 68px;
+            padding: 6px 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: var(--text-main);
+            background: #ffffff;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 6px;
+            text-align: center;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .mat-input:focus {
+            outline: none;
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(91, 154, 160, 0.18);
+        }
+
+        .col-hints {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            margin-top: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        /* Morph Slider */
+        .morph-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .morph-row input[type="range"] {
+            flex: 1;
+            accent-color: var(--teal);
+            cursor: pointer;
+        }
+
+        .morph-val {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 48px;
+            text-align: right;
+        }
+
+        .play-btn {
+            background: var(--teal);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+        .play-btn:hover {
+            background: #488187;
+        }
+
+        /* Presets */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 7px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .preset-btn span.p-sub {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span.p-sub {
+            color: #cbd5e0;
+        }
+
+        /* Toggles */
+        .toggle-row {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .checkbox-label input {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        /* Analysis */
+        .analysis-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .analysis-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 5px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-item span.lbl {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .analysis-item strong {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.79rem;
+            color: var(--primary);
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .analysis-item strong.eig1 { color: var(--coral); }
+        .analysis-item strong.eig2 { color: #c07024; }
+        .analysis-item strong.det { color: var(--blue); }
+        .analysis-item strong.vec { color: var(--purple); }
+
+        .eigen-note {
+            margin-top: 6px;
+            background: #fffaf0;
+            border: 1px solid #fbd38d;
+            border-radius: 5px;
+            padding: 6px 8px;
+            font-size: 0.76rem;
+            color: #9c4221;
+            text-align: center;
+            line-height: 1.35;
+        }
+
+        /* Right Graph Area */
+        .canvas-wrapper {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            min-height: 550px;
+            background-color: #eef2f5;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s;
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .probe-readout {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary);
+            pointer-events: none;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            background: var(--panel-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.79rem;
+            color: var(--primary);
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .swatch {
+            width: 15px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .swatch-dashed {
+            width: 15px;
+            height: 0;
+            border-top: 2px dashed;
+        }
+
+        .swatch-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            background: rgba(43, 108, 176, 0.22);
+            border: 1.5px solid #2b6cb0;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-container {
+                min-height: 380px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Matrix Transformations &amp; Eigenvectors Lab</h1>
+        <p class="subtitle">IB DP Math AI HL &mdash; Linear Transformations, Area Scaling (det A) &amp; Invariant Eigenspaces</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. 2x2 Matrix Builder -->
+            <div class="section-card">
+                <div class="section-title">1. Transformation Matrix A</div>
+                <div class="matrix-editor">
+                    <span class="mat-label">A =</span>
+                    <div class="mat-bracket">
+                        <input type="number" id="inA" class="mat-input" value="2" step="0.25">
+                        <input type="number" id="inB" class="mat-input" value="1" step="0.25">
+                        <input type="number" id="inC" class="mat-input" value="1" step="0.25">
+                        <input type="number" id="inD" class="mat-input" value="2" step="0.25">
+                    </div>
+                </div>
+                <div class="col-hints">
+                    <span style="color: #38a169;">Col 1: T(i)</span>
+                    <span style="color: #2b6cb0;">Col 2: T(j)</span>
+                </div>
+
+                <div class="morph-row">
+                    <button type="button" class="play-btn" id="btnAnimate">&#9654; Animate</button>
+                    <input type="range" id="morphSlider" min="0" max="1" step="0.01" value="1">
+                    <span class="morph-val" id="morphVal">t = 1.00</span>
+                </div>
+            </div>
+
+            <!-- 2. IB Quick Presets -->
+            <div class="section-card">
+                <div class="section-title">2. Quick IB Examples</div>
+                <div class="preset-grid" id="presetGrid">
+                    <button type="button" class="preset-btn active" data-m="2,1,1,2">
+                        Symmetric (Real)
+                        <span class="p-sub">[2, 1; 1, 2]</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-m="1,1,0,1">
+                        Horizontal Shear
+                        <span class="p-sub">[1, 1; 0, 1]</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-m="0.71,-0.71,0.71,0.71">
+                        Rotation 45&deg;
+                        <span class="p-sub">Complex &lambda;</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-m="0,1,1,0">
+                        Reflection y = x
+                        <span class="p-sub">[0, 1; 1, 0]</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-m="2,0,0,-1">
+                        Stretch &amp; Flip
+                        <span class="p-sub">[2, 0; 0, -1]</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-m="2,1,2,1">
+                        Singular (det=0)
+                        <span class="p-sub">[2, 1; 2, 1]</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Display Options -->
+            <div class="section-card">
+                <div class="section-title">3. Display Options</div>
+                <div class="toggle-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkGrid" checked>
+                        Show Transformed Grid
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkSquare" checked>
+                        Show Unit Square &amp; Area |det A|
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkEigen" checked>
+                        Show Eigenspaces &amp; Eigenvectors
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkTestVec" checked>
+                        Show Draggable Vector v &amp; Av
+                    </label>
+                </div>
+            </div>
+
+            <!-- 4. Live Eigen Analysis -->
+            <div class="section-card">
+                <div class="section-title">4. Eigenvalue &amp; Matrix Analysis</div>
+                <div class="analysis-list" id="analysisList"></div>
+                <div class="eigen-note" id="eigenNote"></div>
+            </div>
+
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="canvas-wrapper">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="graphCanvas"></canvas>
+                <div class="probe-readout" id="probeReadout">Drag purple tip v to test Av = &lambda;v</div>
+                <div class="canvas-toolbar">
+                    <button type="button" class="tool-btn" id="btnZoomIn">+ Zoom</button>
+                    <button type="button" class="tool-btn" id="btnZoomOut">&minus; Zoom</button>
+                    <button type="button" class="tool-btn" id="btnReset">Reset View</button>
+                </div>
+                <div class="controls-hint">Drag v: Inspect Av | Scroll: Zoom | Drag Canvas: Pan</div>
+            </div>
+
+            <div class="legend-bar">
+                <div class="legend-item">
+                    <div class="swatch-box"></div>
+                    <span>Transformed Unit Square</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch" style="background: #38a169;"></div>
+                    <span>T(i)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch" style="background: #2b6cb0;"></div>
+                    <span>T(j)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dashed" style="border-color: #d96459;"></div>
+                    <span>Eigenspace 1</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dashed" style="border-color: #e69a53;"></div>
+                    <span>Eigenspace 2</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch" style="background: #7c6992;"></div>
+                    <span>v &rarr; Av</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            function fmt(n) {
+                if (Math.abs(n) < 1e-6) return '0';
+                if (Math.abs(n - Math.round(n)) < 1e-4) return String(Math.round(n));
+                return n.toFixed(2).replace(/\.?0+$/, '');
+            }
+
+            function findEigenvector(a, b, c, d, lam) {
+                // Solve (A - lam I) v = 0
+                var r1x = a - lam, r1y = b;
+                var r2x = c, r2y = d - lam;
+                var n1 = Math.hypot(r1x, r1y);
+                var n2 = Math.hypot(r2x, r2y);
+                var vx, vy;
+                if (n1 >= n2 && n1 > 1e-7) {
+                    vx = -r1y;
+                    vy = r1x;
+                } else if (n2 > 1e-7) {
+                    vx = -r2y;
+                    vy = r2x;
+                } else {
+                    return null; // Scalar matrix
+                }
+                var mag = Math.hypot(vx, vy);
+                if (mag < 1e-9) return null;
+                vx /= mag;
+                vy /= mag;
+                // Canonical sign: prefer positive x, or positive y if x ~ 0
+                if (vx < -1e-6 || (Math.abs(vx) <= 1e-6 && vy < 0)) {
+                    vx = -vx;
+                    vy = -vy;
+                }
+                return { x: vx, y: vy };
+            }
+
+            function formatVecNice(v) {
+                if (!v) return 'Any v ≠ 0';
+                // Try scaling so smaller non-zero component is 1 for clean IB display
+                var ax = Math.abs(v.x), ay = Math.abs(v.y);
+                if (ax > 1e-4 && ay > 1e-4) {
+                    var rx = v.x / ay, ry = v.y / ay;
+                    if (Math.abs(rx - Math.round(rx)) < 0.02 && Math.abs(rx) <= 6) {
+                        return '(' + fmt(rx) + ', ' + fmt(ry) + ')';
+                    }
+                    rx = v.x / ax; ry = v.y / ax;
+                    if (Math.abs(ry - Math.round(ry)) < 0.02 && Math.abs(ry) <= 6) {
+                        return '(' + fmt(rx) + ', ' + fmt(ry) + ')';
+                    }
+                }
+                return '(' + fmt(v.x) + ', ' + fmt(v.y) + ')';
+            }
+
+            function analyzeMatrix(a, b, c, d) {
+                var det = a * d - b * c;
+                var tr = a + d;
+                var disc = tr * tr - 4 * det;
+
+                var type = 'real-distinct';
+                var eigenvalues = [];
+                var eigenvectors = [];
+                var note = '';
+
+                if (disc > 1e-6) {
+                    var sq = Math.sqrt(disc);
+                    var l1 = (tr + sq) / 2;
+                    var l2 = (tr - sq) / 2;
+                    eigenvalues = [l1, l2];
+                    eigenvectors = [
+                        findEigenvector(a, b, c, d, l1),
+                        findEigenvector(a, b, c, d, l2)
+                    ];
+                    note = 'Two distinct real eigenspaces. Vectors along these dashed lines are only scaled by λ₁ or λ₂.';
+                } else if (Math.abs(disc) <= 1e-6) {
+                    var l = tr / 2;
+                    eigenvalues = [l, l];
+                    if (Math.abs(b) < 1e-6 && Math.abs(c) < 1e-6 && Math.abs(a - d) < 1e-6) {
+                        type = 'scalar';
+                        eigenvectors = [{ x: 1, y: 0 }, { x: 0, y: 1 }];
+                        note = 'Uniform scaling matrix: every non-zero vector is an eigenvector with λ = ' + fmt(l) + '.';
+                    } else {
+                        type = 'repeated';
+                        eigenvectors = [findEigenvector(a, b, c, d, l)];
+                        note = 'Repeated real eigenvalue (defective/shear): only one invariant eigenspace line exists.';
+                    }
+                } else {
+                    type = 'complex';
+                    var re = tr / 2;
+                    var im = Math.sqrt(-disc) / 2;
+                    eigenvalues = [{ re: re, im: im }, { re: re, im: -im }];
+                    note = 'Complex conjugate eigenvalues (Δ < 0): rotation/spiral behavior with no real invariant lines.';
+                }
+
+                return { a: a, b: b, c: c, d: d, det: det, tr: tr, disc: disc, type: type, eigenvalues: eigenvalues, eigenvectors: eigenvectors, note: note };
+            }
+
+            function init() {
+                var canvas = document.getElementById('graphCanvas');
+                var ctx = canvas.getContext('2d');
+                var container = document.getElementById('canvasContainer');
+
+                var inA = document.getElementById('inA');
+                var inB = document.getElementById('inB');
+                var inC = document.getElementById('inC');
+                var inD = document.getElementById('inD');
+                var morphSlider = document.getElementById('morphSlider');
+                var morphVal = document.getElementById('morphVal');
+                var btnAnimate = document.getElementById('btnAnimate');
+
+                var presetBtns = document.querySelectorAll('.preset-btn');
+                var chkGrid = document.getElementById('chkGrid');
+                var chkSquare = document.getElementById('chkSquare');
+                var chkEigen = document.getElementById('chkEigen');
+                var chkTestVec = document.getElementById('chkTestVec');
+
+                var analysisList = document.getElementById('analysisList');
+                var eigenNote = document.getElementById('eigenNote');
+                var probeReadout = document.getElementById('probeReadout');
+
+                var btnZoomIn = document.getElementById('btnZoomIn');
+                var btnZoomOut = document.getElementById('btnZoomOut');
+                var btnReset = document.getElementById('btnReset');
+
+                var state = {
+                    offsetX: 0,
+                    offsetY: 0,
+                    scale: 68,
+                    initializedView: false,
+                    isPanning: false,
+                    isDraggingVec: false,
+                    dragStartX: 0,
+                    dragStartY: 0,
+                    t: 1,
+                    animId: null,
+                    testVec: { x: 1.5, y: 0.5 },
+                    model: null
+                };
+
+                function getMatrix() {
+                    var a = parseFloat(inA.value); if (isNaN(a)) a = 0;
+                    var b = parseFloat(inB.value); if (isNaN(b)) b = 0;
+                    var c = parseFloat(inC.value); if (isNaN(c)) c = 0;
+                    var d = parseFloat(inD.value); if (isNaN(d)) d = 0;
+                    return { a: a, b: b, c: c, d: d };
+                }
+
+                function getLerpedMatrix() {
+                    var m = state.model;
+                    var t = state.t;
+                    return {
+                        a: (1 - t) * 1 + t * m.a,
+                        b: t * m.b,
+                        c: t * m.c,
+                        d: (1 - t) * 1 + t * m.d
+                    };
+                }
+
+                function updateAnalysisUI() {
+                    var m = state.model;
+                    var trSign = m.tr >= 0 ? ' - ' + fmt(m.tr) : ' + ' + fmt(-m.tr);
+                    var detSign = m.det >= 0 ? ' + ' + fmt(m.det) : ' - ' + fmt(-m.det);
+                    var charPoly = 'λ²' + (Math.abs(m.tr) > 1e-6 ? trSign + 'λ' : '') + (Math.abs(m.det) > 1e-6 ? detSign : '') + ' = 0';
+
+                    var detExtra = Math.abs(m.det) < 1e-6 ? ' (Singular)' : (m.det < 0 ? ' (Flip)' : '');
+                    var html =
+                        '<div class="analysis-item"><span class="lbl">Determinant</span><strong class="det">' + fmt(m.det) + detExtra + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Trace tr(A)</span><strong>' + fmt(m.tr) + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Char. Poly.</span><strong>' + charPoly + '</strong></div>';
+
+                    if (m.type === 'real-distinct') {
+                        html +=
+                            '<div class="analysis-item"><span class="lbl">λ₁ &amp; v₁</span><strong class="eig1">λ₁=' + fmt(m.eigenvalues[0]) + ' | ' + formatVecNice(m.eigenvectors[0]) + '</strong></div>' +
+                            '<div class="analysis-item"><span class="lbl">λ₂ &amp; v₂</span><strong class="eig2">λ₂=' + fmt(m.eigenvalues[1]) + ' | ' + formatVecNice(m.eigenvectors[1]) + '</strong></div>';
+                    } else if (m.type === 'scalar') {
+                        html += '<div class="analysis-item"><span class="lbl">Eigenvalue</span><strong class="eig1">λ = ' + fmt(m.eigenvalues[0]) + ' (All ℝ²)</strong></div>';
+                    } else if (m.type === 'repeated') {
+                        html += '<div class="analysis-item"><span class="lbl">Repeated λ</span><strong class="eig1">λ = ' + fmt(m.eigenvalues[0]) + ' | ' + formatVecNice(m.eigenvectors[0]) + '</strong></div>';
+                    } else {
+                        var e = m.eigenvalues[0];
+                        html += '<div class="analysis-item"><span class="lbl">Complex λ</span><strong class="eig1">' + fmt(e.re) + ' ± ' + fmt(e.im) + 'i</strong></div>';
+                    }
+
+                    var tv = state.testVec;
+                    var avx = m.a * tv.x + m.b * tv.y;
+                    var avy = m.c * tv.x + m.d * tv.y;
+                    html += '<div class="analysis-item"><span class="lbl">Av Result</span><strong class="vec">(' + fmt(avx) + ', ' + fmt(avy) + ')</strong></div>';
+
+                    analysisList.innerHTML = html;
+                    eigenNote.textContent = m.note;
+                }
+
+                function getSize() {
+                    var rect = container.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 640,
+                        h: rect.height > 50 ? rect.height : 550
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    if (!state.initializedView) {
+                        state.offsetX = sz.w / 2;
+                        state.offsetY = sz.h / 2;
+                        state.initializedView = true;
+                    }
+                    draw();
+                }
+
+                function resetView() {
+                    var sz = getSize();
+                    state.offsetX = sz.w / 2;
+                    state.offsetY = sz.h / 2;
+                    state.scale = 68;
+                    draw();
+                }
+
+                function zoomBy(factor) {
+                    var sz = getSize();
+                    var cx = sz.w / 2;
+                    var cy = sz.h / 2;
+                    var newScale = Math.max(18, Math.min(220, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = cx - (cx - state.offsetX) * actual;
+                    state.offsetY = cy - (cy - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }
+
+                function toCX(x) { return state.offsetX + x * state.scale; }
+                function toCY(y) { return state.offsetY - y * state.scale; }
+                function toMathX(px) { return (px - state.offsetX) / state.scale; }
+                function toMathY(py) { return (state.offsetY - py) / state.scale; }
+
+                function drawArrow(x1, y1, x2, y2, color, width, dashed) {
+                    var headLen = 10;
+                    var angle = Math.atan2(y2 - y1, x2 - x1);
+                    ctx.save();
+                    ctx.strokeStyle = color;
+                    ctx.fillStyle = color;
+                    ctx.lineWidth = width;
+                    if (dashed) ctx.setLineDash([5, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    if (Math.hypot(x2 - x1, y2 - y1) > 6) {
+                        ctx.beginPath();
+                        ctx.moveTo(x2, y2);
+                        ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
+                        ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+
+                function drawBadge(text, x, y, color) {
+                    ctx.save();
+                    ctx.font = "bold 11px 'Segoe UI'";
+                    var w = ctx.measureText(text).width + 10;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+                    ctx.fillRect(x - w / 2, y - 9, w, 18);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x - w / 2, y - 9, w, 18);
+                    ctx.fillStyle = color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(text, x, y);
+                    ctx.restore();
+                }
+
+                function draw() {
+                    var sz = getSize();
+                    var W = sz.w;
+                    var H = sz.h;
+                    ctx.clearRect(0, 0, W, H);
+
+                    // Adaptive Standard Grid
+                    var step = 1;
+                    if (state.scale < 35) step = 2;
+                    if (state.scale > 130) step = 0.5;
+
+                    var minX = Math.floor(-state.offsetX / state.scale / step) * step;
+                    var maxX = Math.ceil((W - state.offsetX) / state.scale / step) * step;
+                    var minY = Math.floor(-(H - state.offsetY) / state.scale / step) * step;
+                    var maxY = Math.ceil(state.offsetY / state.scale / step) * step;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#dce3e8';
+                    ctx.lineWidth = 1;
+                    ctx.fillStyle = '#718096';
+                    ctx.font = "11px 'Segoe UI'";
+
+                    for (var gx = minX; gx <= maxX; gx += step) {
+                        var cx = toCX(gx);
+                        ctx.moveTo(cx, 0);
+                        ctx.lineTo(cx, H);
+                        if (Math.abs(gx) > 0.001) {
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'top';
+                            var yClamp = Math.max(8, Math.min(H - 20, state.offsetY + 6));
+                            ctx.fillText(fmt(gx), cx, yClamp);
+                        }
+                    }
+
+                    for (var gy = minY; gy <= maxY; gy += step) {
+                        var cy = toCY(gy);
+                        ctx.moveTo(0, cy);
+                        ctx.lineTo(W, cy);
+                        if (Math.abs(gy) > 0.001) {
+                            ctx.textAlign = 'right';
+                            ctx.textBaseline = 'middle';
+                            var xClamp = Math.max(26, Math.min(W - 8, state.offsetX - 8));
+                            ctx.fillText(fmt(gy), xClamp, cy);
+                        }
+                    }
+                    ctx.stroke();
+
+                    // Main Axes
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#8da2b0';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(state.offsetX, 0);
+                    ctx.lineTo(state.offsetX, H);
+                    ctx.moveTo(0, state.offsetY);
+                    ctx.lineTo(W, state.offsetY);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('0', state.offsetX - 6, state.offsetY + 6);
+
+                    var M = getLerpedMatrix();
+                    var m = state.model;
+
+                    // Transformed Grid
+                    if (chkGrid.checked) {
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(91, 154, 160, 0.28)';
+                        ctx.lineWidth = 1.2;
+                        var range = 10;
+                        ctx.beginPath();
+                        for (var k = -range; k <= range; k++) {
+                            // Vertical lines x = k
+                            var x1 = M.a * k + M.b * (-range);
+                            var y1 = M.c * k + M.d * (-range);
+                            var x2 = M.a * k + M.b * range;
+                            var y2 = M.c * k + M.d * range;
+                            ctx.moveTo(toCX(x1), toCY(y1));
+                            ctx.lineTo(toCX(x2), toCY(y2));
+
+                            // Horizontal lines y = k
+                            var hx1 = M.a * (-range) + M.b * k;
+                            var hy1 = M.c * (-range) + M.d * k;
+                            var hx2 = M.a * range + M.b * k;
+                            var hy2 = M.c * range + M.d * k;
+                            ctx.moveTo(toCX(hx1), toCY(hy1));
+                            ctx.lineTo(toCX(hx2), toCY(hy2));
+                        }
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+
+                    // Unit Square & Transformed Parallelogram
+                    if (chkSquare.checked) {
+                        // Original faint unit square
+                        ctx.save();
+                        ctx.strokeStyle = 'rgba(74, 101, 114, 0.35)';
+                        ctx.setLineDash([4, 3]);
+                        ctx.lineWidth = 1.4;
+                        ctx.strokeRect(toCX(0), toCY(1), state.scale, state.scale);
+                        ctx.restore();
+
+                        // Transformed unit square
+                        var detCur = M.a * M.d - M.b * M.c;
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.moveTo(toCX(0), toCY(0));
+                        ctx.lineTo(toCX(M.a), toCY(M.c));
+                        ctx.lineTo(toCX(M.a + M.b), toCY(M.c + M.d));
+                        ctx.lineTo(toCX(M.b), toCY(M.d));
+                        ctx.closePath();
+                        ctx.fillStyle = detCur >= 0 ? 'rgba(43, 108, 176, 0.16)' : 'rgba(217, 100, 89, 0.16)';
+                        ctx.fill();
+                        ctx.strokeStyle = detCur >= 0 ? '#2b6cb0' : '#d96459';
+                        ctx.lineWidth = 1.8;
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+
+                    // Eigenspaces & Eigenvectors
+                    if (chkEigen.checked && m.type !== 'complex') {
+                        var colors = ['#d96459', '#e69a53'];
+                        m.eigenvectors.forEach(function (ev, idx) {
+                            if (!ev) return;
+                            var col = colors[idx % 2];
+                            var span = 18;
+                            // Invariant line
+                            ctx.save();
+                            ctx.strokeStyle = col;
+                            ctx.setLineDash([7, 5]);
+                            ctx.lineWidth = 1.8;
+                            ctx.beginPath();
+                            ctx.moveTo(toCX(-ev.x * span), toCY(-ev.y * span));
+                            ctx.lineTo(toCX(ev.x * span), toCY(ev.y * span));
+                            ctx.stroke();
+                            ctx.restore();
+
+                            // Eigenvector arrow (unit length)
+                            drawArrow(toCX(0), toCY(0), toCX(ev.x * 1.4), toCY(ev.y * 1.4), col, 2.5, false);
+                            var lam = m.eigenvalues[idx];
+                            drawBadge('λ' + (idx + 1) + ' = ' + fmt(lam), toCX(ev.x * 2.1), toCY(ev.y * 2.1), col);
+                        });
+                    }
+
+                    // Basis Vectors T(i) and T(j)
+                    drawArrow(toCX(0), toCY(0), toCX(M.a), toCY(M.c), '#38a169', 2.8, false);
+                    drawArrow(toCX(0), toCY(0), toCX(M.b), toCY(M.d), '#2b6cb0', 2.8, false);
+
+                    // Draggable Test Vector v and Av
+                    if (chkTestVec.checked) {
+                        var tv = state.testVec;
+                        var avx = M.a * tv.x + M.b * tv.y;
+                        var avy = M.c * tv.x + M.d * tv.y;
+
+                        // Av vector
+                        drawArrow(toCX(0), toCY(0), toCX(avx), toCY(avy), '#7c6992', 2.6, true);
+                        // v vector
+                        drawArrow(toCX(0), toCY(0), toCX(tv.x), toCY(tv.y), '#7c6992', 2.8, false);
+
+                        // Draggable handle on v
+                        ctx.beginPath();
+                        ctx.arc(toCX(tv.x), toCY(tv.y), 6.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fill();
+                        ctx.strokeStyle = '#7c6992';
+                        ctx.lineWidth = 2.8;
+                        ctx.stroke();
+
+                        // Check if v is nearly an eigenvector
+                        var cross = Math.abs(tv.x * avy - tv.y * avx);
+                        var isEig = cross < 0.08 && Math.hypot(tv.x, tv.y) > 0.25 && state.t > 0.98;
+                        probeReadout.textContent =
+                            'v = (' + fmt(tv.x) + ', ' + fmt(tv.y) + ')  |  Av = (' + fmt(avx) + ', ' + fmt(avy) + ')' +
+                            (isEig ? '  ★ Collinear (Eigenvector!)' : '');
+                    } else {
+                        probeReadout.textContent = 'det(A) = ' + fmt(m.det) + '  |  Area Scale = ' + fmt(Math.abs(m.det)) + '×';
+                    }
+                }
+
+                function refreshModel() {
+                    var mat = getMatrix();
+                    state.model = analyzeMatrix(mat.a, mat.b, mat.c, mat.d);
+                    updateAnalysisUI();
+                    draw();
+                }
+
+                function stopAnimation() {
+                    if (state.animId) {
+                        cancelAnimationFrame(state.animId);
+                        state.animId = null;
+                        btnAnimate.innerHTML = '&#9654; Animate';
+                    }
+                }
+
+                btnAnimate.addEventListener('click', function () {
+                    if (state.animId) {
+                        stopAnimation();
+                        return;
+                    }
+                    state.t = 0;
+                    btnAnimate.innerHTML = '&#9724; Stop';
+                    var start = null;
+                    var duration = 1400;
+                    function stepAnim(ts) {
+                        if (!start) start = ts;
+                        var progress = Math.min(1, (ts - start) / duration);
+                        // Smooth ease-in-out
+                        state.t = progress < 0.5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                        morphSlider.value = state.t.toFixed(2);
+                        morphVal.textContent = 't = ' + state.t.toFixed(2);
+                        draw();
+                        if (progress < 1) {
+                            state.animId = requestAnimationFrame(stepAnim);
+                        } else {
+                            state.animId = null;
+                            btnAnimate.innerHTML = '&#9654; Animate';
+                        }
+                    }
+                    state.animId = requestAnimationFrame(stepAnim);
+                });
+
+                morphSlider.addEventListener('input', function () {
+                    stopAnimation();
+                    state.t = parseFloat(morphSlider.value);
+                    morphVal.textContent = 't = ' + state.t.toFixed(2);
+                    draw();
+                });
+
+                [inA, inB, inC, inD].forEach(function (inp) {
+                    inp.addEventListener('input', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        refreshModel();
+                    });
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        stopAnimation();
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        var parts = btn.getAttribute('data-m').split(',');
+                        inA.value = parts[0];
+                        inB.value = parts[1];
+                        inC.value = parts[2];
+                        inD.value = parts[3];
+                        state.t = 1;
+                        morphSlider.value = '1';
+                        morphVal.textContent = 't = 1.00';
+                        refreshModel();
+                    });
+                });
+
+                [chkGrid, chkSquare, chkEigen, chkTestVec].forEach(function (el) {
+                    el.addEventListener('change', draw);
+                });
+
+                btnZoomIn.addEventListener('click', function () { zoomBy(1.25); });
+                btnZoomOut.addEventListener('click', function () { zoomBy(0.8); });
+                btnReset.addEventListener('click', resetView);
+
+                // Pointer Interactions (Drag Test Vector v or Pan Canvas)
+                canvas.addEventListener('mousedown', function (e) {
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+                    if (chkTestVec.checked) {
+                        var vx = toCX(state.testVec.x);
+                        var vy = toCY(state.testVec.y);
+                        if (Math.hypot(mx - vx, my - vy) < 16) {
+                            state.isDraggingVec = true;
+                            return;
+                        }
+                    }
+                    state.isPanning = true;
+                    state.dragStartX = e.clientX - state.offsetX;
+                    state.dragStartY = e.clientY - state.offsetY;
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (state.isDraggingVec) {
+                        var rect = canvas.getBoundingClientRect();
+                        var mx = e.clientX - rect.left;
+                        var my = e.clientY - rect.top;
+                        var nx = toMathX(mx);
+                        var ny = toMathY(my);
+                        // Light snap to 0.25 increments if Shift not held
+                        state.testVec.x = Math.round(nx * 4) / 4;
+                        state.testVec.y = Math.round(ny * 4) / 4;
+                        updateAnalysisUI();
+                        draw();
+                    } else if (state.isPanning) {
+                        state.offsetX = e.clientX - state.dragStartX;
+                        state.offsetY = e.clientY - state.dragStartY;
+                        draw();
+                    }
+                });
+
+                window.addEventListener('mouseup', function () {
+                    state.isDraggingVec = false;
+                    state.isPanning = false;
+                });
+
+                canvas.addEventListener('wheel', function (e) {
+                    e.preventDefault();
+                    var factor = Math.exp(-e.deltaY * 0.0012);
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+                    var newScale = Math.max(18, Math.min(220, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = mx - (mx - state.offsetX) * actual;
+                    state.offsetY = my - (my - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }, { passive: false });
+
+                window.addEventListener('resize', resizeCanvas);
+
+                refreshModel();
+                resizeCanvas();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
