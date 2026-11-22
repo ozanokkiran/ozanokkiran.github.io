@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voronoi Diagrams &amp; Nearest-Neighbour Lab</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 340px;
+            min-width: 295px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        /* Interaction Mode Buttons */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .mode-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .mode-btn.active {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .sub-btn {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .sub-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .sub-btn.danger {
+            background: #fff5f5;
+            color: var(--coral);
+            border-color: #fed7d7;
+        }
+
+        .sub-btn.danger:hover {
+            background: var(--coral);
+            color: #ffffff;
+            border-color: var(--coral);
+        }
+
+        .input-hint {
+            font-size: 0.71rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        /* Presets */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 7px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .preset-btn span.p-sub {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span.p-sub {
+            color: #cbd5e0;
+        }
+
+        /* Toggles */
+        .toggle-row {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .checkbox-label input {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: var(--teal);
+            margin: 0;
+        }
+
+        /* Analysis */
+        .analysis-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .analysis-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 5px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-item span.lbl {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .analysis-item strong {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.79rem;
+            color: var(--primary);
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .analysis-item strong.toxic { color: var(--coral); }
+        .analysis-item strong.near { color: var(--blue); }
+        .analysis-item strong.vert { color: var(--purple); }
+
+        .ib-note {
+            margin-top: 6px;
+            background: #fffaf0;
+            border: 1px solid #fbd38d;
+            border-radius: 5px;
+            padding: 6px 8px;
+            font-size: 0.76rem;
+            color: #9c4221;
+            text-align: center;
+            line-height: 1.35;
+        }
+
+        /* Right Graph Area */
+        .canvas-wrapper {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            min-height: 550px;
+            background-color: #eef2f5;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .canvas-container.add-mode {
+            cursor: crosshair;
+        }
+
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+
+        .canvas-container.add-mode:active {
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s;
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .probe-readout {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary);
+            pointer-events: none;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            background: var(--panel-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.79rem;
+            color: var(--primary);
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .swatch-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .swatch-line {
+            width: 15px;
+            height: 2.5px;
+            border-radius: 2px;
+        }
+
+        .swatch-dashed {
+            width: 15px;
+            height: 0;
+            border-top: 2px dashed;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-container {
+                min-height: 380px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Voronoi Diagrams &amp; Nearest-Neighbour Lab</h1>
+        <p class="subtitle">IB DP Math AI &mdash; Perpendicular Bisectors, Voronoi Vertices &amp; Toxic Waste Dump Problem</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Site Controls -->
+            <div class="section-card">
+                <div class="section-title">1. Manage Sites (Seeds)</div>
+                <div class="mode-grid">
+                    <button type="button" class="mode-btn active" id="btnModeMove">Drag Sites / Pan</button>
+                    <button type="button" class="mode-btn" id="btnModeAdd">+ Click to Add</button>
+                </div>
+                <div class="action-row">
+                    <button type="button" class="sub-btn" id="btnRemoveLast">Undo Last Site</button>
+                    <button type="button" class="sub-btn danger" id="btnClear">Clear All</button>
+                </div>
+                <div class="input-hint">Drag any site (A, B, C...) to reshape cells live.</div>
+            </div>
+
+            <!-- 2. IB Quick Presets -->
+            <div class="section-card">
+                <div class="section-title">2. Quick IB Examples</div>
+                <div class="preset-grid" id="presetGrid">
+                    <button type="button" class="preset-btn active" data-preset="toxic">
+                        Toxic Waste Dump
+                        <span class="p-sub">5 Sites + Safe Spot</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="town">
+                        4-Site Town Wells
+                        <span class="p-sub">Classic IB SL/HL</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="center">
+                        Bounded Cell
+                        <span class="p-sub">Center + 4 Corners</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="hex">
+                        Hexagonal Cell
+                        <span class="p-sub">7 Symmetric Sites</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Display Options -->
+            <div class="section-card">
+                <div class="section-title">3. Display Options</div>
+                <div class="toggle-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkCells" checked>
+                        Show Colored Voronoi Cells
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkVertices" checked>
+                        Show Voronoi Vertices
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkToxic" checked>
+                        Show Largest Empty Circle (Toxic Waste)
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="chkProbe" checked>
+                        Hover Nearest-Neighbour Probe
+                    </label>
+                </div>
+            </div>
+
+            <!-- 4. Live Analysis -->
+            <div class="section-card">
+                <div class="section-title">4. Voronoi &amp; Distance Analysis</div>
+                <div class="analysis-list" id="analysisList"></div>
+                <div class="ib-note" id="ibNote">
+                    Every Voronoi edge lies on the perpendicular bisector of two adjacent sites.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="canvas-wrapper">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="graphCanvas"></canvas>
+                <div class="probe-readout" id="probeReadout">Hover over graph to find nearest site</div>
+                <div class="canvas-toolbar">
+                    <button type="button" class="tool-btn" id="btnZoomIn">+ Zoom</button>
+                    <button type="button" class="tool-btn" id="btnZoomOut">&minus; Zoom</button>
+                    <button type="button" class="tool-btn" id="btnReset">Reset View</button>
+                </div>
+                <div class="controls-hint">Drag Site: Move | Scroll: Zoom | Drag Canvas: Pan</div>
+            </div>
+
+            <div class="legend-bar">
+                <div class="legend-item">
+                    <div class="swatch-dot" style="background: #2b6cb0;"></div>
+                    <span>Site (Seed)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-line" style="background: #4a6572;"></div>
+                    <span>Voronoi Edge (Bisector)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dot" style="background: #7c6992;"></div>
+                    <span>Voronoi Vertex</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dashed" style="border-color: #d96459;"></div>
+                    <span>Largest Empty Circle</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var CELL_PALETTE = [
+                'rgba(91, 154, 160, 0.22)',
+                'rgba(43, 108, 176, 0.18)',
+                'rgba(230, 154, 83, 0.22)',
+                'rgba(124, 105, 146, 0.20)',
+                'rgba(56, 161, 105, 0.20)',
+                'rgba(217, 100, 89, 0.18)',
+                'rgba(74, 101, 114, 0.18)',
+                'rgba(49, 151, 149, 0.20)'
+            ];
+
+            var PRESETS = {
+                toxic: [
+                    { x: -3.5, y: 2.5 },
+                    { x: 2.5, y: 3.5 },
+                    { x: 4.0, y: -1.5 },
+                    { x: -1.0, y: -3.5 },
+                    { x: -4.0, y: -1.5 }
+                ],
+                town: [
+                    { x: -3, y: 2 },
+                    { x: 2, y: 3 },
+                    { x: 3, y: -2 },
+                    { x: -2, y: -2.5 }
+                ],
+                center: [
+                    { x: 0, y: 0 },
+                    { x: -3, y: 3 },
+                    { x: 3, y: 3 },
+                    { x: 3, y: -3 },
+                    { x: -3, y: -3 }
+                ],
+                hex: [
+                    { x: 0, y: 0 },
+                    { x: 3.5, y: 0 },
+                    { x: 1.75, y: 3.03 },
+                    { x: -1.75, y: 3.03 },
+                    { x: -3.5, y: 0 },
+                    { x: -1.75, y: -3.03 },
+                    { x: 1.75, y: -3.03 }
+                ]
+            };
+
+            function fmt(n) {
+                if (Math.abs(n) < 1e-6) return '0';
+                if (Math.abs(n - Math.round(n)) < 1e-4) return String(Math.round(n));
+                return n.toFixed(2).replace(/\.?0+$/, '');
+            }
+
+            function siteLabel(idx) {
+                var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                if (idx < 26) return letters[idx];
+                return 'S' + (idx + 1);
+            }
+
+            // Sutherland-Hodgman half-plane clipping: keep points where (p - M) . n <= 0
+            function clipPolygonHalfPlane(poly, mx, my, nx, ny) {
+                if (poly.length === 0) return [];
+                var out = [];
+                for (var i = 0; i < poly.length; i++) {
+                    var curr = poly[i];
+                    var prev = poly[(i + poly.length - 1) % poly.length];
+                    var dCurr = (curr.x - mx) * nx + (curr.y - my) * ny;
+                    var dPrev = (prev.x - mx) * nx + (prev.y - my) * ny;
+                    var currIn = dCurr <= 1e-9;
+                    var prevIn = dPrev <= 1e-9;
+
+                    if (currIn !== prevIn) {
+                        var t = dPrev / (dPrev - dCurr);
+                        out.push({
+                            x: prev.x + t * (curr.x - prev.x),
+                            y: prev.y + t * (curr.y - prev.y)
+                        });
+                    }
+                    if (currIn) {
+                        out.push(curr);
+                    }
+                }
+                return out;
+            }
+
+            function computeVoronoi(sites) {
+                var BOUND = 60;
+                var cells = [];
+                var rawVertices = [];
+
+                for (var i = 0; i < sites.length; i++) {
+                    var poly = [
+                        { x: -BOUND, y: -BOUND },
+                        { x: BOUND, y: -BOUND },
+                        { x: BOUND, y: BOUND },
+                        { x: -BOUND, y: BOUND }
+                    ];
+                    var pi = sites[i];
+                    for (var j = 0; j < sites.length; j++) {
+                        if (i === j) continue;
+                        var pj = sites[j];
+                        var mx = (pi.x + pj.x) / 2;
+                        var my = (pi.y + pj.y) / 2;
+                        var nx = pj.x - pi.x;
+                        var ny = pj.y - pi.y;
+                        poly = clipPolygonHalfPlane(poly, mx, my, nx, ny);
+                        if (poly.length === 0) break;
+                    }
+                    cells.push(poly);
+
+                    for (var k = 0; k < poly.length; k++) {
+                        var v = poly[k];
+                        if (Math.abs(v.x) < BOUND - 1 && Math.abs(v.y) < BOUND - 1) {
+                            rawVertices.push(v);
+                        }
+                    }
+                }
+
+                // Deduplicate Voronoi vertices
+                var vertices = [];
+                rawVertices.forEach(function (v) {
+                    var exists = vertices.some(function (u) {
+                        return Math.hypot(u.x - v.x, u.y - v.y) < 1e-3;
+                    });
+                    if (!exists) {
+                        // Compute distance to nearest site
+                        var minDist = Infinity;
+                        sites.forEach(function (s) {
+                            var d = Math.hypot(v.x - s.x, v.y - s.y);
+                            if (d < minDist) minDist = d;
+                        });
+                        vertices.push({ x: v.x, y: v.y, r: minDist });
+                    }
+                });
+
+                // Find largest empty circle among interior Voronoi vertices
+                var toxic = null;
+                if (vertices.length > 0) {
+                    vertices.forEach(function (v) {
+                        if (!toxic || v.r > toxic.r) {
+                            toxic = v;
+                        }
+                    });
+                }
+
+                return { cells: cells, vertices: vertices, toxic: toxic };
+            }
+
+            function init() {
+                var canvas = document.getElementById('graphCanvas');
+                var ctx = canvas.getContext('2d');
+                var container = document.getElementById('canvasContainer');
+
+                var btnModeMove = document.getElementById('btnModeMove');
+                var btnModeAdd = document.getElementById('btnModeAdd');
+                var btnRemoveLast = document.getElementById('btnRemoveLast');
+                var btnClear = document.getElementById('btnClear');
+                var presetBtns = document.querySelectorAll('.preset-btn');
+
+                var chkCells = document.getElementById('chkCells');
+                var chkVertices = document.getElementById('chkVertices');
+                var chkToxic = document.getElementById('chkToxic');
+                var chkProbe = document.getElementById('chkProbe');
+
+                var analysisList = document.getElementById('analysisList');
+                var probeReadout = document.getElementById('probeReadout');
+
+                var btnZoomIn = document.getElementById('btnZoomIn');
+                var btnZoomOut = document.getElementById('btnZoomOut');
+                var btnReset = document.getElementById('btnReset');
+
+                var state = {
+                    sites: PRESETS.toxic.map(function (p) { return { x: p.x, y: p.y }; }),
+                    voronoi: null,
+                    mode: 'move', // 'move' or 'add'
+                    offsetX: 0,
+                    offsetY: 0,
+                    scale: 52,
+                    initializedView: false,
+                    isPanning: false,
+                    dragSiteIdx: -1,
+                    dragStartX: 0,
+                    dragStartY: 0,
+                    hoverPt: null
+                };
+
+                function setMode(m) {
+                    state.mode = m;
+                    btnModeMove.classList.toggle('active', m === 'move');
+                    btnModeAdd.classList.toggle('active', m === 'add');
+                    container.classList.toggle('add-mode', m === 'add');
+                }
+
+                btnModeMove.addEventListener('click', function () { setMode('move'); });
+                btnModeAdd.addEventListener('click', function () { setMode('add'); });
+
+                function recompute() {
+                    state.voronoi = computeVoronoi(state.sites);
+                    updateAnalysisUI();
+                    draw();
+                }
+
+                function updateAnalysisUI() {
+                    var v = state.voronoi;
+                    var toxicCenter = v.toxic ? '(' + fmt(v.toxic.x) + ', ' + fmt(v.toxic.y) + ')' : 'None (need ≥3)';
+                    var toxicRad = v.toxic ? fmt(v.toxic.r) + ' units' : '—';
+
+                    var nearText = 'Hover on canvas';
+                    if (state.hoverPt && state.sites.length > 0) {
+                        var bestIdx = 0, bestD = Infinity;
+                        state.sites.forEach(function (s, i) {
+                            var d = Math.hypot(state.hoverPt.x - s.x, state.hoverPt.y - s.y);
+                            if (d < bestD) { bestD = d; bestIdx = i; }
+                        });
+                        nearText = 'Site ' + siteLabel(bestIdx) + ' (d = ' + bestD.toFixed(2) + ')';
+                    }
+
+                    analysisList.innerHTML =
+                        '<div class="analysis-item"><span class="lbl">Active Sites</span><strong>' + state.sites.length + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Voronoi Vertices</span><strong class="vert">' + v.vertices.length + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Toxic Dump Spot</span><strong class="toxic">' + toxicCenter + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Max Safe Radius</span><strong class="toxic">' + toxicRad + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Nearest Site</span><strong class="near">' + nearText + '</strong></div>';
+                }
+
+                function getSize() {
+                    var rect = container.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 640,
+                        h: rect.height > 50 ? rect.height : 550
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    if (!state.initializedView) {
+                        state.offsetX = sz.w / 2;
+                        state.offsetY = sz.h / 2;
+                        state.initializedView = true;
+                    }
+                    draw();
+                }
+
+                function resetView() {
+                    var sz = getSize();
+                    state.offsetX = sz.w / 2;
+                    state.offsetY = sz.h / 2;
+                    state.scale = 52;
+                    draw();
+                }
+
+                function zoomBy(factor) {
+                    var sz = getSize();
+                    var cx = sz.w / 2;
+                    var cy = sz.h / 2;
+                    var newScale = Math.max(16, Math.min(200, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = cx - (cx - state.offsetX) * actual;
+                    state.offsetY = cy - (cy - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }
+
+                function toCX(x) { return state.offsetX + x * state.scale; }
+                function toCY(y) { return state.offsetY - y * state.scale; }
+                function toMathX(px) { return (px - state.offsetX) / state.scale; }
+                function toMathY(py) { return (state.offsetY - py) / state.scale; }
+
+                function draw() {
+                    var sz = getSize();
+                    var W = sz.w;
+                    var H = sz.h;
+                    ctx.clearRect(0, 0, W, H);
+
+                    // 1. Voronoi Colored Cells (drawn behind grid for clarity)
+                    if (chkCells.checked && state.voronoi) {
+                        state.voronoi.cells.forEach(function (poly, idx) {
+                            if (poly.length < 3) return;
+                            ctx.beginPath();
+                            ctx.moveTo(toCX(poly[0].x), toCY(poly[0].y));
+                            for (var i = 1; i < poly.length; i++) {
+                                ctx.lineTo(toCX(poly[i].x), toCY(poly[i].y));
+                            }
+                            ctx.closePath();
+                            ctx.fillStyle = CELL_PALETTE[idx % CELL_PALETTE.length];
+                            ctx.fill();
+                        });
+                    }
+
+                    // 2. Adaptive Grid
+                    var step = 1;
+                    if (state.scale < 30) step = 2;
+                    if (state.scale < 18) step = 5;
+                    if (state.scale > 120) step = 0.5;
+
+                    var minX = Math.floor(-state.offsetX / state.scale / step) * step;
+                    var maxX = Math.ceil((W - state.offsetX) / state.scale / step) * step;
+                    var minY = Math.floor(-(H - state.offsetY) / state.scale / step) * step;
+                    var maxY = Math.ceil(state.offsetY / state.scale / step) * step;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(180, 195, 208, 0.55)';
+                    ctx.lineWidth = 1;
+                    ctx.fillStyle = '#718096';
+                    ctx.font = "11px 'Segoe UI'";
+
+                    for (var gx = minX; gx <= maxX; gx += step) {
+                        var cx = toCX(gx);
+                        ctx.moveTo(cx, 0);
+                        ctx.lineTo(cx, H);
+                        if (Math.abs(gx) > 0.001) {
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'top';
+                            var yClamp = Math.max(8, Math.min(H - 20, state.offsetY + 6));
+                            ctx.fillText(fmt(gx), cx, yClamp);
+                        }
+                    }
+
+                    for (var gy = minY; gy <= maxY; gy += step) {
+                        var cy = toCY(gy);
+                        ctx.moveTo(0, cy);
+                        ctx.lineTo(W, cy);
+                        if (Math.abs(gy) > 0.001) {
+                            ctx.textAlign = 'right';
+                            ctx.textBaseline = 'middle';
+                            var xClamp = Math.max(26, Math.min(W - 8, state.offsetX - 8));
+                            ctx.fillText(fmt(gy), xClamp, cy);
+                        }
+                    }
+                    ctx.stroke();
+
+                    // Main Axes
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#8da2b0';
+                    ctx.lineWidth = 1.8;
+                    ctx.moveTo(state.offsetX, 0);
+                    ctx.lineTo(state.offsetX, H);
+                    ctx.moveTo(0, state.offsetY);
+                    ctx.lineTo(W, state.offsetY);
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#4a6572';
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('0', state.offsetX - 6, state.offsetY + 6);
+
+                    if (!state.voronoi) return;
+
+                    // 3. Voronoi Edges
+                    ctx.strokeStyle = '#4a6572';
+                    ctx.lineWidth = 2.2;
+                    state.voronoi.cells.forEach(function (poly) {
+                        if (poly.length < 2) return;
+                        ctx.beginPath();
+                        ctx.moveTo(toCX(poly[0].x), toCY(poly[0].y));
+                        for (var i = 1; i < poly.length; i++) {
+                            ctx.lineTo(toCX(poly[i].x), toCY(poly[i].y));
+                        }
+                        ctx.closePath();
+                        ctx.stroke();
+                    });
+
+                    // 4. Largest Empty Circle (Toxic Waste Dump)
+                    if (chkToxic.checked && state.voronoi.toxic) {
+                        var tx = toCX(state.voronoi.toxic.x);
+                        var ty = toCY(state.voronoi.toxic.y);
+                        var tr = state.voronoi.toxic.r * state.scale;
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(tx, ty, tr, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(217, 100, 89, 0.08)';
+                        ctx.fill();
+                        ctx.strokeStyle = '#d96459';
+                        ctx.setLineDash([7, 5]);
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // Center star/dot
+                        ctx.beginPath();
+                        ctx.arc(tx, ty, 5.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#d96459';
+                        ctx.fill();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+
+                    // 5. Voronoi Vertices
+                    if (chkVertices.checked) {
+                        state.voronoi.vertices.forEach(function (v) {
+                            var vx = toCX(v.x);
+                            var vy = toCY(v.y);
+                            ctx.beginPath();
+                            ctx.arc(vx, vy, 4.5, 0, Math.PI * 2);
+                            ctx.fillStyle = '#7c6992';
+                            ctx.fill();
+                            ctx.strokeStyle = '#ffffff';
+                            ctx.lineWidth = 1.6;
+                            ctx.stroke();
+                        });
+                    }
+
+                    // 6. Nearest-Neighbour Hover Probe
+                    if (chkProbe.checked && state.hoverPt && state.sites.length > 0) {
+                        var bestIdx = 0, bestD = Infinity;
+                        state.sites.forEach(function (s, i) {
+                            var d = Math.hypot(state.hoverPt.x - s.x, state.hoverPt.y - s.y);
+                            if (d < bestD) { bestD = d; bestIdx = i; }
+                        });
+                        var ns = state.sites[bestIdx];
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.strokeStyle = 'rgba(43, 108, 176, 0.55)';
+                        ctx.setLineDash([4, 3]);
+                        ctx.lineWidth = 1.6;
+                        ctx.moveTo(toCX(state.hoverPt.x), toCY(state.hoverPt.y));
+                        ctx.lineTo(toCX(ns.x), toCY(ns.y));
+                        ctx.stroke();
+                        ctx.restore();
+
+                        ctx.beginPath();
+                        ctx.arc(toCX(state.hoverPt.x), toCY(state.hoverPt.y), 4, 0, Math.PI * 2);
+                        ctx.fillStyle = '#4a6572';
+                        ctx.fill();
+
+                        probeReadout.textContent =
+                            '(' + state.hoverPt.x.toFixed(1) + ', ' + state.hoverPt.y.toFixed(1) + ')  |  Nearest: ' +
+                            siteLabel(bestIdx) + '  |  d = ' + bestD.toFixed(2);
+                    } else if (!chkProbe.checked) {
+                        probeReadout.textContent = 'Probe disabled';
+                    } else {
+                        probeReadout.textContent = 'Hover over graph to find nearest site';
+                    }
+
+                    // 7. Sites (Seeds)
+                    state.sites.forEach(function (s, idx) {
+                        var sx = toCX(s.x);
+                        var sy = toCY(s.y);
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, 6.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#2b6cb0';
+                        ctx.fill();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2.2;
+                        ctx.stroke();
+
+                        ctx.font = "bold 12px 'Segoe UI'";
+                        ctx.fillStyle = '#1a202c';
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(siteLabel(idx) + ' (' + fmt(s.x) + ', ' + fmt(s.y) + ')', sx + 9, sy - 6);
+                    });
+                }
+
+                // Controls
+                btnRemoveLast.addEventListener('click', function () {
+                    if (state.sites.length > 0) {
+                        state.sites.pop();
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        recompute();
+                    }
+                });
+
+                btnClear.addEventListener('click', function () {
+                    state.sites = [];
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                    recompute();
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        var key = btn.getAttribute('data-preset');
+                        state.sites = PRESETS[key].map(function (p) { return { x: p.x, y: p.y }; });
+                        resetView();
+                        recompute();
+                    });
+                });
+
+                [chkCells, chkVertices, chkToxic, chkProbe].forEach(function (el) {
+                    el.addEventListener('change', draw);
+                });
+
+                btnZoomIn.addEventListener('click', function () { zoomBy(1.25); });
+                btnZoomOut.addEventListener('click', function () { zoomBy(0.8); });
+                btnReset.addEventListener('click', resetView);
+
+                // Pointer Events
+                canvas.addEventListener('mousedown', function (e) {
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+
+                    // Check if clicking near an existing site
+                    for (var i = 0; i < state.sites.length; i++) {
+                        var sx = toCX(state.sites[i].x);
+                        var sy = toCY(state.sites[i].y);
+                        if (Math.hypot(mx - sx, my - sy) < 15) {
+                            state.dragSiteIdx = i;
+                            presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                            return;
+                        }
+                    }
+
+                    if (state.mode === 'add') {
+                        var nx = Math.round(toMathX(mx) * 4) / 4;
+                        var ny = Math.round(toMathY(my) * 4) / 4;
+                        if (state.sites.length < 20) {
+                            state.sites.push({ x: nx, y: ny });
+                            presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                            recompute();
+                        }
+                        return;
+                    }
+
+                    state.isPanning = true;
+                    state.dragStartX = e.clientX - state.offsetX;
+                    state.dragStartY = e.clientY - state.offsetY;
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (state.dragSiteIdx !== -1) {
+                        var rect = canvas.getBoundingClientRect();
+                        var mx = e.clientX - rect.left;
+                        var my = e.clientY - rect.top;
+                        state.sites[state.dragSiteIdx].x = Math.round(toMathX(mx) * 4) / 4;
+                        state.sites[state.dragSiteIdx].y = Math.round(toMathY(my) * 4) / 4;
+                        recompute();
+                    } else if (state.isPanning) {
+                        state.offsetX = e.clientX - state.dragStartX;
+                        state.offsetY = e.clientY - state.dragStartY;
+                        draw();
+                    }
+                });
+
+                window.addEventListener('mouseup', function () {
+                    state.dragSiteIdx = -1;
+                    state.isPanning = false;
+                });
+
+                canvas.addEventListener('mousemove', function (e) {
+                    if (state.dragSiteIdx !== -1 || state.isPanning) return;
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+                    state.hoverPt = { x: toMathX(mx), y: toMathY(my) };
+                    if (chkProbe.checked) {
+                        updateAnalysisUI();
+                        draw();
+                    }
+                });
+
+                canvas.addEventListener('mouseleave', function () {
+                    state.hoverPt = null;
+                    updateAnalysisUI();
+                    draw();
+                });
+
+                canvas.addEventListener('wheel', function (e) {
+                    e.preventDefault();
+                    var factor = Math.exp(-e.deltaY * 0.0012);
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+                    var newScale = Math.max(16, Math.min(200, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = mx - (mx - state.offsetX) * actual;
+                    state.offsetY = my - (my - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }, { passive: false });
+
+                window.addEventListener('resize', resizeCanvas);
+
+                recompute();
+                resizeCanvas();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
