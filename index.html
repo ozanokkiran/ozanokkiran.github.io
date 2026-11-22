@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Mathematics Laboratory</title>
+    <title>Interactive Mathematics Laboratory | IB DP Math AA HL</title>
+    <meta name="description" content="Dynamic visualizers and interactive conceptual models for IB DP Mathematics AA HL, developed by Ozan Okkıran.">
+    <meta property="og:title" content="Interactive Mathematics Laboratory">
+    <meta property="og:description" content="28 dynamic visualizers and conceptual models covering all 5 topics of IB DP Mathematics AA HL.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ozanokkiran.github.io/">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234a6572'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='Georgia, serif' font-size='40' font-style='italic' fill='%23ffffff'%3E%E2%88%AB%3C/text%3E%3C/svg%3E">
     <style>
         :root {
             --bg-color: #f4f7f9;
@@ -131,6 +137,15 @@
         .toggle-all-btn:hover {
             background: #edf2f7;
             border-color: #a0aec0;
+        }
+
+        /* ACCESSIBILITY FOCUS */
+        .filter-btn:focus-visible,
+        .toggle-all-btn:focus-visible,
+        .topic-header:focus-visible,
+        .card:focus-visible {
+            outline: 2px solid var(--teal);
+            outline-offset: 2px;
         }
 
         /* TOPIC ACCORDION SECTIONS */
