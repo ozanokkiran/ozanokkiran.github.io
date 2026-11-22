@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hypothesis Testing (t-test &amp; Chi-Squared) Lab</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 340px;
+            min-width: 295px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        /* Test Type Tabs */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .mode-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        /* Tail & Alpha Pills */
+        .pill-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+
+        .pill-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 5px 4px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .pill-btn:hover {
+            border-color: var(--teal);
+        }
+
+        .pill-btn.active {
+            background: var(--teal);
+            color: #ffffff;
+            border-color: var(--teal);
+        }
+
+        /* Sliders */
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .slider-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .slider-header strong {
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--primary);
+        }
+
+        .slider-group input[type="range"] {
+            width: 100%;
+            accent-color: var(--teal);
+            cursor: pointer;
+        }
+
+        /* Presets */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 7px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .preset-btn span.p-sub {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span.p-sub {
+            color: #cbd5e0;
+        }
+
+        /* Analysis */
+        .analysis-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .analysis-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 5px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-item span.lbl {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .analysis-item strong {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            color: var(--primary);
+            text-align: right;
+        }
+
+        .analysis-item strong.crit { color: var(--coral); }
+        .analysis-item strong.pval { color: var(--blue); }
+        .analysis-item strong.stat { color: var(--purple); }
+
+        .decision-box {
+            margin-top: 8px;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.35;
+        }
+
+        .decision-box.reject {
+            background: #fff5f5;
+            border: 1.5px solid #feb2b2;
+            color: #c53030;
+        }
+
+        .decision-box.fail {
+            background: #f0fff4;
+            border: 1.5px solid #9ae6b4;
+            color: #276749;
+        }
+
+        /* Right Graph Area */
+        .canvas-wrapper {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            min-height: 550px;
+            background-color: #eef2f5;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s;
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .probe-readout {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary);
+            pointer-events: none;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            background: var(--panel-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.79rem;
+            color: var(--primary);
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .swatch-line {
+            width: 15px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .swatch-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-container {
+                min-height: 380px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Hypothesis Testing (t-test &amp; &chi;&sup2;) Lab</h1>
+        <p class="subtitle">IB DP Math AI &mdash; Rejection Regions (&alpha;), Critical Values &amp; Dynamic p-Value Comparison</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Distribution & Parameters -->
+            <div class="section-card">
+                <div class="section-title">1. Distribution &amp; Test Setup</div>
+                <div class="mode-grid">
+                    <button type="button" class="mode-btn active" id="btnModeT">Student's t-test</button>
+                    <button type="button" class="mode-btn" id="btnModeChi">&chi;&sup2; Test</button>
+                </div>
+
+                <div id="tailSelector">
+                    <div class="pill-row">
+                        <button type="button" class="pill-btn active" data-tail="two">Two-Tailed</button>
+                        <button type="button" class="pill-btn" data-tail="right">Right-Tailed</button>
+                        <button type="button" class="pill-btn" data-tail="left">Left-Tailed</button>
+                    </div>
+                </div>
+
+                <div class="pill-row" id="alphaSelector">
+                    <button type="button" class="pill-btn" data-alpha="0.10">&alpha; = 10%</button>
+                    <button type="button" class="pill-btn active" data-alpha="0.05">&alpha; = 5%</button>
+                    <button type="button" class="pill-btn" data-alpha="0.01">&alpha; = 1%</button>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span>Degrees of Freedom (&nu;)</span>
+                        <strong id="dfVal">10</strong>
+                    </div>
+                    <input type="range" id="dfSlider" min="1" max="30" step="1" value="10">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span id="statLabel">Test Statistic (t)</span>
+                        <strong id="statVal">2.45</strong>
+                    </div>
+                    <input type="range" id="statSlider" min="-4.5" max="4.5" step="0.05" value="2.45">
+                </div>
+            </div>
+
+            <!-- 2. IB Quick Examples -->
+            <div class="section-card">
+                <div class="section-title">2. Quick IB Examples</div>
+                <div class="preset-grid" id="presetGrid">
+                    <button type="button" class="preset-btn active" data-preset="t_reject">
+                        2-Tailed t (Reject)
+                        <span class="p-sub">&nu;=10, &alpha;=0.05, t=2.45</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="t_fail">
+                        1-Tailed t (Fail)
+                        <span class="p-sub">&nu;=14, &alpha;=0.05, t=1.20</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="chi_ind">
+                        &chi;&sup2; Independence
+                        <span class="p-sub">&nu;=4, &alpha;=0.05, &chi;&sup2;=11.4</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="chi_gof">
+                        &chi;&sup2; Goodness of Fit
+                        <span class="p-sub">&nu;=3, &alpha;=0.01, &chi;&sup2;=6.8</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Live Statistical Decision -->
+            <div class="section-card">
+                <div class="section-title">3. Statistical Results &amp; Decision</div>
+                <div class="analysis-list" id="analysisList"></div>
+                <div class="decision-box reject" id="decisionBox"></div>
+            </div>
+
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="canvas-wrapper">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="graphCanvas"></canvas>
+                <div class="probe-readout" id="probeReadout">Drag purple line to move Test Statistic</div>
+                <div class="canvas-toolbar">
+                    <button type="button" class="tool-btn" id="btnZoomIn">+ Zoom</button>
+                    <button type="button" class="tool-btn" id="btnZoomOut">&minus; Zoom</button>
+                    <button type="button" class="tool-btn" id="btnReset">Reset View</button>
+                </div>
+                <div class="controls-hint">Drag Purple Line: Change Stat | Scroll: Zoom | Drag Canvas: Pan</div>
+            </div>
+
+            <div class="legend-bar">
+                <div class="legend-item">
+                    <div class="swatch-line" style="background: #2b6cb0;"></div>
+                    <span>PDF Curve</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-box" style="background: rgba(217, 100, 89, 0.32); border: 1.5px solid #d96459;"></div>
+                    <span>Rejection Region (&alpha;)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-box" style="background: rgba(91, 154, 160, 0.35); border: 1.5px solid #5b9aa0;"></div>
+                    <span>p-Value Area</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-line" style="background: #7c6992;"></div>
+                    <span>Test Statistic (Draggable)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            /* =========================================================
+               SELF-CONTAINED STATISTICAL MATH ENGINE (t & Chi-Squared)
+            ========================================================= */
+            function logGamma(z) {
+                var g = 7;
+                var p = [
+                    0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+                    771.32342877765313, -176.61502916214059, 12.507343278686905,
+                    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7
+                ];
+                if (z < 0.5) return Math.log(Math.PI / Math.sin(Math.PI * z)) - logGamma(1 - z);
+                z -= 1;
+                var x = p[0];
+                for (var i = 1; i < g + 2; i++) x += p[i] / (z + i);
+                var t = z + g + 0.5;
+                return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+            }
+
+            function tPDF(x, df) {
+                var c = Math.exp(logGamma((df + 1) / 2) - logGamma(df / 2)) / Math.sqrt(df * Math.PI);
+                return c * Math.pow(1 + (x * x) / df, -(df + 1) / 2);
+            }
+
+            function chiPDF(x, df) {
+                if (x <= 0) return df === 2 ? 0.5 : 0;
+                var k = df / 2;
+                var logVal = (k - 1) * Math.log(x) - x / 2 - k * Math.log(2) - logGamma(k);
+                return Math.exp(logVal);
+            }
+
+            // Composite Simpson's rule for accurate CDF
+            function integrate(fn, a, b, n) {
+                if (b <= a) return 0;
+                var steps = n || 200;
+                if (steps % 2 !== 0) steps++;
+                var h = (b - a) / steps;
+                var sum = fn(a) + fn(b);
+                for (var i = 1; i < steps; i++) {
+                    sum += (i % 2 === 0 ? 2 : 4) * fn(a + i * h);
+                }
+                return (h / 3) * sum;
+            }
+
+            function tCDF(x, df) {
+                if (x === 0) return 0.5;
+                var absX = Math.abs(x);
+                if (absX > 30) return x > 0 ? 1 : 0;
+                var area = integrate(function (u) { return tPDF(u, df); }, 0, absX, 240);
+                return x > 0 ? Math.min(1, 0.5 + area) : Math.max(0, 0.5 - area);
+            }
+
+            function chiCDF(x, df) {
+                if (x <= 0) return 0;
+                if (x > df + 12 * Math.sqrt(2 * df) + 40) return 1;
+                // Avoid singularity at 0 for df=1 using substitution x = u^2
+                if (df === 1) {
+                    var area1 = integrate(function (u) { return 2 * u * chiPDF(u * u, 1); }, 1e-6, Math.sqrt(x), 240);
+                    return Math.min(1, Math.max(0, area1));
+                }
+                var area = integrate(function (u) { return chiPDF(u, df); }, 1e-6, x, 260);
+                return Math.min(1, Math.max(0, area));
+            }
+
+            function invT(p, df) {
+                var lo = -25, hi = 25;
+                for (var i = 0; i < 45; i++) {
+                    var mid = (lo + hi) / 2;
+                    if (tCDF(mid, df) < p) lo = mid;
+                    else hi = mid;
+                }
+                return (lo + hi) / 2;
+            }
+
+            function invChi(p, df) {
+                var lo = 0, hi = Math.max(30, df * 5 + 30);
+                for (var i = 0; i < 45; i++) {
+                    var mid = (lo + hi) / 2;
+                    if (chiCDF(mid, df) < p) lo = mid;
+                    else hi = mid;
+                }
+                return (lo + hi) / 2;
+            }
+
+            /* =========================================================
+               UI & GRAPHING ENGINE
+            ========================================================= */
+            function init() {
+                var canvas = document.getElementById('graphCanvas');
+                var ctx = canvas.getContext('2d');
+                var container = document.getElementById('canvasContainer');
+
+                var btnModeT = document.getElementById('btnModeT');
+                var btnModeChi = document.getElementById('btnModeChi');
+                var tailSelector = document.getElementById('tailSelector');
+                var tailBtns = document.querySelectorAll('#tailSelector .pill-btn');
+                var alphaBtns = document.querySelectorAll('#alphaSelector .pill-btn');
+                var presetBtns = document.querySelectorAll('.preset-btn');
+
+                var dfSlider = document.getElementById('dfSlider');
+                var dfVal = document.getElementById('dfVal');
+                var statSlider = document.getElementById('statSlider');
+                var statLabel = document.getElementById('statLabel');
+                var statVal = document.getElementById('statVal');
+
+                var analysisList = document.getElementById('analysisList');
+                var decisionBox = document.getElementById('decisionBox');
+                var probeReadout = document.getElementById('probeReadout');
+
+                var btnZoomIn = document.getElementById('btnZoomIn');
+                var btnZoomOut = document.getElementById('btnZoomOut');
+                var btnReset = document.getElementById('btnReset');
+
+                var state = {
+                    dist: 't',       // 't' or 'chi'
+                    tail: 'two',     // 'two', 'right', 'left' (chi is always right)
+                    alpha: 0.05,
+                    df: 10,
+                    stat: 2.45,
+                    offsetX: 0,
+                    offsetY: 0,
+                    scaleX: 72,
+                    scaleY: 720,
+                    initializedView: false,
+                    isPanning: false,
+                    isDraggingStat: false,
+                    dragStartX: 0,
+                    dragStartY: 0
+                };
+
+                function getSize() {
+                    var rect = container.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 640,
+                        h: rect.height > 50 ? rect.height : 550
+                    };
+                }
+
+                function resetView() {
+                    var sz = getSize();
+                    if (state.dist === 't') {
+                        state.offsetX = sz.w / 2;
+                        state.offsetY = sz.h * 0.80;
+                        state.scaleX = sz.w / 10.5;
+                        state.scaleY = sz.h * 1.45;
+                    } else {
+                        var maxX = Math.max(16, state.df * 2.4 + 8);
+                        state.offsetX = sz.w * 0.10;
+                        state.offsetY = sz.h * 0.82;
+                        state.scaleX = (sz.w * 0.82) / maxX;
+                        var peak = state.df <= 2 ? 0.45 : chiPDF(Math.max(0.5, state.df - 2), state.df);
+                        state.scaleY = (sz.h * 0.62) / Math.max(0.08, peak);
+                    }
+                    draw();
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    if (!state.initializedView) {
+                        state.initializedView = true;
+                        resetView();
+                    } else {
+                        draw();
+                    }
+                }
+
+                function zoomBy(factor) {
+                    var sz = getSize();
+                    var cx = sz.w / 2;
+                    var newScaleX = Math.max(12, Math.min(240, state.scaleX * factor));
+                    var actual = newScaleX / state.scaleX;
+                    state.offsetX = cx - (cx - state.offsetX) * actual;
+                    state.scaleX = newScaleX;
+                    draw();
+                }
+
+                function toCX(x) { return state.offsetX + x * state.scaleX; }
+                function toCY(y) { return state.offsetY - y * state.scaleY; }
+                function toMathX(px) { return (px - state.offsetX) / state.scaleX; }
+
+                function computeStats() {
+                    var critLow = null, critHigh = null, pVal = 0;
+                    if (state.dist === 't') {
+                        if (state.tail === 'two') {
+                            critHigh = invT(1 - state.alpha / 2, state.df);
+                            critLow = -critHigh;
+                            pVal = 2 * (1 - tCDF(Math.abs(state.stat), state.df));
+                        } else if (state.tail === 'right') {
+                            critHigh = invT(1 - state.alpha, state.df);
+                            pVal = 1 - tCDF(state.stat, state.df);
+                        } else {
+                            critLow = invT(state.alpha, state.df);
+                            pVal = tCDF(state.stat, state.df);
+                        }
+                    } else {
+                        critHigh = invChi(1 - state.alpha, state.df);
+                        pVal = 1 - chiCDF(Math.max(0, state.stat), state.df);
+                    }
+                    var reject = pVal < state.alpha;
+                    return { critLow: critLow, critHigh: critHigh, pVal: pVal, reject: reject };
+                }
+
+                function updateAnalysisUI(res) {
+                    var sym = state.dist === 't' ? 't' : 'χ²';
+                    var critStr = '';
+                    if (res.critLow !== null && res.critHigh !== null) {
+                        critStr = '±' + res.critHigh.toFixed(3);
+                    } else if (res.critHigh !== null) {
+                        critStr = res.critHigh.toFixed(3);
+                    } else {
+                        critStr = res.critLow.toFixed(3);
+                    }
+
+                    var pStr = res.pVal < 0.0001 ? '< 0.0001' : res.pVal.toFixed(4);
+                    analysisList.innerHTML =
+                        '<div class="analysis-item"><span class="lbl">Test Statistic</span><strong class="stat">' + sym + ' = ' + state.stat.toFixed(2) + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Critical Value</span><strong class="crit">' + critStr + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">p-Value</span><strong class="pval">' + pStr + '</strong></div>' +
+                        '<div class="analysis-item"><span class="lbl">Significance (&alpha;)</span><strong>' + state.alpha.toFixed(2) + '</strong></div>';
+
+                    if (res.reject) {
+                        decisionBox.className = 'decision-box reject';
+                        decisionBox.innerHTML = 'Reject H₀ (p = ' + pStr + ' &lt; ' + state.alpha.toFixed(2) + ')<br><span style="font-weight:500;font-size:0.74rem;">Statistically significant evidence against H₀.</span>';
+                    } else {
+                        decisionBox.className = 'decision-box fail';
+                        decisionBox.innerHTML = 'Fail to Reject H₀ (p = ' + pStr + ' &ge; ' + state.alpha.toFixed(2) + ')<br><span style="font-weight:500;font-size:0.74rem;">Insufficient evidence to reject H₀.</span>';
+                    }
+
+                    probeReadout.textContent = sym + ' = ' + state.stat.toFixed(2) + '  |  p-value = ' + pStr + '  |  ' + (res.reject ? 'Reject H₀' : 'Fail to Reject H₀');
+                }
+
+                function shadeArea(fn, xStart, xEnd, fillStyle) {
+                    if (xEnd <= xStart) return;
+                    var steps = 120;
+                    var dx = (xEnd - xStart) / steps;
+                    ctx.beginPath();
+                    ctx.moveTo(toCX(xStart), toCY(0));
+                    for (var i = 0; i <= steps; i++) {
+                        var x = xStart + i * dx;
+                        var y = Math.min(2.0, fn(x));
+                        ctx.lineTo(toCX(x), toCY(y));
+                    }
+                    ctx.lineTo(toCX(xEnd), toCY(0));
+                    ctx.closePath();
+                    ctx.fillStyle = fillStyle;
+                    ctx.fill();
+                }
+
+                function draw() {
+                    var sz = getSize();
+                    var W = sz.w;
+                    var H = sz.h;
+                    ctx.clearRect(0, 0, W, H);
+
+                    var res = computeStats();
+                    updateAnalysisUI(res);
+
+                    var pdf = state.dist === 't'
+                        ? function (x) { return tPDF(x, state.df); }
+                        : function (x) { return chiPDF(x, state.df); };
+
+                    // Adaptive X-Grid
+                    var stepX = 1;
+                    if (state.scaleX < 38) stepX = 2;
+                    if (state.scaleX < 18) stepX = 5;
+                    if (state.scaleX > 110) stepX = 0.5;
+
+                    var minX = Math.floor(-state.offsetX / state.scaleX / stepX) * stepX;
+                    var maxX = Math.ceil((W - state.offsetX) / state.scaleX / stepX) * stepX;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#dce3e8';
+                    ctx.lineWidth = 1;
+                    ctx.fillStyle = '#718096';
+                    ctx.font = "11px 'Segoe UI'";
+
+                    for (var gx = minX; gx <= maxX; gx += stepX) {
+                        if (state.dist === 'chi' && gx < 0) continue;
+                        var cx = toCX(gx);
+                        ctx.moveTo(cx, 0);
+                        ctx.lineTo(cx, H);
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'top';
+                        ctx.fillText(String(Math.round(gx * 10) / 10), cx, Math.min(H - 20, state.offsetY + 6));
+                    }
+                    ctx.stroke();
+
+                    // Main Axes
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#8da2b0';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(0, state.offsetY);
+                    ctx.lineTo(W, state.offsetY);
+                    ctx.moveTo(state.offsetX, 0);
+                    ctx.lineTo(state.offsetX, H);
+                    ctx.stroke();
+
+                    var visMinX = Math.max(state.dist === 'chi' ? 0.001 : -15, toMathX(0));
+                    var visMaxX = Math.min(60, toMathX(W));
+
+                    // 1. Shade Rejection Region (alpha)
+                    if (res.critHigh !== null) {
+                        shadeArea(pdf, Math.max(visMinX, res.critHigh), visMaxX, 'rgba(217, 100, 89, 0.28)');
+                    }
+                    if (res.critLow !== null) {
+                        shadeArea(pdf, visMinX, Math.min(visMaxX, res.critLow), 'rgba(217, 100, 89, 0.28)');
+                    }
+
+                    // 2. Shade p-Value Region
+                    if (state.dist === 't') {
+                        if (state.tail === 'two') {
+                            var absS = Math.abs(state.stat);
+                            shadeArea(pdf, Math.max(visMinX, absS), visMaxX, 'rgba(91, 154, 160, 0.34)');
+                            shadeArea(pdf, visMinX, Math.min(visMaxX, -absS), 'rgba(91, 154, 160, 0.34)');
+                        } else if (state.tail === 'right') {
+                            shadeArea(pdf, Math.max(visMinX, state.stat), visMaxX, 'rgba(91, 154, 160, 0.34)');
+                        } else {
+                            shadeArea(pdf, visMinX, Math.min(visMaxX, state.stat), 'rgba(91, 154, 160, 0.34)');
+                        }
+                    } else {
+                        shadeArea(pdf, Math.max(0.001, state.stat), visMaxX, 'rgba(91, 154, 160, 0.34)');
+                    }
+
+                    // 3. Draw PDF Curve
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#2b6cb0';
+                    ctx.lineWidth = 2.8;
+                    var first = true;
+                    for (var px = 0; px <= W; px += 2) {
+                        var xv = toMathX(px);
+                        if (state.dist === 'chi' && xv <= 0.001) continue;
+                        var yv = Math.min(2.0, pdf(xv));
+                        var py = toCY(yv);
+                        if (first) { ctx.moveTo(px, py); first = false; }
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.stroke();
+
+                    // 4. Critical Value Dashed Lines
+                    [res.critLow, res.critHigh].forEach(function (cv) {
+                        if (cv === null) return;
+                        var px = toCX(cv);
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.strokeStyle = '#d96459';
+                        ctx.setLineDash([6, 4]);
+                        ctx.lineWidth = 2;
+                        ctx.moveTo(px, state.offsetY);
+                        ctx.lineTo(px, Math.max(45, toCY(pdf(cv)) - 45));
+                        ctx.stroke();
+                        ctx.restore();
+
+                        ctx.font = "bold 11px 'Segoe UI'";
+                        ctx.fillStyle = '#d96459';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText('crit = ' + cv.toFixed(2), px, Math.max(42, toCY(pdf(cv)) - 48));
+                    });
+
+                    // 5. Draggable Test Statistic Line
+                    var sx = toCX(state.stat);
+                    var syTop = Math.max(55, toCY(pdf(Math.max(0.01, state.stat))) - 75);
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.strokeStyle = '#7c6992';
+                    ctx.lineWidth = 2.8;
+                    ctx.moveTo(sx, state.offsetY);
+                    ctx.lineTo(sx, syTop);
+                    ctx.stroke();
+
+                    // Handle circle
+                    ctx.beginPath();
+                    ctx.arc(sx, syTop, 7, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fill();
+                    ctx.strokeStyle = '#7c6992';
+                    ctx.lineWidth = 2.8;
+                    ctx.stroke();
+
+                    var sym = state.dist === 't' ? 't' : 'χ²';
+                    ctx.font = "bold 12px 'Segoe UI'";
+                    ctx.fillStyle = '#7c6992';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(sym + ' = ' + state.stat.toFixed(2), sx, syTop - 10);
+                    ctx.restore();
+                }
+
+                function configureSlidersForDist() {
+                    if (state.dist === 't') {
+                        tailSelector.style.display = 'block';
+                        statLabel.textContent = 'Test Statistic (t)';
+                        statSlider.min = '-4.5';
+                        statSlider.max = '4.5';
+                        statSlider.step = '0.05';
+                    } else {
+                        tailSelector.style.display = 'none';
+                        statLabel.textContent = 'Test Statistic (χ²)';
+                        statSlider.min = '0.1';
+                        statSlider.max = '30';
+                        statSlider.step = '0.1';
+                    }
+                    statSlider.value = state.stat;
+                    statVal.textContent = state.stat.toFixed(2);
+                    dfSlider.value = state.df;
+                    dfVal.textContent = String(state.df);
+                }
+
+                function clearPresetActive() {
+                    presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                }
+
+                // Event Listeners
+                btnModeT.addEventListener('click', function () {
+                    state.dist = 't';
+                    state.df = 10;
+                    state.stat = 2.45;
+                    btnModeT.classList.add('active');
+                    btnModeChi.classList.remove('active');
+                    clearPresetActive();
+                    configureSlidersForDist();
+                    resetView();
+                });
+
+                btnModeChi.addEventListener('click', function () {
+                    state.dist = 'chi';
+                    state.df = 4;
+                    state.stat = 11.4;
+                    btnModeChi.classList.add('active');
+                    btnModeT.classList.remove('active');
+                    clearPresetActive();
+                    configureSlidersForDist();
+                    resetView();
+                });
+
+                tailBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        tailBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.tail = btn.getAttribute('data-tail');
+                        clearPresetActive();
+                        draw();
+                    });
+                });
+
+                alphaBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        alphaBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        state.alpha = parseFloat(btn.getAttribute('data-alpha'));
+                        clearPresetActive();
+                        draw();
+                    });
+                });
+
+                dfSlider.addEventListener('input', function () {
+                    state.df = parseInt(dfSlider.value, 10);
+                    dfVal.textContent = String(state.df);
+                    clearPresetActive();
+                    if (state.dist === 'chi') resetView();
+                    else draw();
+                });
+
+                statSlider.addEventListener('input', function () {
+                    state.stat = parseFloat(statSlider.value);
+                    statVal.textContent = state.stat.toFixed(2);
+                    clearPresetActive();
+                    draw();
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        clearPresetActive();
+                        btn.classList.add('active');
+                        var key = btn.getAttribute('data-preset');
+                        if (key === 't_reject') {
+                            state.dist = 't'; state.tail = 'two'; state.alpha = 0.05; state.df = 10; state.stat = 2.45;
+                        } else if (key === 't_fail') {
+                            state.dist = 't'; state.tail = 'right'; state.alpha = 0.05; state.df = 14; state.stat = 1.20;
+                        } else if (key === 'chi_ind') {
+                            state.dist = 'chi'; state.tail = 'right'; state.alpha = 0.05; state.df = 4; state.stat = 11.4;
+                        } else if (key === 'chi_gof') {
+                            state.dist = 'chi'; state.tail = 'right'; state.alpha = 0.01; state.df = 3; state.stat = 6.8;
+                        }
+
+                        btnModeT.classList.toggle('active', state.dist === 't');
+                        btnModeChi.classList.toggle('active', state.dist === 'chi');
+                        tailBtns.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tail') === state.tail); });
+                        alphaBtns.forEach(function (b) { b.classList.toggle('active', parseFloat(b.getAttribute('data-alpha')) === state.alpha); });
+                        configureSlidersForDist();
+                        resetView();
+                    });
+                });
+
+                btnZoomIn.addEventListener('click', function () { zoomBy(1.25); });
+                btnZoomOut.addEventListener('click', function () { zoomBy(0.8); });
+                btnReset.addEventListener('click', resetView);
+
+                // Pointer Interactions (Drag Test Statistic Line or Pan)
+                canvas.addEventListener('mousedown', function (e) {
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var sx = toCX(state.stat);
+                    if (Math.abs(mx - sx) < 16) {
+                        state.isDraggingStat = true;
+                        clearPresetActive();
+                        return;
+                    }
+                    state.isPanning = true;
+                    state.dragStartX = e.clientX - state.offsetX;
+                    state.dragStartY = e.clientY - state.offsetY;
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (state.isDraggingStat) {
+                        var rect = canvas.getBoundingClientRect();
+                        var mx = e.clientX - rect.left;
+                        var val = toMathX(mx);
+                        if (state.dist === 'chi') val = Math.max(0.1, Math.min(30, val));
+                        else val = Math.max(-4.5, Math.min(4.5, val));
+                        state.stat = Math.round(val * 20) / 20;
+                        statSlider.value = state.stat;
+                        statVal.textContent = state.stat.toFixed(2);
+                        draw();
+                    } else if (state.isPanning) {
+                        state.offsetX = e.clientX - state.dragStartX;
+                        state.offsetY = e.clientY - state.dragStartY;
+                        draw();
+                    }
+                });
+
+                window.addEventListener('mouseup', function () {
+                    state.isDraggingStat = false;
+                    state.isPanning = false;
+                });
+
+                canvas.addEventListener('wheel', function (e) {
+                    e.preventDefault();
+                    var factor = Math.exp(-e.deltaY * 0.0012);
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var newScaleX = Math.max(12, Math.min(240, state.scaleX * factor));
+                    var actual = newScaleX / state.scaleX;
+                    state.offsetX = mx - (mx - state.offsetX) * actual;
+                    state.scaleX = newScaleX;
+                    draw();
+                }, { passive: false });
+
+                window.addEventListener('resize', resizeCanvas);
+
+                configureSlidersForDist();
+                resizeCanvas();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
