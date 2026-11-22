@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Theory: Dijkstra &amp; Kruskal MST Lab</title>
+    <style>
+        :root {
+            --bg-color: #fdfbf7;
+            --card-bg: #ffffff;
+            --panel-bg: #f4f6f8;
+            --primary: #4a6572;
+            --teal: #5b9aa0;
+            --coral: #d96459;
+            --amber: #e69a53;
+            --purple: #7c6992;
+            --green: #38a169;
+            --blue: #2b6cb0;
+            --border: #dce3e8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 3px 0;
+            font-size: 1.65rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.92rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 16px;
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            max-width: 1340px;
+            width: 100%;
+        }
+
+        .panel {
+            width: 340px;
+            min-width: 295px;
+            flex-shrink: 0;
+            background-color: var(--panel-bg);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .section-title {
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        /* Algorithm Tabs */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .mode-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 6px;
+            font-size: 0.77rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .mode-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        /* Node Selectors for Dijkstra */
+        .select-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .select-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .select-group label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .select-group select {
+            padding: 5px 8px;
+            border: 1.5px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        .select-group select:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+
+        /* Stepper Controls */
+        .step-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 0.8fr;
+            gap: 6px;
+        }
+
+        .step-btn {
+            background: var(--teal);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 6px;
+            font-size: 0.77rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .step-btn:hover {
+            background: #488187;
+        }
+
+        .step-btn.secondary {
+            background: #eef2f5;
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .step-btn.secondary:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .input-hint {
+            font-size: 0.71rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        /* Presets */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+        }
+
+        .preset-btn {
+            background: #f8fafc;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 7px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .preset-btn span.p-sub {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.69rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--teal);
+            background: #f0f9fa;
+        }
+
+        .preset-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .preset-btn.active span.p-sub {
+            color: #cbd5e0;
+        }
+
+        /* Analysis */
+        .analysis-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .analysis-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            padding: 5px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-item span.lbl {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .analysis-item strong {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.79rem;
+            color: var(--primary);
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .analysis-item strong.cost { color: var(--green); }
+        .analysis-item strong.path { color: var(--blue); }
+        .analysis-item strong.rej { color: var(--coral); }
+
+        .step-log {
+            margin-top: 6px;
+            background: #fffaf0;
+            border: 1px solid #fbd38d;
+            border-radius: 5px;
+            padding: 7px 9px;
+            font-size: 0.77rem;
+            color: #9c4221;
+            line-height: 1.4;
+        }
+
+        /* Right Graph Area */
+        .canvas-wrapper {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .canvas-container {
+            position: relative;
+            flex: 1;
+            min-height: 550px;
+            background-color: #eef2f5;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .canvas-container:active {
+            cursor: grabbing;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid var(--border);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            transition: all 0.15s;
+        }
+
+        .tool-btn:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .probe-readout {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary);
+            pointer-events: none;
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.88);
+            padding: 4px 9px;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            background: var(--panel-bg);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.79rem;
+            color: var(--primary);
+            align-items: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .swatch-line {
+            width: 16px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .swatch-dashed {
+            width: 16px;
+            height: 0;
+            border-top: 2px dashed;
+        }
+
+        .swatch-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                flex-direction: column;
+            }
+            .panel {
+                width: 100%;
+            }
+            .canvas-container {
+                min-height: 380px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Graph Theory: Dijkstra &amp; Kruskal MST Lab</h1>
+        <p class="subtitle">IB DP Math AI HL &mdash; Weighted Networks, Shortest Path &amp; Minimum Spanning Tree</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Control Panel -->
+        <div class="panel">
+
+            <!-- 1. Algorithm & Execution -->
+            <div class="section-card">
+                <div class="section-title">1. Algorithm &amp; Stepper</div>
+                <div class="mode-grid">
+                    <button type="button" class="mode-btn active" id="btnAlgoDijkstra">Dijkstra (Shortest)</button>
+                    <button type="button" class="mode-btn" id="btnAlgoKruskal">Kruskal (MST)</button>
+                </div>
+
+                <div class="select-row" id="dijkstraSelectors">
+                    <div class="select-group">
+                        <label for="selStart">Start Vertex</label>
+                        <select id="selStart"></select>
+                    </div>
+                    <div class="select-group">
+                        <label for="selEnd">Target Vertex</label>
+                        <select id="selEnd"></select>
+                    </div>
+                </div>
+
+                <div class="step-controls">
+                    <button type="button" class="step-btn" id="btnStep">Next Step &rarr;</button>
+                    <button type="button" class="step-btn" id="btnRunAll">Run Full</button>
+                    <button type="button" class="step-btn secondary" id="btnResetAlgo">Reset</button>
+                </div>
+                <div class="input-hint">Click any edge weight box on the graph to edit its value.</div>
+            </div>
+
+            <!-- 2. IB Quick Networks -->
+            <div class="section-card">
+                <div class="section-title">2. Quick IB Networks</div>
+                <div class="preset-grid" id="presetGrid">
+                    <button type="button" class="preset-btn active" data-preset="classic">
+                        Classic 6-Node
+                        <span class="p-sub">6 Vertices, 9 Edges</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="fiber">
+                        Fiber Grid (7)
+                        <span class="p-sub">7 Vertices, 11 Edges</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="dense">
+                        Dense K5 Network
+                        <span class="p-sub">5 Vertices, 9 Edges</span>
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="bridge">
+                        Two-Cluster Hub
+                        <span class="p-sub">6 Vertices, 8 Edges</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Live Analysis -->
+            <div class="section-card">
+                <div class="section-title">3. Network &amp; Algorithm Analysis</div>
+                <div class="analysis-list" id="analysisList"></div>
+                <div class="step-log" id="stepLog">
+                    Click "Next Step" or "Run Full" to execute the algorithm.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Graph Area -->
+        <div class="canvas-wrapper">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="graphCanvas"></canvas>
+                <div class="probe-readout" id="probeReadout">Mode: Dijkstra's Algorithm</div>
+                <div class="canvas-toolbar">
+                    <button type="button" class="tool-btn" id="btnZoomIn">+ Zoom</button>
+                    <button type="button" class="tool-btn" id="btnZoomOut">&minus; Zoom</button>
+                    <button type="button" class="tool-btn" id="btnReset">Reset View</button>
+                </div>
+                <div class="controls-hint">Drag Node: Move | Click Weight: Edit | Scroll: Zoom | Drag Canvas: Pan</div>
+            </div>
+
+            <div class="legend-bar">
+                <div class="legend-item">
+                    <div class="swatch-line" style="background: #38a169;"></div>
+                    <span>Selected Path / MST Edge</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-line" style="background: #e69a53;"></div>
+                    <span>Active / Considering</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dashed" style="border-color: #d96459;"></div>
+                    <span>Rejected (Cycle)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="swatch-dot" style="background: #2b6cb0;"></div>
+                    <span>Visited / Permanent</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var PRESETS = {
+                classic: {
+                    nodes: [
+                        { id: 'A', x: -4.2, y: 0.4 },
+                        { id: 'B', x: -1.6, y: 2.6 },
+                        { id: 'C', x: -1.4, y: -2.2 },
+                        { id: 'D', x: 1.6, y: 2.4 },
+                        { id: 'E', x: 1.8, y: -2.0 },
+                        { id: 'F', x: 4.4, y: 0.2 }
+                    ],
+                    edges: [
+                        { u: 0, v: 1, w: 4 }, { u: 0, v: 2, w: 2 },
+                        { u: 1, v: 2, w: 5 }, { u: 1, v: 3, w: 10 },
+                        { u: 2, v: 4, w: 3 }, { u: 4, v: 3, w: 4 },
+                        { u: 3, v: 5, w: 11 }, { u: 4, v: 5, w: 8 },
+                        { u: 1, v: 4, w: 6 }
+                    ],
+                    start: 0, end: 5
+                },
+                fiber: {
+                    nodes: [
+                        { id: 'A', x: -4.4, y: 0 },
+                        { id: 'B', x: -2.0, y: 2.8 },
+                        { id: 'C', x: -2.0, y: -2.8 },
+                        { id: 'D', x: 0.2, y: 0 },
+                        { id: 'E', x: 2.4, y: 2.8 },
+                        { id: 'F', x: 2.4, y: -2.8 },
+                        { id: 'G', x: 4.6, y: 0 }
+                    ],
+                    edges: [
+                        { u: 0, v: 1, w: 7 }, { u: 0, v: 2, w: 5 },
+                        { u: 1, v: 3, w: 9 }, { u: 2, v: 3, w: 6 },
+                        { u: 1, v: 4, w: 8 }, { u: 2, v: 5, w: 11 },
+                        { u: 3, v: 4, w: 4 }, { u: 3, v: 5, w: 7 },
+                        { u: 4, v: 6, w: 5 }, { u: 5, v: 6, w: 9 },
+                        { u: 4, v: 5, w: 6 }
+                    ],
+                    start: 0, end: 6
+                },
+                dense: {
+                    nodes: [
+                        { id: 'A', x: 0, y: 3.1 },
+                        { id: 'B', x: 3.1, y: 0.9 },
+                        { id: 'C', x: 1.9, y: -2.6 },
+                        { id: 'D', x: -1.9, y: -2.6 },
+                        { id: 'E', x: -3.1, y: 0.9 }
+                    ],
+                    edges: [
+                        { u: 0, v: 1, w: 6 }, { u: 1, v: 2, w: 4 },
+                        { u: 2, v: 3, w: 5 }, { u: 3, v: 4, w: 3 },
+                        { u: 4, v: 0, w: 7 }, { u: 0, v: 2, w: 9 },
+                        { u: 0, v: 3, w: 8 }, { u: 1, v: 4, w: 5 },
+                        { u: 1, v: 3, w: 10 }
+                    ],
+                    start: 0, end: 2
+                },
+                bridge: {
+                    nodes: [
+                        { id: 'A', x: -4.4, y: 2.0 },
+                        { id: 'B', x: -4.4, y: -2.0 },
+                        { id: 'C', x: -1.4, y: 0 },
+                        { id: 'D', x: 1.4, y: 0 },
+                        { id: 'E', x: 4.4, y: 2.0 },
+                        { id: 'F', x: 4.4, y: -2.0 }
+                    ],
+                    edges: [
+                        { u: 0, v: 1, w: 3 }, { u: 0, v: 2, w: 4 },
+                        { u: 1, v: 2, w: 2 }, { u: 2, v: 3, w: 7 },
+                        { u: 3, v: 4, w: 5 }, { u: 3, v: 5, w: 3 },
+                        { u: 4, v: 5, w: 4 }, { u: 0, v: 4, w: 15 }
+                    ],
+                    start: 0, end: 5
+                }
+            };
+
+            function computeDijkstraSteps(nodes, edges, startIdx, endIdx) {
+                var n = nodes.length;
+                var dist = new Array(n).fill(Infinity);
+                var prev = new Array(n).fill(-1);
+                var visited = new Array(n).fill(false);
+                dist[startIdx] = 0;
+
+                var steps = [];
+                steps.push({
+                    dist: dist.slice(),
+                    visited: visited.slice(),
+                    activeNode: startIdx,
+                    activeEdge: -1,
+                    pathEdges: [],
+                    done: false,
+                    msg: 'Initialize: Set d(' + nodes[startIdx].id + ') = 0 and all other distances to ∞.'
+                });
+
+                for (var iter = 0; iter < n; iter++) {
+                    var u = -1, best = Infinity;
+                    for (var i = 0; i < n; i++) {
+                        if (!visited[i] && dist[i] < best) {
+                            best = dist[i];
+                            u = i;
+                        }
+                    }
+                    if (u === -1) break;
+                    visited[u] = true;
+
+                    var relaxed = [];
+                    edges.forEach(function (e, eIdx) {
+                        var v = -1;
+                        if (e.u === u) v = e.v;
+                        else if (e.v === u) v = e.u;
+                        if (v !== -1 && !visited[v]) {
+                            var cand = dist[u] + e.w;
+                            if (cand < dist[v]) {
+                                dist[v] = cand;
+                                prev[v] = u;
+                                relaxed.push(nodes[v].id + '=' + cand);
+                            }
+                        }
+                    });
+
+                    var msg = 'Lock vertex ' + nodes[u].id + ' (d = ' + dist[u] + ').';
+                    if (relaxed.length > 0) msg += ' Updated: ' + relaxed.join(', ') + '.';
+                    else msg += ' No shorter neighbors found.';
+
+                    steps.push({
+                        dist: dist.slice(),
+                        visited: visited.slice(),
+                        activeNode: u,
+                        activeEdge: -1,
+                        pathEdges: [],
+                        done: false,
+                        msg: msg
+                    });
+
+                    if (u === endIdx) break;
+                }
+
+                // Reconstruct shortest path
+                var pathNodes = [];
+                var pathEdges = [];
+                if (dist[endIdx] < Infinity) {
+                    var cur = endIdx;
+                    while (cur !== -1) {
+                        pathNodes.unshift(cur);
+                        var p = prev[cur];
+                        if (p !== -1) {
+                            for (var ei = 0; ei < edges.length; ei++) {
+                                if ((edges[ei].u === cur && edges[ei].v === p) || (edges[ei].v === cur && edges[ei].u === p)) {
+                                    pathEdges.push(ei);
+                                    break;
+                                }
+                            }
+                        }
+                        cur = p;
+                    }
+                }
+
+                var pathStr = pathNodes.map(function (idx) { return nodes[idx].id; }).join(' → ');
+                steps.push({
+                    dist: dist.slice(),
+                    visited: visited.slice(),
+                    activeNode: endIdx,
+                    activeEdge: -1,
+                    pathEdges: pathEdges,
+                    pathNodes: pathNodes,
+                    done: true,
+                    totalCost: dist[endIdx],
+                    msg: dist[endIdx] < Infinity
+                        ? 'Shortest path found: ' + pathStr + ' (Total weight = ' + dist[endIdx] + ').'
+                        : 'Target vertex is unreachable from ' + nodes[startIdx].id + '.'
+                });
+
+                return steps;
+            }
+
+            function computeKruskalSteps(nodes, edges) {
+                var n = nodes.length;
+                var parent = [];
+                for (var i = 0; i < n; i++) parent.push(i);
+                function find(x) { return parent[x] === x ? x : (parent[x] = find(parent[x])); }
+
+                var sorted = edges.map(function (e, idx) {
+                    return { idx: idx, u: e.u, v: e.v, w: e.w };
+                }).sort(function (a, b) { return a.w - b.w; });
+
+                var mstEdges = [];
+                var rejectedEdges = [];
+                var totalWeight = 0;
+                var steps = [];
+
+                steps.push({
+                    mstEdges: [],
+                    rejectedEdges: [],
+                    activeEdge: -1,
+                    totalWeight: 0,
+                    done: false,
+                    msg: 'Sort all ' + edges.length + ' edges by ascending weight. Target: select ' + (n - 1) + ' edges without cycles.'
+                });
+
+                for (var k = 0; k < sorted.length; k++) {
+                    var e = sorted[k];
+                    var ru = find(e.u), rv = find(e.v);
+                    var label = nodes[e.u].id + '–' + nodes[e.v].id + ' (w=' + e.w + ')';
+                    if (ru !== rv) {
+                        parent[ru] = rv;
+                        mstEdges.push(e.idx);
+                        totalWeight += e.w;
+                        steps.push({
+                            mstEdges: mstEdges.slice(),
+                            rejectedEdges: rejectedEdges.slice(),
+                            activeEdge: e.idx,
+                            totalWeight: totalWeight,
+                            done: false,
+                            msg: 'Accept edge ' + label + ' — connects two components. MST total = ' + totalWeight + '.'
+                        });
+                        if (mstEdges.length === n - 1) break;
+                    } else {
+                        rejectedEdges.push(e.idx);
+                        steps.push({
+                            mstEdges: mstEdges.slice(),
+                            rejectedEdges: rejectedEdges.slice(),
+                            activeEdge: e.idx,
+                            totalWeight: totalWeight,
+                            done: false,
+                            msg: 'Reject edge ' + label + ' — would form a cycle.'
+                        });
+                    }
+                }
+
+                steps.push({
+                    mstEdges: mstEdges.slice(),
+                    rejectedEdges: rejectedEdges.slice(),
+                    activeEdge: -1,
+                    totalWeight: totalWeight,
+                    done: true,
+                    msg: 'Minimum Spanning Tree complete! ' + mstEdges.length + ' edges selected, total minimum weight = ' + totalWeight + '.'
+                });
+
+                return steps;
+            }
+
+            function init() {
+                var canvas = document.getElementById('graphCanvas');
+                var ctx = canvas.getContext('2d');
+                var container = document.getElementById('canvasContainer');
+
+                var btnAlgoDijkstra = document.getElementById('btnAlgoDijkstra');
+                var btnAlgoKruskal = document.getElementById('btnAlgoKruskal');
+                var dijkstraSelectors = document.getElementById('dijkstraSelectors');
+                var selStart = document.getElementById('selStart');
+                var selEnd = document.getElementById('selEnd');
+
+                var btnStep = document.getElementById('btnStep');
+                var btnRunAll = document.getElementById('btnRunAll');
+                var btnResetAlgo = document.getElementById('btnResetAlgo');
+                var presetBtns = document.querySelectorAll('.preset-btn');
+
+                var analysisList = document.getElementById('analysisList');
+                var stepLog = document.getElementById('stepLog');
+                var probeReadout = document.getElementById('probeReadout');
+
+                var btnZoomIn = document.getElementById('btnZoomIn');
+                var btnZoomOut = document.getElementById('btnZoomOut');
+                var btnReset = document.getElementById('btnReset');
+
+                var state = {
+                    algo: 'dijkstra',
+                    nodes: [],
+                    edges: [],
+                    startIdx: 0,
+                    endIdx: 5,
+                    steps: [],
+                    stepIdx: 0,
+                    offsetX: 0,
+                    offsetY: 0,
+                    scale: 66,
+                    initializedView: false,
+                    isPanning: false,
+                    dragNodeIdx: -1,
+                    dragStartX: 0,
+                    dragStartY: 0
+                };
+
+                function loadPreset(key) {
+                    var p = PRESETS[key];
+                    state.nodes = p.nodes.map(function (n) { return { id: n.id, x: n.x, y: n.y }; });
+                    state.edges = p.edges.map(function (e) { return { u: e.u, v: e.v, w: e.w }; });
+                    state.startIdx = p.start;
+                    state.endIdx = p.end;
+                    populateSelectors();
+                    recomputeSteps(true);
+                }
+
+                function populateSelectors() {
+                    selStart.innerHTML = '';
+                    selEnd.innerHTML = '';
+                    state.nodes.forEach(function (n, idx) {
+                        var o1 = document.createElement('option');
+                        o1.value = idx; o1.textContent = 'Vertex ' + n.id;
+                        if (idx === state.startIdx) o1.selected = true;
+                        selStart.appendChild(o1);
+
+                        var o2 = document.createElement('option');
+                        o2.value = idx; o2.textContent = 'Vertex ' + n.id;
+                        if (idx === state.endIdx) o2.selected = true;
+                        selEnd.appendChild(o2);
+                    });
+                }
+
+                function recomputeSteps(runToEnd) {
+                    if (state.algo === 'dijkstra') {
+                        state.steps = computeDijkstraSteps(state.nodes, state.edges, state.startIdx, state.endIdx);
+                    } else {
+                        state.steps = computeKruskalSteps(state.nodes, state.edges);
+                    }
+                    state.stepIdx = runToEnd ? state.steps.length - 1 : 0;
+                    updateUI();
+                    draw();
+                }
+
+                function updateUI() {
+                    var cur = state.steps[state.stepIdx];
+                    stepLog.textContent = 'Step ' + state.stepIdx + '/' + (state.steps.length - 1) + ': ' + cur.msg;
+
+                    var html =
+                        '<div class="analysis-item"><span class="lbl">Graph Size</span><strong>V = ' + state.nodes.length + ', E = ' + state.edges.length + '</strong></div>';
+
+                    if (state.algo === 'dijkstra') {
+                        var targetDist = cur.dist[state.endIdx];
+                        var distStr = targetDist < Infinity ? String(targetDist) : '∞';
+                        var pathStr = (cur.done && cur.pathNodes && cur.pathNodes.length > 0)
+                            ? cur.pathNodes.map(function (i) { return state.nodes[i].id; }).join(' → ')
+                            : 'In progress...';
+                        html +=
+                            '<div class="analysis-item"><span class="lbl">Route</span><strong>' + state.nodes[state.startIdx].id + ' → ' + state.nodes[state.endIdx].id + '</strong></div>' +
+                            '<div class="analysis-item"><span class="lbl">Shortest Cost</span><strong class="cost">' + distStr + '</strong></div>' +
+                            '<div class="analysis-item"><span class="lbl">Optimal Path</span><strong class="path">' + pathStr + '</strong></div>';
+                        probeReadout.textContent = 'Dijkstra: ' + state.nodes[state.startIdx].id + ' → ' + state.nodes[state.endIdx].id + '  |  Cost = ' + distStr;
+                    } else {
+                        var edgeLabels = cur.mstEdges.map(function (ei) {
+                            var e = state.edges[ei];
+                            return state.nodes[e.u].id + state.nodes[e.v].id;
+                        }).join(', ');
+                        html +=
+                            '<div class="analysis-item"><span class="lbl">MST Edges</span><strong>' + cur.mstEdges.length + ' / ' + (state.nodes.length - 1) + '</strong></div>' +
+                            '<div class="analysis-item"><span class="lbl">Total Weight</span><strong class="cost">' + cur.totalWeight + '</strong></div>' +
+                            '<div class="analysis-item"><span class="lbl">Cycles Rejected</span><strong class="rej">' + cur.rejectedEdges.length + '</strong></div>' +
+                            '<div class="analysis-item"><span class="lbl">Selected</span><strong class="path">' + (edgeLabels || 'None') + '</strong></div>';
+                        probeReadout.textContent = 'Kruskal MST  |  Weight = ' + cur.totalWeight + '  |  Edges: ' + cur.mstEdges.length + '/' + (state.nodes.length - 1);
+                    }
+
+                    analysisList.innerHTML = html;
+                }
+
+                function getSize() {
+                    var rect = container.getBoundingClientRect();
+                    return {
+                        w: rect.width > 50 ? rect.width : 640,
+                        h: rect.height > 50 ? rect.height : 550
+                    };
+                }
+
+                function resizeCanvas() {
+                    var dpr = window.devicePixelRatio || 1;
+                    var sz = getSize();
+                    canvas.width = Math.round(sz.w * dpr);
+                    canvas.height = Math.round(sz.h * dpr);
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                    if (!state.initializedView) {
+                        state.offsetX = sz.w / 2;
+                        state.offsetY = sz.h / 2;
+                        state.initializedView = true;
+                    }
+                    draw();
+                }
+
+                function resetView() {
+                    var sz = getSize();
+                    state.offsetX = sz.w / 2;
+                    state.offsetY = sz.h / 2;
+                    state.scale = 66;
+                    draw();
+                }
+
+                function zoomBy(factor) {
+                    var sz = getSize();
+                    var cx = sz.w / 2;
+                    var cy = sz.h / 2;
+                    var newScale = Math.max(25, Math.min(180, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = cx - (cx - state.offsetX) * actual;
+                    state.offsetY = cy - (cy - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }
+
+                function toCX(x) { return state.offsetX + x * state.scale; }
+                function toCY(y) { return state.offsetY - y * state.scale; }
+                function toMathX(px) { return (px - state.offsetX) / state.scale; }
+                function toMathY(py) { return (state.offsetY - py) / state.scale; }
+
+                function draw() {
+                    var sz = getSize();
+                    var W = sz.w;
+                    var H = sz.h;
+                    ctx.clearRect(0, 0, W, H);
+
+                    // Subtle background grid
+                    var step = 1;
+                    var minX = Math.floor(-state.offsetX / state.scale);
+                    var maxX = Math.ceil((W - state.offsetX) / state.scale);
+                    var minY = Math.floor(-(H - state.offsetY) / state.scale);
+                    var maxY = Math.ceil(state.offsetY / state.scale);
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(203, 213, 224, 0.45)';
+                    ctx.lineWidth = 1;
+                    for (var gx = minX; gx <= maxX; gx += step) {
+                        var cx = toCX(gx);
+                        ctx.moveTo(cx, 0); ctx.lineTo(cx, H);
+                    }
+                    for (var gy = minY; gy <= maxY; gy += step) {
+                        var cy = toCY(gy);
+                        ctx.moveTo(0, cy); ctx.lineTo(W, cy);
+                    }
+                    ctx.stroke();
+
+                    var cur = state.steps[state.stepIdx];
+                    if (!cur) return;
+
+                    // 1. Draw Edges
+                    state.edges.forEach(function (e, idx) {
+                        var n1 = state.nodes[e.u];
+                        var n2 = state.nodes[e.v];
+                        var x1 = toCX(n1.x), y1 = toCY(n1.y);
+                        var x2 = toCX(n2.x), y2 = toCY(n2.y);
+
+                        var color = '#a0aec0';
+                        var width = 2.4;
+                        var dashed = false;
+
+                        if (state.algo === 'dijkstra') {
+                            if (cur.pathEdges && cur.pathEdges.indexOf(idx) !== -1) {
+                                color = '#38a169';
+                                width = 4.5;
+                            }
+                        } else {
+                            if (cur.mstEdges.indexOf(idx) !== -1) {
+                                color = '#38a169';
+                                width = 4.2;
+                            } else if (cur.rejectedEdges.indexOf(idx) !== -1) {
+                                color = '#d96459';
+                                width = 2.2;
+                                dashed = true;
+                            }
+                            if (cur.activeEdge === idx) {
+                                color = cur.rejectedEdges.indexOf(idx) !== -1 ? '#d96459' : '#e69a53';
+                                width = 4.8;
+                            }
+                        }
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = width;
+                        if (dashed) ctx.setLineDash([6, 4]);
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.stroke();
+                        ctx.restore();
+
+                        // Weight Pill at Midpoint
+                        var mx = (x1 + x2) / 2;
+                        var my = (y1 + y2) / 2;
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(mx, my, 12, 0, Math.PI * 2);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fill();
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = 1.8;
+                        ctx.stroke();
+
+                        ctx.font = "bold 11px 'Segoe UI'";
+                        ctx.fillStyle = '#2d3748';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(String(e.w), mx, my);
+                        ctx.restore();
+                    });
+
+                    // 2. Draw Nodes
+                    state.nodes.forEach(function (n, idx) {
+                        var nx = toCX(n.x);
+                        var ny = toCY(n.y);
+                        var fill = '#4a6572';
+                        var ring = '#ffffff';
+
+                        if (state.algo === 'dijkstra') {
+                            if (cur.visited[idx]) fill = '#2b6cb0';
+                            if (idx === state.startIdx) fill = '#38a169';
+                            if (idx === state.endIdx) fill = '#7c6992';
+                            if (cur.activeNode === idx && !cur.done) ring = '#e69a53';
+                        } else {
+                            fill = '#2b6cb0';
+                        }
+
+                        ctx.beginPath();
+                        ctx.arc(nx, ny, 19, 0, Math.PI * 2);
+                        ctx.fillStyle = fill;
+                        ctx.fill();
+                        ctx.strokeStyle = ring;
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+
+                        ctx.font = "bold 14px 'Segoe UI'";
+                        ctx.fillStyle = '#ffffff';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(n.id, nx, ny);
+
+                        // Distance badge in Dijkstra mode
+                        if (state.algo === 'dijkstra') {
+                            var d = cur.dist[idx];
+                            var dText = d < Infinity ? 'd=' + d : 'd=∞';
+                            ctx.save();
+                            ctx.font = "bold 11px 'Courier New', monospace";
+                            var bw = ctx.measureText(dText).width + 10;
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+                            ctx.fillRect(nx - bw / 2, ny - 38, bw, 16);
+                            ctx.strokeStyle = fill;
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(nx - bw / 2, ny - 38, bw, 16);
+                            ctx.fillStyle = '#2d3748';
+                            ctx.fillText(dText, nx, ny - 30);
+                            ctx.restore();
+                        }
+                    });
+                }
+
+                // Controls
+                btnAlgoDijkstra.addEventListener('click', function () {
+                    state.algo = 'dijkstra';
+                    btnAlgoDijkstra.classList.add('active');
+                    btnAlgoKruskal.classList.remove('active');
+                    dijkstraSelectors.style.display = 'grid';
+                    recomputeSteps(true);
+                });
+
+                btnAlgoKruskal.addEventListener('click', function () {
+                    state.algo = 'kruskal';
+                    btnAlgoKruskal.classList.add('active');
+                    btnAlgoDijkstra.classList.remove('active');
+                    dijkstraSelectors.style.display = 'none';
+                    recomputeSteps(true);
+                });
+
+                selStart.addEventListener('change', function () {
+                    state.startIdx = parseInt(selStart.value, 10);
+                    recomputeSteps(true);
+                });
+
+                selEnd.addEventListener('change', function () {
+                    state.endIdx = parseInt(selEnd.value, 10);
+                    recomputeSteps(true);
+                });
+
+                btnStep.addEventListener('click', function () {
+                    if (state.stepIdx < state.steps.length - 1) {
+                        state.stepIdx++;
+                        updateUI();
+                        draw();
+                    }
+                });
+
+                btnRunAll.addEventListener('click', function () {
+                    state.stepIdx = state.steps.length - 1;
+                    updateUI();
+                    draw();
+                });
+
+                btnResetAlgo.addEventListener('click', function () {
+                    state.stepIdx = 0;
+                    updateUI();
+                    draw();
+                });
+
+                presetBtns.forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        presetBtns.forEach(function (b) { b.classList.remove('active'); });
+                        btn.classList.add('active');
+                        resetView();
+                        loadPreset(btn.getAttribute('data-preset'));
+                    });
+                });
+
+                btnZoomIn.addEventListener('click', function () { zoomBy(1.2); });
+                btnZoomOut.addEventListener('click', function () { zoomBy(0.82); });
+                btnReset.addEventListener('click', resetView);
+
+                // Pointer Interactions
+                canvas.addEventListener('mousedown', function (e) {
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+
+                    // 1. Check Node drag
+                    for (var i = 0; i < state.nodes.length; i++) {
+                        var nx = toCX(state.nodes[i].x);
+                        var ny = toCY(state.nodes[i].y);
+                        if (Math.hypot(mx - nx, my - ny) < 22) {
+                            state.dragNodeIdx = i;
+                            return;
+                        }
+                    }
+
+                    // 2. Check Edge weight click to edit
+                    for (var j = 0; j < state.edges.length; j++) {
+                        var ed = state.edges[j];
+                        var ex = (toCX(state.nodes[ed.u].x) + toCX(state.nodes[ed.v].x)) / 2;
+                        var ey = (toCY(state.nodes[ed.u].y) + toCY(state.nodes[ed.v].y)) / 2;
+                        if (Math.hypot(mx - ex, my - ey) < 15) {
+                            var label = state.nodes[ed.u].id + '–' + state.nodes[ed.v].id;
+                            var val = window.prompt('Enter new positive weight for edge ' + label + ':', String(ed.w));
+                            if (val !== null) {
+                                var num = parseFloat(val);
+                                if (!isNaN(num) && num > 0 && num <= 999) {
+                                    ed.w = Math.round(num * 10) / 10;
+                                    recomputeSteps(true);
+                                }
+                            }
+                            return;
+                        }
+                    }
+
+                    // 3. Pan Canvas
+                    state.isPanning = true;
+                    state.dragStartX = e.clientX - state.offsetX;
+                    state.dragStartY = e.clientY - state.offsetY;
+                });
+
+                window.addEventListener('mousemove', function (e) {
+                    if (state.dragNodeIdx !== -1) {
+                        var rect = canvas.getBoundingClientRect();
+                        var mx = e.clientX - rect.left;
+                        var my = e.clientY - rect.top;
+                        state.nodes[state.dragNodeIdx].x = toMathX(mx);
+                        state.nodes[state.dragNodeIdx].y = toMathY(my);
+                        draw();
+                    } else if (state.isPanning) {
+                        state.offsetX = e.clientX - state.dragStartX;
+                        state.offsetY = e.clientY - state.dragStartY;
+                        draw();
+                    }
+                });
+
+                window.addEventListener('mouseup', function () {
+                    state.dragNodeIdx = -1;
+                    state.isPanning = false;
+                });
+
+                canvas.addEventListener('wheel', function (e) {
+                    e.preventDefault();
+                    var factor = Math.exp(-e.deltaY * 0.0012);
+                    var rect = canvas.getBoundingClientRect();
+                    var mx = e.clientX - rect.left;
+                    var my = e.clientY - rect.top;
+                    var newScale = Math.max(25, Math.min(180, state.scale * factor));
+                    var actual = newScale / state.scale;
+                    state.offsetX = mx - (mx - state.offsetX) * actual;
+                    state.offsetY = my - (my - state.offsetY) * actual;
+                    state.scale = newScale;
+                    draw();
+                }, { passive: false });
+
+                window.addEventListener('resize', resizeCanvas);
+
+                loadPreset('classic');
+                resizeCanvas();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+</body>
+</html>
